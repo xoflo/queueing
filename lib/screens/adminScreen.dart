@@ -16,8 +16,17 @@ class _AdminScreenState extends State<AdminScreen> {
 
   int screenIndex = 0;
 
+  // Service
+
   TextEditingController serviceType = TextEditingController();
   TextEditingController serviceCode = TextEditingController();
+
+  // Users
+
+  TextEditingController user = TextEditingController();
+  TextEditingController password = TextEditingController();
+  TextEditingController userServiceType = TextEditingController();
+  TextEditingController userType = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +252,13 @@ class _AdminScreenState extends State<AdminScreen> {
     serviceType.clear();
   }
 
+  clearUserFields() {
+    user.clear();
+    password.clear();
+    userServiceType.clear();
+    userType.clear();
+  }
+
 
   usersView() {
     return Container(
@@ -251,7 +267,7 @@ class _AdminScreenState extends State<AdminScreen> {
           Align(
               alignment: Alignment.centerLeft,
               child: ElevatedButton(onPressed: () {
-                addService();
+                addUser();
               }, child: Text("+ Add User"))),
           FutureBuilder(
             future: getUserSQL(),
@@ -263,14 +279,16 @@ class _AdminScreenState extends State<AdminScreen> {
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, i) {
                       print("$i: ${snapshot.data![i]}");
+                      final name = snapshot.data![i]['name'];
+                      final password = snapshot.data![i]['password'];
                       final serviceType = snapshot.data![i]['serviceType'];
-                      final serviceCode = snapshot.data![i]['serviceCode'];
+                      final userType = snapshot.data![i]['userType'];
 
                       return ListTile(
-                        title: Text("Service: $serviceType"),
-                        subtitle: Text("Code: $serviceCode"),
+                        title: Text("$name"),
+                        subtitle: Text("Service: $serviceType | Authority: $userType"),
                         trailing: IconButton(onPressed: () {
-                          deleteService(i);
+                          deleteUser(i);
                         }, icon: Icon(Icons.delete)),
                       );
                     }),
@@ -310,6 +328,97 @@ class _AdminScreenState extends State<AdminScreen> {
 
   }
 
+  addUser() {
+    showDialog(context: context, builder: (_) => AlertDialog(
+      title: Text('Add User'),
+      content: Container(
+        height: 120,
+        width: 250,
+        child: Column(
+          children: [
+            Container(
+                child: TextField(
+                  controller: user,
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                  ),
+                )),
+
+            Container(
+                child: TextField(
+                  controller: password,
+                  decoration: InputDecoration(
+                      labelText: 'Password'
+                  ),
+                )),
+
+            Container(
+                child: TextField(
+                  controller: userServiceType,
+                  decoration: InputDecoration(
+                    labelText: 'Service Type',
+                  ),
+                )),
+
+            Container(
+                child: TextField(
+                  controller: userType,
+                  decoration: InputDecoration(
+                    labelText: 'User Type',
+                  ),
+                )),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () {
+          addUserSQL();
+          clearUserFields();
+        }, child: Text("Add Service"))
+      ],
+    ));
+  }
+
+  addUserSQL() async {
+    final uri = Uri.parse('http://localhost:8080/queueing_api/api_user.php');
+    final body = jsonEncode({
+        'name': user.text,
+        'password': password.text,
+        'serviceType': userServiceType.text,
+      'userType': userType.text
+    });
+
+    final result = await http.post(uri, body: body);
+    print("result: ${result.body}");
+
+
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Added")));
+    setState(() {
+
+    });
+
+  }
+
+
+  deleteUser(int i) async {
+
+    final uri = Uri.parse('http://localhost:8080/queueing_api/api_user.php');
+    final body = jsonEncode({'id': '$i'});
+
+    final result = await http.delete(uri, body: body);
+
+    print("result: ${result.body}");
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Deleted")));
+    setState(() {
+
+    });
+
+  }
+
+
+
   tellersView() {
     return Container(
       child: Column(
@@ -322,4 +431,8 @@ class _AdminScreenState extends State<AdminScreen> {
       ),
     );
   }
+
+
 }
+
+
