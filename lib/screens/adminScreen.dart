@@ -286,8 +286,8 @@ class _AdminScreenState extends State<AdminScreen> {
                 child: ListView.builder(
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, i) {
-                      print("$i: ${snapshot.data![i]}");
                       final name = snapshot.data![i]['username'];
+                      final id = snapshot.data![i]['id'];
                       final password = snapshot.data![i]['pass'];
                       final serviceType = snapshot.data![i]['serviceType'];
                       final userType = snapshot.data![i]['userType'];
@@ -296,7 +296,7 @@ class _AdminScreenState extends State<AdminScreen> {
                         title: Text("$name"),
                         subtitle: Text("Service: $serviceType | Authority: $userType"),
                         trailing: IconButton(onPressed: () {
-                          deleteUser(i);
+                          deleteUser(id);
                         }, icon: Icon(Icons.delete)),
                       );
                     }),
@@ -542,13 +542,216 @@ class _AdminScreenState extends State<AdminScreen> {
         children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: ElevatedButton(onPressed: () {}, child: Text("+ Add Station"))),
+              child: ElevatedButton(onPressed: () {
+                addStation();
+              }, child: Text("+ Add Station"))),
+          FutureBuilder(
+            future: getStationSQL(),
+            builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
+                padding: EdgeInsets.all(10),
+                height: 400,
+                child: ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, i) {
+                      print("$i: ${snapshot.data![i]}");
+                      final name = snapshot.data![i]['username'];
+                      final password = snapshot.data![i]['pass'];
+                      final serviceType = snapshot.data![i]['serviceType'];
+                      final userType = snapshot.data![i]['userType'];
 
+                      return ListTile(
+                        title: Text("$name"),
+                        subtitle: Text("Service: $serviceType | Authority: $userType"),
+                        trailing: IconButton(onPressed: () {
+                          deleteStation(i);
+                        }, icon: Icon(Icons.delete)),
+                      );
+                    }),
+              ) : Container(
+                height: 400,
+                child: Text("No users found", style: TextStyle(color: Colors.grey)),
+              ) : Center(
+                child: Container(
+                  height: 100,
+                  width: 100,
+                  child: CircularProgressIndicator(
+                    color: Colors.blue,
+                  ),
+                ),
+              );
+            },
+          )
         ],
       ),
     );
   }
 
+
+  getStationSQL() async {
+
+    try {
+
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+
+      final result = await http.get(uri);
+
+      final response = jsonDecode(result.body);
+
+      print("response1: $response");
+
+      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+
+      print("response2: $response");
+
+      return response;
+    } catch(e) {
+      print(e);
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+
+  }
+
+
+  addStation() {
+    String display = "Select";
+
+    showDialog(context: context, builder: (_) => AlertDialog(
+      title: Text('Add User'),
+      content: StatefulBuilder(
+        builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+          return Container(
+            height: 220,
+            width: 250,
+            child: Column(
+              children: [
+                Container(
+                    child: TextField(
+                      controller: user,
+                      decoration: InputDecoration(
+                        labelText: 'Username',
+                      ),
+                    )),
+
+                Container(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 210,
+                          child: TextField(
+                            controller: password,
+                            decoration: InputDecoration(
+                                labelText: 'Password'
+                            ),
+                          ),
+                        ),
+                      ],
+                    )),
+
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: ListTile(
+                      title: Text("Service Type: $display"),
+                      onTap: () {
+                        showDialog(context: context, builder: (_) => AlertDialog(
+                          content: Container(
+                            height: 300,
+                            width: 200,
+                            child: FutureBuilder(
+                              future: getServiceSQL(),
+                              builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
+                                  height: 300,
+                                  width: 200,
+                                  child: ListView.builder(
+                                      itemCount: snapshot.data!.length,
+                                      itemBuilder: (context, i) {
+                                        final name = snapshot.data![i]['serviceType'];
+
+                                        return ListTile(
+                                          title: Text(name),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            display = name;
+                                            setStateDialog((){});
+                                          },
+                                        );
+                                      }),
+
+                                ) : Text("No Services Found", style: TextStyle(color: Colors.grey)) : Container(
+                                  height: 100,
+                                  width: 100,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.blue,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ));
+                      }
+
+                  ),
+                ),
+
+              ],
+            ),
+          );
+        },
+      ),
+      actions: [
+        TextButton(onPressed: () {
+          try {
+            addStationSQL();
+          } catch(e) {
+            print(e);
+          }
+          clearUserFields();
+        }, child: Text("Add Station"))
+      ],
+    ));
+  }
+
+  addStationSQL() async {
+    final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+    final body = jsonEncode({
+      "username": "${user.text}",
+      "pass": "${password.text}",
+      "serviceType": "${serviceType}",
+      "userType": "${userType}"
+    });
+
+    final result = await http.post(uri, body: body);
+    print("result: ${result.body}");
+
+
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Added")));
+    setState(() {
+
+    });
+
+  }
+
+
+  deleteStation(int i) async {
+
+    final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+    final body = jsonEncode({'id': '$i'});
+
+    final result = await http.delete(uri, body: body);
+
+    print("result: ${result.body}");
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Deleted")));
+    setState(() {
+
+    });
+
+  }
 
 }
 
