@@ -154,32 +154,6 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  usersView() {
-    return Container(
-      child: Column(
-        children: [
-          Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton(onPressed: () {}, child: Text("+ Add User"))),
-
-        ],
-      ),
-    );
-  }
-
-  tellersView() {
-    return Container(
-      child: Column(
-        children: [
-          Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton(onPressed: () {}, child: Text("+ Add Teller"))),
-
-        ],
-      ),
-    );
-  }
-
   deleteService(int i) async {
 
     final uri = Uri.parse('http://localhost:8080/queueing_api/api_service.php');
@@ -261,11 +235,91 @@ class _AdminScreenState extends State<AdminScreen> {
     print("response2: $response");
 
     return response;
-    
+
   }
 
   clearServiceFields() {
     serviceCode.clear();
     serviceType.clear();
+  }
+
+
+  usersView() {
+    return Container(
+      child: Column(
+        children: [
+          Align(
+              alignment: Alignment.centerLeft,
+              child: ElevatedButton(onPressed: () {
+                addService();
+              }, child: Text("+ Add User"))),
+          FutureBuilder(
+            future: getUserSQL(),
+            builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
+                padding: EdgeInsets.all(10),
+                height: 400,
+                child: ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, i) {
+                      print("$i: ${snapshot.data![i]}");
+                      final serviceType = snapshot.data![i]['serviceType'];
+                      final serviceCode = snapshot.data![i]['serviceCode'];
+
+                      return ListTile(
+                        title: Text("Service: $serviceType"),
+                        subtitle: Text("Code: $serviceCode"),
+                        trailing: IconButton(onPressed: () {
+                          deleteService(i);
+                        }, icon: Icon(Icons.delete)),
+                      );
+                    }),
+              ) : Container(
+                height: 400,
+                child: Text("No services found", style: TextStyle(color: Colors.grey)),
+              ) : Center(
+                child: Container(
+                  height: 100,
+                  width: 100,
+                  child: CircularProgressIndicator(
+                    color: Colors.blue,
+                  ),
+                ),
+              );
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  getUserSQL() async {
+    final uri = Uri.parse('http://localhost:8080/queueing_api/api_user.php');
+
+    final result = await http.get(uri);
+
+    final response = jsonDecode(result.body);
+
+    print("response1: $response");
+
+    response.sort((a, b) => int.parse(a['id']).compareTo(int.parse(b['id'])));
+
+    print("response2: $response");
+
+    return response;
+
+  }
+
+  tellersView() {
+    return Container(
+      child: Column(
+        children: [
+          Align(
+              alignment: Alignment.centerLeft,
+              child: ElevatedButton(onPressed: () {}, child: Text("+ Add Teller"))),
+
+        ],
+      ),
+    );
   }
 }
