@@ -117,7 +117,8 @@ class _AdminScreenState extends State<AdminScreen> {
           FutureBuilder(
             future: getServiceSQL(),
             builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? SizedBox(
+              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
+                padding: EdgeInsets.all(10),
                 height: 400,
                 child: ListView.builder(
                     itemCount: snapshot.data!.length,
