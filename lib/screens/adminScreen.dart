@@ -29,6 +29,11 @@ class _AdminScreenState extends State<AdminScreen> {
   TextEditingController userServiceType = TextEditingController();
   TextEditingController userType = TextEditingController();
 
+  // Stations
+
+  TextEditingController stationNumber = TextEditingController();
+  TextEditingController stationName = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
 
@@ -69,6 +74,11 @@ class _AdminScreenState extends State<AdminScreen> {
                         screenIndex = 2;
                         setState(() {});
                       }, icon: Icon(Icons.desktop_windows_rounded)),
+                  IconButton(
+                      tooltip: "Logout",
+                      onPressed: () {
+                    Navigator.pop(context);
+                  }, icon: Icon(Icons.logout))
 
                 ],
               ),
@@ -218,7 +228,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   addServiceSQL() async {
     final uri = Uri.parse('http://localhost:$port/queueing_api/api_service.php');
-    final body = jsonEncode({'serviceType': "${serviceType.text}", 'serviceCode': "${serviceCode.text}"});
+    final body = jsonEncode({'serviceType': "${serviceType.text[0].toUpperCase() + serviceType.text.substring(1).toLowerCase()}", 'serviceCode': "${serviceCode.text}"});
 
     final result = await http.post(uri, body: body);
     print("result: ${result.body}");
@@ -265,6 +275,11 @@ class _AdminScreenState extends State<AdminScreen> {
     password.clear();
     userServiceType.clear();
     userType.clear();
+  }
+
+  clearStationFields() {
+    stationName.clear();
+    stationNumber.clear();
   }
 
 
@@ -554,23 +569,25 @@ class _AdminScreenState extends State<AdminScreen> {
                 child: ListView.builder(
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, i) {
-                      print("$i: ${snapshot.data![i]}");
-                      final name = snapshot.data![i]['username'];
-                      final password = snapshot.data![i]['pass'];
+                      final id = snapshot.data![i]['id'];
+                      final name = snapshot.data![i]['stationName'];
+                      final number = snapshot.data![i]['stationNumber'];
                       final serviceType = snapshot.data![i]['serviceType'];
-                      final userType = snapshot.data![i]['userType'];
+                      final inSession = snapshot.data![i]['inSession'];
+                      final userInSession = snapshot.data![i]['userInSession'];
+                      final ticketServing = snapshot.data![i]['ticketServing'];
 
                       return ListTile(
-                        title: Text("$name"),
-                        subtitle: Text("Service: $serviceType | Authority: $userType"),
+                        title: Text("$name #$number"),
+                        subtitle: Text("$serviceType | Active: ${inSession == true? "$userInSession": "No"}"),
                         trailing: IconButton(onPressed: () {
-                          deleteStation(i);
+                          deleteStation(id);
                         }, icon: Icon(Icons.delete)),
                       );
                     }),
               ) : Container(
                 height: 400,
-                child: Text("No users found", style: TextStyle(color: Colors.grey)),
+                child: Text("No stations found", style: TextStyle(color: Colors.grey)),
               ) : Center(
                 child: Container(
                   height: 100,
@@ -620,35 +637,28 @@ class _AdminScreenState extends State<AdminScreen> {
     String display = "Select";
 
     showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text('Add User'),
+      title: Text('Add Station'),
       content: StatefulBuilder(
         builder: (BuildContext context, void Function(void Function()) setStateDialog) {
           return Container(
-            height: 220,
+            height: 180,
             width: 250,
             child: Column(
               children: [
                 Container(
                     child: TextField(
-                      controller: user,
+                      controller: stationName,
                       decoration: InputDecoration(
-                        labelText: 'Username',
+                        labelText: 'Station Name',
                       ),
                     )),
 
                 Container(
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 210,
-                          child: TextField(
-                            controller: password,
-                            decoration: InputDecoration(
-                                labelText: 'Password'
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: TextField(
+                      controller: stationNumber,
+                      decoration: InputDecoration(
+                          labelText: 'Station Number'
+                      ),
                     )),
 
                 Padding(
@@ -705,7 +715,7 @@ class _AdminScreenState extends State<AdminScreen> {
       actions: [
         TextButton(onPressed: () {
           try {
-            addStationSQL();
+            addStationSQL(display);
           } catch(e) {
             print(e);
           }
@@ -715,13 +725,15 @@ class _AdminScreenState extends State<AdminScreen> {
     ));
   }
 
-  addStationSQL() async {
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+  addStationSQL(String serviceType) async {
+    final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
     final body = jsonEncode({
-      "username": "${user.text}",
-      "pass": "${password.text}",
+      "stationNumber": "${stationNumber.text}",
+      "stationName": "${stationName.text[0].toUpperCase() + stationName.text.substring(1).toLowerCase()}",
       "serviceType": "${serviceType}",
-      "userType": "${userType}"
+      "inSession": 0,
+      "userInSession": "",
+      "ticketServing": "",
     });
 
     final result = await http.post(uri, body: body);
@@ -729,7 +741,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Added")));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Added")));
     setState(() {
 
     });
@@ -739,7 +751,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   deleteStation(int i) async {
 
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+    final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
     final body = jsonEncode({'id': '$i'});
 
     final result = await http.delete(uri, body: body);
