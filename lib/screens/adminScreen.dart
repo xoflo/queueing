@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:queueing/screens/servicesScreen.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/station.dart';
+
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -334,7 +336,7 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  getUserSQL() async {
+  getUserSQL([String? userType, String? serviceType]) async {
 
     try {
 
@@ -346,11 +348,23 @@ class _AdminScreenState extends State<AdminScreen> {
 
       print("response1: $response");
 
-      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
-
       print("response2: $response");
 
+
+      if (userType != null) {
+        if (userType == 'Admin') {
+          response.where((e) => e['userType'] == 'Admin').toList();
+        } else {
+          response.where((e) => e['userType'] == 'Staff').toList();
+        }
+      }
+
+      if (serviceType != null) {
+        return response.where((e) => e['serviceType'] == serviceType).toList();
+      }
+
       return response;
+
     } catch(e) {
       print(e);
 
@@ -569,20 +583,56 @@ class _AdminScreenState extends State<AdminScreen> {
                 child: ListView.builder(
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, i) {
-                      final id = snapshot.data![i]['id'];
-                      final name = snapshot.data![i]['stationName'];
-                      final number = snapshot.data![i]['stationNumber'];
-                      final serviceType = snapshot.data![i]['serviceType'];
-                      final inSession = snapshot.data![i]['inSession'];
-                      final userInSession = snapshot.data![i]['userInSession'];
-                      final ticketServing = snapshot.data![i]['ticketServing'];
+                      final station = Station.fromJson(snapshot.data![i]);
 
                       return ListTile(
-                        title: Text("$name #$number"),
-                        subtitle: Text("$serviceType | ${inSession == true? "In Session: $userInSession": "Inactive"}"),
+                        title: Text("${station.stationName} #${station.stationNumber} ${station.userInSession == "" ? "| Unassigned" : "| Assigned: ${station.userInSession}"}"),
+                        subtitle: Text("${station.serviceType} | ${station.inSession == true? "In Session": "Inactive"}"),
                         trailing: IconButton(onPressed: () {
-                          deleteStation(id);
+                          deleteStation(station.id!);
                         }, icon: Icon(Icons.delete)),
+                        onTap: () {
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            title: Text("Assign Staff (${station.serviceType})"),
+                            content: FutureBuilder(
+                              future: getUserSQL('Staff', station.serviceType),
+                              builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                                return Container(
+                                  height: 400,
+                                  width: 300,
+                                  child: snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                                      itemCount: snapshot.data!.length,
+                                      itemBuilder: (context, i) {
+                                    final name = snapshot.data![i]['username'];
+
+                                    return ListTile(
+                                      title: Text(name),
+                                      onTap: () async {
+                                        await station.update({
+                                          'userInSession': "$name",
+                                        });
+
+                                        setState(() {
+
+                                        });
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User assigned")));
+                                        Navigator.pop(context);
+                                      },
+                                    );
+                                  }) : Center(
+                                    child: Container(
+                                      height: 100,
+                                      width: 100,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ));
+                        },
                       );
                     }),
               ) : Container(
@@ -602,6 +652,35 @@ class _AdminScreenState extends State<AdminScreen> {
         ],
       ),
     );
+  }
+
+  assignUserToStation() async {
+    try {
+
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+      final body = {
+
+      };
+
+      final result = await http.put(uri);
+
+      final response = jsonDecode(result.body);
+
+      print("response1: $response");
+
+      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+
+      print("response2: $response");
+
+      return response;
+    } catch(e) {
+      print(e);
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+
   }
 
 
