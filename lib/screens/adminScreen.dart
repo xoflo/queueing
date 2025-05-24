@@ -309,7 +309,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                       return ListTile(
                         title: Text("${user.username}"),
-                        subtitle: Text("Service: ${user.serviceType} | Authority: ${user.userType}"),
+                        subtitle: Text("${user.serviceType!.isEmpty ? "" : "Service: ${user.serviceType!.join(', ')} | "}Authority: ${user.userType}"),
                         trailing: IconButton(onPressed: () {
                           deleteUser(user.id!);
                         }, icon: Icon(Icons.delete)),
@@ -370,7 +370,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   addUser() {
     bool obscure = true;
-
+    List<String> services = [];
     String userType = "Admin";
     String display = "Select";
 
@@ -425,7 +425,7 @@ class _AdminScreenState extends State<AdminScreen> {
                             child: FutureBuilder(
                               future: getServiceSQL(),
                               builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                                List<String> services = [];
+
                                 return snapshot.connectionState == ConnectionState.done ? StatefulBuilder(
                                   builder: (BuildContext context, void Function(void Function()) setStateList) {
                                     return ListView.builder(
@@ -438,8 +438,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                               onChanged: (value) {
                                                 if (value == true) {
                                                   services.add(user.serviceType!);
-                                                  setStateList((){});
+                                                } else {
+                                                  services.remove(user.serviceType!);
                                                 }
+                                                setStateList((){});
                                               });
                                         });
                                   },
@@ -455,6 +457,13 @@ class _AdminScreenState extends State<AdminScreen> {
                               },
                             ),
                           ),
+                          actions: [
+                            TextButton(onPressed: () {
+                              display = "${services.length == 1 ? "${services.first}" : "${services.length} Services"}";
+                              Navigator.pop(context);
+                              setStateDialog((){});
+                            }, child: Text("Confirm"))
+                          ],
                         ));
                       }
 
@@ -512,7 +521,7 @@ class _AdminScreenState extends State<AdminScreen> {
       actions: [
         TextButton(onPressed: () {
           try {
-            addUserSQL(display, userType);
+            addUserSQL(services.toString(), userType);
           } catch(e) {
             print(e);
           }
@@ -522,12 +531,12 @@ class _AdminScreenState extends State<AdminScreen> {
     ));
   }
 
-  addUserSQL(String serviceType, String userType) async {
+  addUserSQL(String services, String userType) async {
     final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
     final body = jsonEncode({
         "username": "${user.text}",
         "pass": "${password.text}",
-        "serviceType": "${serviceType}",
+        "serviceType": "${services}",
         "userType": "${userType}"
     });
 
@@ -583,13 +592,17 @@ class _AdminScreenState extends State<AdminScreen> {
                       final station = Station.fromJson(snapshot.data![i]);
 
                       return ListTile(
-                        title: Text("${station.stationName} #${station.stationNumber} ${station.userInSession == "" ? "| Unassigned" : "| Assigned: ${station.userInSession}"}"),
-                        subtitle: Text("${station.serviceType} | ${station.inSession == 1 ? "In Session": "Inactive"}"),
+                        title: Text("${station.stationName} #${station.stationNumber}"),
+                        subtitle: Row(
+                          children: [
+                            Text("${station.serviceType} | "),
+                            station.inSession == 1 ? Text("In Session: ${station.userInSession}", style: TextStyle(color: Colors.red)) : Text("Available", style: TextStyle(color: Colors.green))
+                          ],
+                        ),
                         trailing: IconButton(onPressed: () {
                           deleteStation(station.id!);
                         }, icon: Icon(Icons.delete)),
-                        onTap: () {
-                        },
+
                       );
                     }),
               ) : Container(

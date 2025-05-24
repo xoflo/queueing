@@ -6,7 +6,7 @@ class User {
   int? id;
   String? pass;
   String? userType;
-  String? serviceType;
+  List<dynamic>? serviceType;
   String? username;
 
 
@@ -14,8 +14,20 @@ class User {
     this.id = int.parse(data['id']);
     this.pass = data['pass'];
     this.userType = data['userType'];
-    this.serviceType = data['serviceType'];
+    this.serviceType = stringToList(data['serviceType']);
     this.username = data['username'];
+  }
+
+  stringToList(String text) {
+    if (text != "") {
+      String trimmed = text.substring(1, text.length - 1);
+      List<String> parts = trimmed.split(',');
+      List<String> result = parts.map((s) => s.trim().replaceAll('"', '')).toList();
+
+      return result;
+    } else {
+      return [];
+    }
   }
 
   update(dynamic data) async {
