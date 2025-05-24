@@ -13,9 +13,9 @@ class Station {
 
 
   Station.fromJson(dynamic data) {
-    this.id = data['id'];
-    this.stationNumber = data['stationNumber'];
-    this.inSession = data['inSession'];
+    this.id = int.parse(data['id']);
+    this.stationNumber = int.parse(data['stationNumber']);
+    this.inSession = int.parse(data['inSession']);
     this.userInSession = data['userInSession'];
     this.serviceType = data['serviceType'];
     this.ticketServing = data['ticketServing'];
