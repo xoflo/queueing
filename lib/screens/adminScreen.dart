@@ -579,7 +579,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                       return ListTile(
                         title: Text("$name #$number"),
-                        subtitle: Text("$serviceType | Active: ${inSession == true? "$userInSession": "No"}"),
+                        subtitle: Text("$serviceType | ${inSession == true? "In Session: $userInSession": "Inactive"}"),
                         trailing: IconButton(onPressed: () {
                           deleteStation(id);
                         }, icon: Icon(Icons.delete)),
