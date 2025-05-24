@@ -31,6 +31,8 @@ class User {
   }
 
   update(dynamic data) async {
+    int port = 80;
+
     try {
 
       final body = {
@@ -41,7 +43,7 @@ class User {
         'username': data['username'] ?? this.username,
       };
 
-      final uri = Uri.parse('http://localhost:80/queueing_api/api_user.php');
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
 

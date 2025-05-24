@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:queueing/models/service.dart';
-import 'package:queueing/screens/servicesScreen.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/station.dart';

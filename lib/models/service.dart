@@ -15,6 +15,9 @@ class Service {
   }
 
   update(dynamic data) async {
+
+    int port = 80;
+
     try {
 
       final body = {
@@ -23,7 +26,7 @@ class Service {
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
       };
 
-      final uri = Uri.parse('http://localhost:80/queueing_api/api_service.php');
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_service.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
 
