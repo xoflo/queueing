@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -22,6 +23,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool obscure = true;
 
+  int port = 80;
+  late Timer pingCheck;
+
+  @override
+  void initState() {
+
+
+
+    pingCheck = Timer.periodic(Duration(seconds: 3), (timer) async {
+      List<Map<String, dynamic>> result = await getStationSQL();
+      final sorted = result.where((e) => DateTime.parse(e['sessionPing']).difference(DateTime.now()).inSeconds > Duration(seconds: 5).inSeconds).toList();
+      sorted.forEach((e) {
+        e.update("inSession", (value) => 0);
+        e.update("userInSession", (value) => "");
+        e.update("sessionPing", (value) => "");
+      });
+
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
 
-      final uri = Uri.parse('http://localhost:80/queueing_api/api_user.php');
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
       final result = await http.get(uri);
       final users = jsonDecode(result.body);
       final sorted = users.where((e) => e['username'] == username.text && e['pass'] == pass.text).toList();
@@ -122,6 +143,33 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch(e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong.")));
+    }
+
+  }
+
+  getStationSQL() async {
+
+    try {
+
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+
+      final result = await http.get(uri);
+
+      final response = jsonDecode(result.body);
+
+      print("response1: $response");
+
+      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+
+      print("response2: $response");
+
+      return response;
+    } catch(e) {
+      print(e);
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
     }
 
   }

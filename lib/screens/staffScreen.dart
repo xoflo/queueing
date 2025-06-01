@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -52,6 +53,20 @@ class _StaffScreenState extends State<StaffScreen> {
                           )),
                           onTap: () {
 
+                            if (station.inSession == 1) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station is currently in session.")));
+                            } else {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => StaffSession(user: widget.user)));
+                              /*
+
+                            station.update({
+                              "inSession": 1,
+                              "userInSession": widget.user.username,
+                              "sessionPing": DateTime.now().toString()
+                            });
+                             */
+                            }
+
                           },
                         );
                       }),
@@ -101,3 +116,58 @@ class _StaffScreenState extends State<StaffScreen> {
 
   }
 }
+
+class StaffSession extends StatefulWidget {
+  const StaffSession({super.key, required this.user});
+
+  final User user;
+
+  @override
+  State<StaffSession> createState() => _StaffSessionState();
+}
+
+class _StaffSessionState extends State<StaffSession> {
+
+  late Timer pingTimer;
+  
+  @override
+  void initState() {
+    pingTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      await widget.user.update({
+        "sessionPing": DateTime.now().toString()
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    pingTimer.cancel();
+    super.dispose();
+  }
+
+  
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Card(
+              child: Center(
+                child: Text("Call Next"),
+              ),
+            ),
+            SizedBox(width: 10),
+            Card(
+              child: Center(
+                child: Text("Call Again"),
+              ),
+            )
+          ],
+        )
+      ],
+    );
+  }
+}
+
