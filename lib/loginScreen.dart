@@ -7,6 +7,8 @@ import 'package:queueing/screens/servicesScreen.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/screens/staffScreen.dart';
 
+import 'models/user.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -28,6 +30,11 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Container(
+                height: 300,
+                child: Image.asset('images/logo.png'),
+              ),
+              SizedBox(height: 50),
               Text("Ombudsman Queueing", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
               SizedBox(height: 20),
               Container(
@@ -102,14 +109,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
 
       } else {
-        final userType = sorted[0]['userType'];
+        final user = User.fromJson(sorted[0]);
 
-        if (userType == 'Admin') {
+        if (user.userType == 'Admin') {
           Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen()));
         }
 
-        if (userType == 'Staff') {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen()));
+        if (user.userType == 'Staff') {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
         }
 
       }

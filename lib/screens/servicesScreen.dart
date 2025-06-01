@@ -30,8 +30,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   final service = Service.fromJson(snapshot.data![i]);
                   return Container(
                     padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
-                    height: 200,
+                    height: 250,
                     child: ElevatedButton(onPressed: () {
+                      addTicketSQL(service.serviceType!, 0);
                     }, child: Text(service.serviceType!, style: TextStyle(fontSize: 100))),
                   );
                 }) : Center(
@@ -47,6 +48,38 @@ class _ServicesScreenState extends State<ServicesScreen> {
         ),
       )
     );
+  }
+
+  addTicketSQL(String serviceType, int priority) async {
+    int port = 80;
+
+    final String timestamp = DateTime.now().toString();
+
+    try {
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+      final body = {
+        "timeCreated": timestamp,
+        "number": 0,
+        "serviceType": serviceType,
+        "userAssigned": "",
+        "stationNumber": "",
+        "timeTaken": "",
+        "timeDone": "",
+        "status": "Pending",
+        "log": "$timestamp: ticketGenerated",
+        "priority": priority,
+        "priorityType": "",
+        "printStatus": 1
+      };
+
+      final result = await http.post(uri, body: jsonEncode(body));
+      print(result.body);
+
+
+    } catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+    }
   }
 
 

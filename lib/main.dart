@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'loginScreen.dart';
@@ -13,12 +15,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scrollBehavior: ScrollBehavior().copyWith(dragDevices: {
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.touch,
+      }),
       debugShowCheckedModeBanner: false,
       title: 'queueing',
       theme: ThemeData(
         fontFamily: 'Inter',
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey),
       ),
       home: LoginScreen(),
     );
