@@ -32,7 +32,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
                     height: 250,
                     child: ElevatedButton(onPressed: () {
-                      addTicketSQL(service.serviceType!, 0);
+                      addTicketSQL(service.serviceType!,service.serviceCode!, 0);
                     }, child: Text(service.serviceType!, style: TextStyle(fontSize: 100))),
                   );
                 }) : Center(
@@ -50,16 +50,18 @@ class _ServicesScreenState extends State<ServicesScreen> {
     );
   }
 
-  addTicketSQL(String serviceType, int priority) async {
+  addTicketSQL(String serviceType, String serviceCode, int priority) async {
     int port = 80;
 
     final String timestamp = DateTime.now().toString();
+
 
     try {
       final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
       final body = {
         "timeCreated": timestamp,
         "number": 0,
+        "serviceCode": serviceCode,
         "serviceType": serviceType,
         "userAssigned": "",
         "stationNumber": "",

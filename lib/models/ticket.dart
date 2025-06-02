@@ -6,6 +6,7 @@ class Ticket {
   int? id;
   String? timeCreated;
   int? number;
+  String? serviceCode;
   String? serviceType;
   String? userAssigned;
   int? stationNumber;
@@ -21,6 +22,7 @@ class Ticket {
   Ticket.fromJson(dynamic data) {
     this.timeCreated = data['timeCreated'];
     this.number = int.parse(data['number']);
+    this.serviceCode = data['serviceCode'];
     this.serviceType = data['serviceType'];
     this.userAssigned = data['userAssigned'];
     this.stationNumber = int.parse(data['stationNumber']);
@@ -43,6 +45,7 @@ class Ticket {
         'id': data['id'] ?? this.id,
         'timeCreated': data['timeCreated'] ?? this.timeCreated,
         'number': data['number'] ?? this.number,
+        'serviceCode': data['serviceCode'] ?? this.serviceCode,
         'serviceType': data['serviceType'] ?? this.serviceType,
         'userAssigned': data['userAssigned'] ?? this.userAssigned,
         'stationNumber': data['stationNumber'] ?? this.stationNumber,

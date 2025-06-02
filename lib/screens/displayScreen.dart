@@ -44,8 +44,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                     padding: const EdgeInsets.all(30.0),
                                     child: Column(
                                       children: [
-                                        Text("${snapshot.data![i].serviceType}${snapshot.data![i].number}", style: TextStyle(fontSize: 30)),
-                                        Text("${snapshot.data![i].stationNumber}", style: TextStyle(fontSize: 30)),
+                                        Text("${snapshot.data![i].serviceType}", style: TextStyle(fontSize: 30)),
+                                        Text("${snapshot.data![i].serviceCode}${snapshot.data![i].number}", style: TextStyle(fontSize: 30)),
                                       ],
                                     ),
                                   ),
