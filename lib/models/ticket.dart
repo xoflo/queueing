@@ -22,6 +22,7 @@ class Ticket {
 
 
   Ticket.fromJson(dynamic data) {
+    this.id = int.parse(data['id']);
     this.timeCreated = data['timeCreated'];
     this.number = data['number'];
     this.serviceCode = data['serviceCode'];
@@ -62,8 +63,12 @@ class Ticket {
         'priorityType': data['priorityType'] ?? this.priorityType,
         'printStatus': data['printStatus'] ?? this.printStatus,
         'callCheck': data['callCheck'] ?? this.callCheck,
-
       };
+
+
+      print('id: ${data['id']}');
+      print('callCheckRn: ${data['callCheck']}');
+      print('callCheckOld: ${this.callCheck}');
 
       final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
 
