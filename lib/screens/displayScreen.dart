@@ -87,7 +87,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
       final result = await http.get(uri);
 
       final List<dynamic> response = jsonDecode(result.body);
-      final sorted = response.where((e) => e['status'] == "Pending").toList();
+      final sorted = response.where((e) => e['status'] == "Serving").toList();
       List<Ticket> newTickets = [];
 
 

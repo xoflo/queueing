@@ -5,10 +5,11 @@ import 'package:http/http.dart' as http;
 class Ticket {
   int? id;
   String? timeCreated;
-  int? number;
+  String? number;
   String? serviceCode;
   String? serviceType;
   String? userAssigned;
+  String? stationName;
   int? stationNumber;
   String? timeTaken;
   String? timeDone;
@@ -21,10 +22,11 @@ class Ticket {
 
   Ticket.fromJson(dynamic data) {
     this.timeCreated = data['timeCreated'];
-    this.number = int.parse(data['number']);
+    this.number = data['number'];
     this.serviceCode = data['serviceCode'];
     this.serviceType = data['serviceType'];
     this.userAssigned = data['userAssigned'];
+    this.stationName = data['stationName'];
     this.stationNumber = int.parse(data['stationNumber']);
     this.timeTaken = data['timeTaken'];
     this.timeDone = data['timeDone'];

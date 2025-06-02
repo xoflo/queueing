@@ -1,9 +1,11 @@
 import 'dart:convert';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:queueing/models/service.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:http/http.dart' as http;
+
+import '../models/ticket.dart';
 
 class ServicesScreen extends StatefulWidget {
   const ServicesScreen({super.key});
@@ -50,17 +52,54 @@ class _ServicesScreenState extends State<ServicesScreen> {
     );
   }
 
+  toDateTime(DateTime date) {
+    DateTime(date.year, date.month, date.day);
+  }
+
+  getTicketSQL(String serviceType) async {
+    int port = 80;
+
+    try {
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+
+      final result = await http.get(uri);
+
+      final List<dynamic> response = jsonDecode(result.body);
+      final sorted = response.where((e) => e['status'] == "Pending" && toDateTime(DateTime.parse(e['timeCreated'])) == toDateTime(DateTime.now()) && e['serviceType'] == serviceType).toList();
+      List<Ticket> newTickets = [];
+
+
+      for (int i = 0; i< sorted.length; i++) {
+        newTickets.add(Ticket.fromJson(sorted[i]));
+      }
+
+      newTickets.sort((a,b) => DateTime.parse(a.timeCreated!).compareTo(DateTime.parse(b.timeCreated!)));
+
+      return newTickets;
+
+    } catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+
+  }
+
   addTicketSQL(String serviceType, String serviceCode, int priority) async {
     int port = 80;
 
     final String timestamp = DateTime.now().toString();
 
+    final List<Ticket> tickets =  await getTicketSQL(serviceType);
+    final number = tickets.length + 1;
+    final numberParsed = number.toString().padLeft(4, '0');
+    print(numberParsed);
 
     try {
       final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
       final body = {
         "timeCreated": timestamp,
-        "number": 0,
+        "number": numberParsed,
         "serviceCode": serviceCode,
         "serviceType": serviceType,
         "userAssigned": "",
