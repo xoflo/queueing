@@ -23,7 +23,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   @override
   void initState() {
-    timer = Timer.periodic(Duration(seconds: 3), (value) async {
+    timer = Timer.periodic(Duration(seconds: 2, milliseconds: 500), (value) async {
       final List<Ticket> retrieved = await getTicketSQL();
 
 
