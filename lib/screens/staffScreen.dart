@@ -167,8 +167,9 @@ class _StaffSessionState extends State<StaffSession> {
                       snapshot.data![0].update({
                         "userAssigned": widget.user.username,
                         "status": "Serving",
-                        "log": "${snapshot.data![0].log}, ${DateTime.now().toString()}: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}"
-
+                        "stationName": widget.station.stationName,
+                        "stationNumber": widget.station.stationNumber,
+                      "log": "${snapshot.data![0].log}, ${DateTime.now().toString()}: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}"
                       });
                     }, child: Text("Call Next")),
                     SizedBox(width: 10),
