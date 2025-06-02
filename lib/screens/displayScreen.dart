@@ -19,10 +19,31 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   late Timer timer;
 
+  @override
+  void initState() {
+
+    List<Ticket> tickets = [];
+
+    timer = Timer.periodic(Duration(seconds: 3), (value) async {
+      final List<Ticket> retrieved = await getTicketSQL();
+      if (tickets.length == retrieved.length) {
+        print("noSound");
+      } else {
+        tickets = retrieved;
+        AudioPlayer player = AudioPlayer();
+        player.play(AssetSource('sound.mp3'));
+        print("Sound");
+        setState(() {});
+      }
+
+    });
+
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
-
 
     return Scaffold(
       body: Column(
@@ -97,7 +118,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
       final List<dynamic> response = jsonDecode(result.body);
       final sorted = response.where((e) => e['status'] == "Serving").toList();
       List<Ticket> newTickets = [];
-
 
       for (int i = 0; i< sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
