@@ -19,32 +19,11 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   late Timer timer;
 
-  @override
-  void initState() {
-
-    List<Ticket>? tickets;
-
-    Timer.periodic(Duration(seconds: 5), (value) async {
-
-      List<Ticket> retrieved = await getTicketSQL();
-
-      print("retrieved: $retrieved");
-      print("tickets: $tickets");
-
-      if (tickets == retrieved) {
-      } else {
-        tickets = retrieved;
-        final player = AudioPlayer();
-        player.play(AssetSource('sound.mp3'));
-      }
-
-
-    });
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       body: Column(
         children: [
