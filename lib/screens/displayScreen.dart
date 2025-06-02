@@ -19,21 +19,40 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   late Timer timer;
 
+  List<Ticket> tickets = [];
+
   @override
   void initState() {
-
-    List<Ticket> tickets = [];
-
     timer = Timer.periodic(Duration(seconds: 3), (value) async {
       final List<Ticket> retrieved = await getTicketSQL();
+
+      print("tickets: ${tickets.length}");
+      print("retrieved: ${retrieved.length}");
+
       if (tickets.length == retrieved.length) {
         print("noSound");
       } else {
-        tickets = retrieved;
-        AudioPlayer player = AudioPlayer();
-        player.play(AssetSource('sound.mp3'));
-        print("Sound");
-        setState(() {});
+
+        final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
+        if (toUpdate.isNotEmpty) {
+          print("toUpdateLength: ${toUpdate.length}");
+
+          for (int i = 0; i < toUpdate.length; i++) {
+            await toUpdate[i].update({
+              "callCheck": 1
+            });
+            print("updated$i");
+          }
+
+          tickets = retrieved;
+          AudioPlayer player = AudioPlayer();
+          player.play(AssetSource('sound.mp3'));
+          print("Sound");
+          setState(() {});
+        } else {
+          setState(() {});
+        }
+
       }
 
     });

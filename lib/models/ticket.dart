@@ -18,6 +18,7 @@ class Ticket {
   int? priority;
   String? priorityType;
   int? printStatus;
+  int? callCheck;
 
 
   Ticket.fromJson(dynamic data) {
@@ -35,6 +36,7 @@ class Ticket {
     this.priority = int.parse(data['priority']);
     this.priorityType = data['priorityType'];
     this.printStatus = int.parse(data['printStatus']);
+    this.callCheck = int.parse(data['callCheck']);
   }
 
   update(dynamic data) async {
@@ -50,6 +52,7 @@ class Ticket {
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
         'serviceType': data['serviceType'] ?? this.serviceType,
         'userAssigned': data['userAssigned'] ?? this.userAssigned,
+        'stationName': data['stationNumber'] ?? this.stationName,
         'stationNumber': data['stationNumber'] ?? this.stationNumber,
         'timeTaken': data['timeTaken'] ?? this.timeTaken,
         'timeDone': data['timeDone'] ?? this.timeDone,
@@ -58,12 +61,17 @@ class Ticket {
         'priority': data['priority'] ?? this.priority,
         'priorityType': data['priorityType'] ?? this.priorityType,
         'printStatus': data['printStatus'] ?? this.printStatus,
+        'callCheck': data['callCheck'] ?? this.callCheck,
 
       };
 
       final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
+
+
+      print("updateStatus: ${response.statusCode}");
+      print("updateResponse: ${response.body}");
 
     } catch(e) {
       print(e);
