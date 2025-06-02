@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/models/station.dart';
+import 'package:queueing/models/ticket.dart';
 
 import '../models/user.dart';
 
@@ -51,20 +52,20 @@ class _StaffScreenState extends State<StaffScreen> {
                               station.inSession == 0 ? Text("Available", style: TextStyle(color: Colors.green)) : Text("${station.userInSession}", style: TextStyle(color: Colors.redAccent))
                             ],
                           )),
-                          onTap: () {
+                          onTap: () async {
+                            final timestamp = DateTime.now().toString();
 
                             if (station.inSession == 1) {
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station is currently in session.")));
                             } else {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => StaffSession(user: widget.user)));
-                              /*
+                              await station.update({
+                                "inSession": 1,
+                                "userInSession": widget.user.username,
+                                "sessionPing": timestamp
+                              });
 
-                            station.update({
-                              "inSession": 1,
-                              "userInSession": widget.user.username,
-                              "sessionPing": DateTime.now().toString()
-                            });
-                             */
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => StaffSession(user: widget.user, station: station)));
+
                             }
 
                           },
@@ -90,7 +91,6 @@ class _StaffScreenState extends State<StaffScreen> {
 
   getStationSQL() async {
 
-
     try {
 
       final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
@@ -100,10 +100,6 @@ class _StaffScreenState extends State<StaffScreen> {
       final response = jsonDecode(result.body);
 
       print("response1: $response");
-
-      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
-
-      print("response2: $response");
 
       return response;
     } catch(e) {
@@ -118,8 +114,9 @@ class _StaffScreenState extends State<StaffScreen> {
 }
 
 class StaffSession extends StatefulWidget {
-  const StaffSession({super.key, required this.user});
+  const StaffSession({super.key, required this.user, required this.station});
 
+  final Station station;
   final User user;
 
   @override
@@ -129,11 +126,13 @@ class StaffSession extends StatefulWidget {
 class _StaffSessionState extends State<StaffSession> {
 
   late Timer pingTimer;
+  int port = 80;
   
   @override
   void initState() {
     pingTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
-      await widget.user.update({
+
+      await widget.station.update({
         "sessionPing": DateTime.now().toString()
       });
     });
@@ -149,25 +148,76 @@ class _StaffSessionState extends State<StaffSession> {
   
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Card(
-              child: Center(
-                child: Text("Call Next"),
-              ),
-            ),
-            SizedBox(width: 10),
-            Card(
-              child: Center(
-                child: Text("Call Again"),
-              ),
-            )
-          ],
-        )
-      ],
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.all(20),
+        child: FutureBuilder(
+          future: getTicketSQL(),
+          builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
+            return Column(
+              children: [
+                Text("${widget.user.username}: ${widget.station.serviceType} ${widget.station.stationName} ${widget.station.stationNumber}"),
+                SizedBox(height: 20),
+                Text("Serving Ticket: "),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(onPressed: () {
+                      /*
+
+                      snapshot.data![0].update({
+                        "userAssigned": widget.user.username,
+                        "status": "Serving",
+                        "log": "${snapshot.data![0].log}, ${DateTime.now().toString()}: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}"
+
+                      });
+                       */
+                    }, child: Text("Call Next")),
+                    SizedBox(width: 10),
+                    ElevatedButton(onPressed: () {
+                    }, child: Text("Transfer")),
+                    SizedBox(width: 10),
+                    ElevatedButton(onPressed: () {
+                    }, child: Text("Call Again")),
+                  ],
+                )
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
+
+  getTicketSQL() async {
+    int port = 80;
+
+    try {
+      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+
+      final result = await http.get(uri);
+
+      final List<dynamic> response = jsonDecode(result.body);
+      final sorted = response.where((e) => e['serviceType'] == widget.user.serviceType && e['status'] == "Pending" && e['userAssigned'] == "").toList();
+      List<Ticket> newTickets = [];
+
+
+      for (int i = 0; i< sorted.length; i++) {
+        newTickets.add(Ticket.fromJson(sorted[i]));
+      }
+
+      newTickets.sort((a,b) => DateTime.parse(a.timeCreated!).compareTo(DateTime.parse(b.timeCreated!)));
+
+      return newTickets;
+
+    } catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+
+  }
+
 }
 

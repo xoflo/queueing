@@ -4,14 +4,33 @@ import 'package:http/http.dart' as http;
 
 class Ticket {
   int? id;
+  String? timeCreated;
+  int? number;
   String? serviceType;
-  String? serviceCode;
+  String? userAssigned;
+  int? stationNumber;
+  String? timeTaken;
+  String? timeDone;
+  String? status;
+  String? log;
+  int? priority;
+  String? priorityType;
+  int? printStatus;
 
 
   Ticket.fromJson(dynamic data) {
-    this.id = int.parse(data['id']);
+    this.timeCreated = data['timeCreated'];
+    this.number = int.parse(data['number']);
     this.serviceType = data['serviceType'];
-    this.serviceCode = data['serviceCode'];
+    this.userAssigned = data['userAssigned'];
+    this.stationNumber = int.parse(data['stationNumber']);
+    this.timeTaken = data['timeTaken'];
+    this.timeDone = data['timeDone'];
+    this.status = data['status'];
+    this.log = data['log'];
+    this.priority = int.parse(data['priority']);
+    this.priorityType = data['priorityType'];
+    this.printStatus = int.parse(data['printStatus']);
   }
 
   update(dynamic data) async {
@@ -22,8 +41,19 @@ class Ticket {
 
       final body = {
         'id': data['id'] ?? this.id,
-        'serviceType' : data['serviceType'] ?? this.serviceType,
-        'serviceCode': data['serviceCode'] ?? this.serviceCode,
+        'timeCreated': data['timeCreated'] ?? this.timeCreated,
+        'number': data['number'] ?? this.number,
+        'serviceType': data['serviceType'] ?? this.serviceType,
+        'userAssigned': data['userAssigned'] ?? this.userAssigned,
+        'stationNumber': data['stationNumber'] ?? this.stationNumber,
+        'timeTaken': data['timeTaken'] ?? this.timeTaken,
+        'timeDone': data['timeDone'] ?? this.timeDone,
+        'status': data['status'] ?? this.status,
+        'log': data['log'] ?? this.log,
+        'priority': data['priority'] ?? this.priority,
+        'priorityType': data['priorityType'] ?? this.priorityType,
+        'printStatus': data['printStatus'] ?? this.printStatus,
+
       };
 
       final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');

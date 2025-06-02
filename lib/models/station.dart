@@ -10,6 +10,7 @@ class Station {
   String? serviceType;
   String? ticketServing;
   String? stationName;
+  String? sessionPing;
 
 
   Station.fromJson(dynamic data) {
@@ -20,6 +21,7 @@ class Station {
     this.serviceType = data['serviceType'];
     this.ticketServing = data['ticketServing'];
     this.stationName = data['stationName'];
+    this.sessionPing = data['sessionPing'];
   }
 
   update(dynamic data) async {
@@ -35,7 +37,8 @@ class Station {
         'userInSession': data['userInSession'] ?? this.userInSession,
         'serviceType': data['serviceType'] ?? this.serviceType,
         'ticketServing': data['ticketServing'] ?? this.ticketServing,
-        'stationName': data['stationName'] ?? this.stationName
+        'stationName': data['stationName'] ?? this.stationName,
+        'sessionPing': data['sessionPing'] ?? this.sessionPing
       };
 
       final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');

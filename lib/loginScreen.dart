@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:queueing/models/station.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:queueing/screens/displayScreen.dart';
 import 'package:queueing/screens/servicesScreen.dart';
@@ -28,17 +29,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
+    pingCheck = Timer.periodic(Duration(seconds: 10), (timer) async {
+      List<dynamic> result = await getStationSQL();
+      final sorted = result.where((e) => e['sessionPing'] != "").toList();
 
+      final List<Station> stations = [];
 
+      for (int i = 0; i < sorted.length; i++) {
+       stations.add(Station.fromJson(sorted[i]));
+      }
 
-    pingCheck = Timer.periodic(Duration(seconds: 3), (timer) async {
-      List<Map<String, dynamic>> result = await getStationSQL();
-      final sorted = result.where((e) => DateTime.parse(e['sessionPing']).difference(DateTime.now()).inSeconds > Duration(seconds: 5).inSeconds).toList();
-      sorted.forEach((e) {
-        e.update("inSession", (value) => 0);
-        e.update("userInSession", (value) => "");
-        e.update("sessionPing", (value) => "");
-      });
+      for (int i = 0; i < stations.length; i++) {
+        if (DateTime.parse(stations[i].sessionPing!).difference(DateTime.now()).inSeconds < 5) {
+          await stations[i].update({
+            "inSession": 0,
+            "sessionPing": "",
+            "userInSession": ""
+          });
+        }
+      }
 
     });
     super.initState();
@@ -157,11 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final response = jsonDecode(result.body);
 
-      print("response1: $response");
-
-      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
-
-      print("response2: $response");
+      print('response: $response');
 
       return response;
     } catch(e) {
