@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.4.0
   audioplayers: ^6.4.0
+  marquee: ^2.3.0
 
 dev_dependencies:
   flutter_test:

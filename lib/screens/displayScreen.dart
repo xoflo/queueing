@@ -167,7 +167,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             },
                           )
                         ],
-                      ) : Center(child: Text("No Tickets Pending", style: TextStyle(color: Colors.grey))) : Container(
+                      ) : Center(child: Text("No Tickets Serving", style: TextStyle(color: Colors.grey))) : Container(
                         height: 100,
                         width: 100,
                         child: CircularProgressIndicator(),
@@ -186,7 +186,11 @@ class _DisplayScreenState extends State<DisplayScreen> {
                   Text("Expand Window to Display Queue", style: TextStyle(fontSize: 50), textAlign: TextAlign.center),
                   Text("This display only supports TV Display use", style: TextStyle(fontSize: 30, color: Colors.grey), textAlign: TextAlign.center),
                 ],
-              ))
+              )),
+
+
+
+
         ],
       ),
     );
