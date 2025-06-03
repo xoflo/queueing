@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:queueing/globals.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
 
@@ -17,8 +18,6 @@ class StaffScreen extends StatefulWidget {
 }
 
 class _StaffScreenState extends State<StaffScreen> {
-
-  int port = 80;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +92,7 @@ class _StaffScreenState extends State<StaffScreen> {
 
     try {
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_station.php');
 
       final result = await http.get(uri);
 
@@ -126,8 +125,7 @@ class StaffSession extends StatefulWidget {
 class _StaffSessionState extends State<StaffSession> {
 
   late Timer pingTimer;
-  int port = 80;
-  
+
   @override
   void initState() {
     pingTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
@@ -194,10 +192,9 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
   getTicketSQL() async {
-    int port = 80;
 
     try {
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
       final result = await http.get(uri);
 

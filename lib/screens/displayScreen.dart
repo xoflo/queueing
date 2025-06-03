@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:queueing/globals.dart';
 import '../models/ticket.dart';
 
 class DisplayScreen extends StatefulWidget {
@@ -193,10 +193,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   Future<List<Ticket>> getTicketSQL() async {
-    int port = 80;
+
 
     try {
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
       final result = await http.get(uri);
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:queueing/globals.dart';
 import 'package:queueing/models/service.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:http/http.dart' as http;
@@ -15,8 +16,6 @@ class ServicesScreen extends StatefulWidget {
 }
 
 class _ServicesScreenState extends State<ServicesScreen> {
-
-  int port = 80;
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +56,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   getTicketSQL(String serviceType) async {
-    int port = 80;
 
     try {
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
       final result = await http.get(uri);
 
@@ -86,7 +84,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   addTicketSQL(String serviceType, String serviceCode, int priority) async {
-    int port = 80;
 
     final String timestamp = DateTime.now().toString();
 
@@ -96,7 +93,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     print(numberParsed);
 
     try {
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final body = {
         "timeCreated": timestamp,
         "number": numberParsed,
@@ -126,10 +123,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
 
   getServiceSQL() async {
-    int port = 80;
 
     try {
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_service.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_service.php');
 
       final result = await http.get(uri);
 

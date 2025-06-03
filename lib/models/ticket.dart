@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:queueing/globals.dart';
 
 class Ticket {
   int? id;
@@ -70,7 +71,7 @@ class Ticket {
       print('callCheckRn: ${data['callCheck']}');
       print('callCheckOld: ${this.callCheck}');
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_ticket.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
 

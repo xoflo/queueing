@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:queueing/globals.dart';
 
 class Station {
   int? id;
@@ -41,7 +42,7 @@ class Station {
         'sessionPing': data['sessionPing'] ?? this.sessionPing
       };
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_station.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
 

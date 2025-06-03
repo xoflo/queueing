@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../globals.dart';
+
 class Service {
   int? id;
   String? serviceType;
@@ -16,8 +18,6 @@ class Service {
 
   update(dynamic data) async {
 
-    int port = 80;
-
     try {
 
       final body = {
@@ -26,7 +26,7 @@ class Service {
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
       };
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_service.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_service.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
 

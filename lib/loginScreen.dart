@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:queueing/globals.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:queueing/screens/displayScreen.dart';
@@ -23,8 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController pass = TextEditingController();
 
   bool obscure = true;
-
-  int port = 80;
   late Timer pingCheck;
 
   @override
@@ -128,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final result = await http.get(uri);
       final users = jsonDecode(result.body);
       final sorted = users.where((e) => e['username'] == username.text && e['pass'] == pass.text).toList();
@@ -160,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_station.php');
 
       final result = await http.get(uri);
 

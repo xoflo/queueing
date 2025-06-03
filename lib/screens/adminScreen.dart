@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:queueing/globals.dart';
 import 'package:queueing/models/service.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,7 +19,6 @@ class AdminScreen extends StatefulWidget {
 class _AdminScreenState extends State<AdminScreen> {
 
   int screenIndex = 0;
-  int port = 80;
 
   // Service
 
@@ -180,7 +180,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   deleteService(int i) async {
 
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_service.php');
+    final uri = Uri.parse('http://$site/queueing_api/api_service.php');
     final body = jsonEncode({'id': '$i'});
 
     final result = await http.delete(uri, body: body);
@@ -230,7 +230,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   addServiceSQL() async {
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_service.php');
+    final uri = Uri.parse('http://$site/queueing_api/api_service.php');
     final body = jsonEncode({'serviceType': "${serviceType.text[0].toUpperCase() + serviceType.text.substring(1).toLowerCase()}", 'serviceCode': "${serviceCode.text}"});
 
     final result = await http.post(uri, body: body);
@@ -247,7 +247,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   getServiceSQL() async {
     try {
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_service.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_service.php');
 
       final result = await http.get(uri);
 
@@ -337,7 +337,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     try {
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
 
       final result = await http.get(uri);
 
@@ -531,7 +531,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   addUserSQL(String services, String userType) async {
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+    final uri = Uri.parse('http://$site/queueing_api/api_user.php');
     final body = jsonEncode({
         "username": "${user.text}",
         "pass": "${password.text}",
@@ -554,7 +554,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   deleteUser(int i) async {
 
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+    final uri = Uri.parse('http://$site/queueing_api/api_user.php');
     final body = jsonEncode({'id': '$i'});
 
     final result = await http.delete(uri, body: body);
@@ -672,7 +672,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     try {
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_station.php');
 
       final result = await http.get(uri);
 
@@ -789,7 +789,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   addStationSQL(String serviceType) async {
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+    final uri = Uri.parse('http://$site/queueing_api/api_station.php');
     final body = jsonEncode({
       "stationNumber": "${stationNumber.text}",
       "stationName": "${stationName.text[0].toUpperCase() + stationName.text.substring(1).toLowerCase()}",
@@ -816,7 +816,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   deleteStation(int i) async {
 
-    final uri = Uri.parse('http://localhost:$port/queueing_api/api_station.php');
+    final uri = Uri.parse('http://$site/queueing_api/api_station.php');
     final body = jsonEncode({'id': '$i'});
 
     final result = await http.delete(uri, body: body);

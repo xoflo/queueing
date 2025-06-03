@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:queueing/globals.dart';
 
 class User {
   int? id;
@@ -43,7 +44,7 @@ class User {
         'username': data['username'] ?? this.username,
       };
 
-      final uri = Uri.parse('http://localhost:$port/queueing_api/api_user.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
 
