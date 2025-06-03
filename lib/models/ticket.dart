@@ -43,8 +43,6 @@ class Ticket {
 
   update(dynamic data) async {
 
-    int port = 80;
-
     try {
 
       final body = {
@@ -54,7 +52,7 @@ class Ticket {
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
         'serviceType': data['serviceType'] ?? this.serviceType,
         'userAssigned': data['userAssigned'] ?? this.userAssigned,
-        'stationName': data['stationNumber'] ?? this.stationName,
+        'stationName': data['stationName'] ?? this.stationName,
         'stationNumber': data['stationNumber'] ?? this.stationNumber,
         'timeTaken': data['timeTaken'] ?? this.timeTaken,
         'timeDone': data['timeDone'] ?? this.timeDone,

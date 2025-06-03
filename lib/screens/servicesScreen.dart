@@ -100,6 +100,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "serviceCode": serviceCode,
         "serviceType": serviceType,
         "userAssigned": "",
+        "stationName": "",
         "stationNumber": "",
         "timeTaken": "",
         "timeDone": "",
