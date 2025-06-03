@@ -154,6 +154,8 @@ class _StaffSessionState extends State<StaffSession> {
         child: FutureBuilder(
           future: getTicketSQL(),
           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
+
+
             return Column(
               children: [
                 Text("${widget.user.username}: ${widget.station.serviceType} ${widget.station.stationName} ${widget.station.stationNumber}"),
@@ -164,12 +166,15 @@ class _StaffSessionState extends State<StaffSession> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(onPressed: () {
+                      final timestamp = DateTime.now();
+
                       snapshot.data![0].update({
                         "userAssigned": widget.user.username,
                         "status": "Serving",
                         "stationName": widget.station.stationName,
                         "stationNumber": widget.station.stationNumber,
-                      "log": "${snapshot.data![0].log}, ${DateTime.now().toString()}: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}"
+                        "log": "${snapshot.data![0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                        "timeTaken": timestamp
                       });
                     }, child: Text("Call Next")),
                     SizedBox(width: 10),
