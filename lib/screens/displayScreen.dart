@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:marquee/marquee.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -167,7 +167,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             },
                           )
                         ],
-                      ) : Center(child: Text("No Tickets Serving", style: TextStyle(color: Colors.grey))) : Container(
+                      ) : Container(
+                          height: 650,
+                          child: Center(child: Text("No Tickets Serving", style: TextStyle(color: Colors.grey)))) : Container(
                         height: 100,
                         width: 100,
                         child: CircularProgressIndicator(),
@@ -187,8 +189,23 @@ class _DisplayScreenState extends State<DisplayScreen> {
                   Text("This display only supports TV Display use", style: TextStyle(fontSize: 30, color: Colors.grey), textAlign: TextAlign.center),
                 ],
               )),
-
-
+          Container(
+            height: 50,
+            child: Marquee(
+              text: '    Office of the Ombudsman, Davao City    ',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 40),
+              scrollAxis: Axis.horizontal,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              blankSpace: 20.0,
+              velocity: 100.0,
+              pauseAfterRound: Duration(seconds: 1),
+              startPadding: 10.0,
+              accelerationDuration: Duration(seconds: 1),
+              accelerationCurve: Curves.linear,
+              decelerationDuration: Duration(milliseconds: 500),
+              decelerationCurve: Curves.easeOut,
+            ),
+          )
 
 
         ],
