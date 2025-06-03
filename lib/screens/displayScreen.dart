@@ -41,42 +41,61 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     final List<Ticket> retrieved = await getTicketSQL();
 
                     if (retrieved.length != ticketsLength) {
-                      ticketsLength = retrieved.length;
-                      setStateHere((){});
-                    }
 
-
-                    retrieved.forEach((value){
-                      print("id: ${value.id} call: ${value.callCheck}");
-                    });
-
-                    final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
-                    print("toUpdateLength: ${toUpdate.length}");
-
-                    toUpdate.forEach((value){
-                      print("update id: ${value.id} call: ${value.callCheck}");
-                    });
-
-                    if (toUpdate.isNotEmpty) {
-
-
+                      final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
                       print("toUpdateLength: ${toUpdate.length}");
 
-                      for (int i = 0; i < toUpdate.length; i++) {
-                        await toUpdate[i].update({
-                          "id": toUpdate[i].id,
-                          "callCheck": 1
-                        });
+                      toUpdate.forEach((value){
+                        print("update id: ${value.id} call: ${value.callCheck}");
+                      });
+                      if (toUpdate.isNotEmpty) {
+                        print("toUpdateLength: ${toUpdate.length}");
+                        for (int i = 0; i < toUpdate.length; i++) {
+                          await toUpdate[i].update({
+                            "id": toUpdate[i].id,
+                            "callCheck": 1
+                          });
+                        }
+
+                        ticketsLength = retrieved.length;
+                        AudioPlayer player = AudioPlayer();
+                        player.play(AssetSource('sound.mp3'));
+                        print("Sound");
+
+                        setStateHere((){});
+
                       }
 
                       ticketsLength = retrieved.length;
-                      AudioPlayer player = AudioPlayer();
-                      player.play(AssetSource('sound.mp3'));
-                      print("Sound");
-
                       setStateHere((){});
+                    } else {
+                      final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
+                      print("toUpdateLength: ${toUpdate.length}");
 
+                      toUpdate.forEach((value){
+                        print("update id: ${value.id} call: ${value.callCheck}");
+                      });
+
+                      if (toUpdate.isNotEmpty) {
+                        print("toUpdateLength: ${toUpdate.length}");
+                        for (int i = 0; i < toUpdate.length; i++) {
+                          await toUpdate[i].update({
+                            "id": toUpdate[i].id,
+                            "callCheck": 1
+                          });
+                        }
+
+                        ticketsLength = retrieved.length;
+                        AudioPlayer player = AudioPlayer();
+                        player.play(AssetSource('sound.mp3'));
+                        print("Sound");
+
+                        setStateHere((){});
+
+                      }
                     }
+
+
                   });
 
                   return FutureBuilder(
