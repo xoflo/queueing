@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
-
 import '../models/user.dart';
 
 class StaffScreen extends StatefulWidget {
