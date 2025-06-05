@@ -17,39 +17,101 @@ class ServicesScreen extends StatefulWidget {
 
 class _ServicesScreenState extends State<ServicesScreen> {
 
+  TextEditingController name = TextEditingController();
+  String priorityType = "None";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        child: FutureBuilder(
-          future: getServiceSQL(),
-          builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-            return snapshot.connectionState == ConnectionState.done ? ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, i){
-                  final service = Service.fromJson(snapshot.data![i]);
-                  return Container(
-                    padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
-                    height: 250,
-                    child: ElevatedButton(onPressed: () {
-                      addTicketSQL(service.serviceType!,service.serviceCode!, 0);
-                    }, child: Text(service.serviceType!, style: TextStyle(fontSize: 100))),
-                  );
-                }) : Center(
-              child: Container(
-                height: 100,
-                width: 100,
-                child: CircularProgressIndicator(
-                  color: Colors.blue,
-                ),
-              ),
-            );
-          },
-        ),
+      body: Column(
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: 100,
+            child: StatefulBuilder(
+              builder: (BuildContext context, void Function(void Function()) setStateRow) {
+                return Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Row(
+                    spacing: 10,
+                    children: [
+                      Container(
+                        width: (MediaQuery.of(context).size.width * 1/2) - 40,
+                        child: TextField(
+                          controller: name,
+                          decoration: InputDecoration(
+                              labelText: 'Name (Optional)',
+                              labelStyle: TextStyle(color: Colors.grey)
+                          ),
+                        ),
+                      ),
+                      Text("Priority:", style: TextStyle(fontSize: 30)),
+                      Container(
+                        height: 50,
+                        width: (MediaQuery.of(context).size.width * 1/2) - 120,
+                        child: FutureBuilder(
+                          future: null,
+                          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                            return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: 20,
+                                itemBuilder: (context, i) {
+                                  return Container(
+                                    child: Card(
+                                      clipBehavior: Clip.antiAlias,
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
+                                          child: Text("Mangekyou"),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }) : Container();
+                          },
+                        )
+                      )
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Container(
+            height: MediaQuery.of(context).size.height - 100,
+            child: FutureBuilder(
+              future: getServiceSQL(),
+              builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, i){
+                      final service = Service.fromJson(snapshot.data![i]);
+                      return Container(
+                        padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
+                        height: 200,
+                        child: ElevatedButton(onPressed: () {
+                          addTicketSQL(service.serviceType!,service.serviceCode!, 0);
+                        }, child: Padding(padding: EdgeInsets.all(20),
+                        child: Text(service.serviceType!, style: TextStyle(fontSize: 80)))),
+                      );
+                    }) : Center(
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    child: CircularProgressIndicator(
+                      color: Colors.blue,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       )
     );
   }
+
+
 
   toDateTime(DateTime date) {
     DateTime(date.year, date.month, date.day);

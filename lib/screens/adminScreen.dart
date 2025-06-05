@@ -5,9 +5,9 @@ import 'package:queueing/globals.dart';
 import 'package:queueing/models/service.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/priority.dart';
 import '../models/station.dart';
 import '../models/user.dart';
-
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -17,7 +17,6 @@ class AdminScreen extends StatefulWidget {
 }
 
 class _AdminScreenState extends State<AdminScreen> {
-
   int screenIndex = 0;
 
   // Service
@@ -39,8 +38,6 @@ class _AdminScreenState extends State<AdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       body: Align(
         alignment: Alignment.topLeft,
@@ -53,36 +50,40 @@ class _AdminScreenState extends State<AdminScreen> {
                 children: [
                   Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(titleHandler(), style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700))),
-
+                      child: Text(titleHandler(),
+                          style: TextStyle(
+                              fontSize: 30, fontWeight: FontWeight.w700))),
                   Spacer(),
                   IconButton(
-                    color: colorHandler(screenIndex, 0),
+                      color: colorHandler(screenIndex, 0),
                       tooltip: 'Services',
                       onPressed: () {
-                      screenIndex = 0;
-                      setState(() {});
-                      }, icon: Icon(Icons.sticky_note_2)),
+                        screenIndex = 0;
+                        setState(() {});
+                      },
+                      icon: Icon(Icons.sticky_note_2)),
                   IconButton(
                       color: colorHandler(screenIndex, 1),
                       tooltip: 'Users',
-                      onPressed: (){
+                      onPressed: () {
                         screenIndex = 1;
                         setState(() {});
-                      }, icon: Icon(Icons.supervised_user_circle_rounded)),
+                      },
+                      icon: Icon(Icons.supervised_user_circle_rounded)),
                   IconButton(
                       color: colorHandler(screenIndex, 2),
                       tooltip: 'Stations',
-                      onPressed: (){
+                      onPressed: () {
                         screenIndex = 2;
                         setState(() {});
-                      }, icon: Icon(Icons.desktop_windows_rounded)),
+                      },
+                      icon: Icon(Icons.desktop_windows_rounded)),
                   IconButton(
                       tooltip: "Logout",
                       onPressed: () {
-                    Navigator.pop(context);
-                  }, icon: Icon(Icons.logout))
-
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(Icons.logout))
                 ],
               ),
               Divider(),
@@ -114,6 +115,7 @@ class _AdminScreenState extends State<AdminScreen> {
       return Colors.grey;
     }
   }
+
   screenHandler(int i) {
     if (i == 0) {
       return servicesView();
@@ -134,43 +136,139 @@ class _AdminScreenState extends State<AdminScreen> {
         children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: ElevatedButton(onPressed: () {
-                addService();
-              }, child: Text("+ Add Service"))),
+              child: Row(
+                spacing: 10,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        addService();
+                      },
+                      child: Text("+ Add Service")),
+                  ElevatedButton(
+                      onPressed: () {
+                        TextEditingController name = TextEditingController();
+
+                        showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                                content: Container(
+                              height: 400,
+                              width: 400,
+                              child: StatefulBuilder(
+                                builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+                                  return Column(
+                                    children: [
+                                      Container(
+                                        height: 80,
+                                        width: 380,
+                                        child: Row(children: [
+                                          Container(
+                                            width: 250,
+                                            child: TextField(
+                                              controller: name,
+                                              decoration: InputDecoration(
+                                                  labelText:
+                                                  'Priority Name',
+                                                  labelStyle: TextStyle(
+                                                      color: Colors.grey)),
+                                            ),
+                                          ),
+                                          ElevatedButton(
+                                              onPressed: () async {
+                                                await addPriority(
+                                                    name.text);
+                                                setStateDialog(() {});
+                                              },
+                                              child: Text("Add Priority"))
+                                        ]),
+                                      ),
+                                      SizedBox(height: 10),
+                                      FutureBuilder(
+                                          future: getPriority(),
+                                          builder:
+                                              (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                            return Container(
+                                              height: 300,
+                                              child: snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
+                                                  itemBuilder: (context, i) {
+                                                    final priority =
+                                                    Priority.fromJson(
+                                                        snapshot.data![i]);
+
+                                                    return ListTile(
+                                                      title: Text(
+                                                          priority.priorityName!),
+                                                      trailing: IconButton(
+                                                          onPressed: () {
+                                                            deletePriority(i);
+                                                          },
+                                                          icon:
+                                                          Icon(Icons.delete)),
+                                                    );
+                                                  }) : Center(
+                                                child: Text("No Priorities Added", style: TextStyle(color: Colors.grey)),
+                                              ) : Center(
+                                                child: Container(
+                                                  height: 100,
+                                                  width: 100,
+                                                  child: CircularProgressIndicator(),
+                                                )
+                                              ),
+                                            );
+                                          })
+                                    ],
+                                  );
+                                },
+                              ),
+                            )));
+                      },
+                      child: Text("+ Add Priority Type"))
+                ],
+              )),
           FutureBuilder(
             future: getServiceSQL(),
-            builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
-                padding: EdgeInsets.all(10),
-                height: 400,
-                child: ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, i) {
-                      print("$i: ${snapshot.data![i]}");
-                      final serviceType = snapshot.data![i]['serviceType'];
-                      final serviceCode = snapshot.data![i]['serviceCode'];
-                      final id = snapshot.data![i]['id'];
+            builder: (BuildContext context,
+                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              return snapshot.connectionState == ConnectionState.done
+                  ? snapshot.data!.isNotEmpty
+                      ? Container(
+                          padding: EdgeInsets.all(10),
+                          height: 400,
+                          child: ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, i) {
+                                print("$i: ${snapshot.data![i]}");
+                                final serviceType =
+                                    snapshot.data![i]['serviceType'];
+                                final serviceCode =
+                                    snapshot.data![i]['serviceCode'];
+                                final id = snapshot.data![i]['id'];
 
-                      return ListTile(
-                        title: Text("Service: $serviceType"),
-                        subtitle: Text("Code: $serviceCode"),
-                        trailing: IconButton(onPressed: () {
-                          deleteService(id);
-                        }, icon: Icon(Icons.delete)),
-                      );
-                    }),
-              ) : Container(
-                height: 400,
-                child: Text("No services found", style: TextStyle(color: Colors.grey)),
-              ) : Center(
-                child: Container(
-                  height: 100,
-                  width: 100,
-                  child: CircularProgressIndicator(
-                    color: Colors.blue,
-                  ),
-                ),
-              );
+                                return ListTile(
+                                  title: Text("Service: $serviceType"),
+                                  subtitle: Text("Code: $serviceCode"),
+                                  trailing: IconButton(
+                                      onPressed: () {
+                                        deleteService(id);
+                                      },
+                                      icon: Icon(Icons.delete)),
+                                );
+                              }),
+                        )
+                      : Container(
+                          height: 400,
+                          child: Text("No services found",
+                              style: TextStyle(color: Colors.grey)),
+                        )
+                  : Center(
+                      child: Container(
+                        height: 100,
+                        width: 100,
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    );
             },
           )
         ],
@@ -178,8 +276,29 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  deleteService(int i) async {
+  addPriority(String name) async {
+    final uri = Uri.parse('http://$site/queueing_api/api_priorities.php');
+    final body = jsonEncode({'name': name});
+    final result = await http.post(uri, body: body);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Priority '$name' added.")));
+  }
 
+  getPriority() async {
+    final uri = Uri.parse('http://$site/queueing_api/api_priorities.php');
+    final result = await http.get(uri);
+    return jsonDecode(result.body);
+  }
+
+  deletePriority(int i) async {
+    final uri = Uri.parse('http://$site/queueing_api/api_service.php');
+    final body = jsonEncode({'id': '$i'});
+    final result = await http.delete(uri, body: body);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Priority Deleted")));
+  }
+
+  deleteService(int i) async {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
     final body = jsonEncode({'id': '$i'});
 
@@ -187,62 +306,62 @@ class _AdminScreenState extends State<AdminScreen> {
 
     print("result: ${result.body}");
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Service Deleted")));
-    setState(() {
-
-    });
-
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Service Deleted")));
+    setState(() {});
   }
 
   addService() {
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text('Add Service'),
-      content: Container(
-        height: 120,
-        width: 250,
-        child: Column(
-          children: [
-            Container(
-                child: TextField(
-                  controller: serviceType,
-                  decoration: InputDecoration(
-                    labelText: 'Service Type',
-                  ),
-                )),
-
-            Container(
-                child: TextField(
-                  controller: serviceCode,
-                  decoration: InputDecoration(
-                    labelText: 'Service Code'
-                  ),
-                )),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: () {
-          addServiceSQL();
-          clearServiceFields();
-        }, child: Text("Add Service"))
-      ],
-    ));
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text('Add Service'),
+              content: Container(
+                height: 120,
+                width: 250,
+                child: Column(
+                  children: [
+                    Container(
+                        child: TextField(
+                      controller: serviceType,
+                      decoration: InputDecoration(
+                        labelText: 'Service Type',
+                      ),
+                    )),
+                    Container(
+                        child: TextField(
+                      controller: serviceCode,
+                      decoration: InputDecoration(labelText: 'Service Code'),
+                    )),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      addServiceSQL();
+                      clearServiceFields();
+                    },
+                    child: Text("Add Service"))
+              ],
+            ));
   }
 
   addServiceSQL() async {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
-    final body = jsonEncode({'serviceType': "${serviceType.text[0].toUpperCase() + serviceType.text.substring(1).toLowerCase()}", 'serviceCode': "${serviceCode.text}"});
+    final body = jsonEncode({
+      'serviceType':
+          "${serviceType.text[0].toUpperCase() + serviceType.text.substring(1).toLowerCase()}",
+      'serviceCode': "${serviceCode.text}"
+    });
 
     final result = await http.post(uri, body: body);
     print("result: ${result.body}");
 
-
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Service Added")));
-    setState(() {
-
-    });
-
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Service Added")));
+    setState(() {});
   }
 
   getServiceSQL() async {
@@ -255,17 +374,18 @@ class _AdminScreenState extends State<AdminScreen> {
 
       print("response1: $response");
 
-      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+      response.sort((a, b) => int.parse(a['id'].toString())
+          .compareTo(int.parse(b['id'].toString())));
 
       print("response2: $response");
 
       return response;
-    } catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
       print(e);
       return [];
     }
-
   }
 
   clearServiceFields() {
@@ -285,47 +405,57 @@ class _AdminScreenState extends State<AdminScreen> {
     stationNumber.clear();
   }
 
-
   usersView() {
     return Container(
       child: Column(
         children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: ElevatedButton(onPressed: () {
-                addUser();
-              }, child: Text("+ Add User"))),
+              child: ElevatedButton(
+                  onPressed: () {
+                    addUser();
+                  },
+                  child: Text("+ Add User"))),
           FutureBuilder(
             future: getUserSQL(),
-            builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
-                padding: EdgeInsets.all(10),
-                height: 400,
-                child: ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, i) {
-                      final user = User.fromJson(snapshot.data![i]);
+            builder: (BuildContext context,
+                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              return snapshot.connectionState == ConnectionState.done
+                  ? snapshot.data!.isNotEmpty
+                      ? Container(
+                          padding: EdgeInsets.all(10),
+                          height: 400,
+                          child: ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, i) {
+                                final user = User.fromJson(snapshot.data![i]);
 
-                      return ListTile(
-                        title: Text("${user.username}"),
-                        subtitle: Text("${user.serviceType!.isEmpty ? "" : "Service: ${user.serviceType!.join(', ')} | "}Authority: ${user.userType}"),
-                        trailing: IconButton(onPressed: () {
-                          deleteUser(user.id!);
-                        }, icon: Icon(Icons.delete)),
-                      );
-                    }),
-              ) : Container(
-                height: 400,
-                child: Text("No users found", style: TextStyle(color: Colors.grey)),
-              ) : Center(
-                child: Container(
-                  height: 100,
-                  width: 100,
-                  child: CircularProgressIndicator(
-                    color: Colors.blue,
-                  ),
-                ),
-              );
+                                return ListTile(
+                                  title: Text("${user.username}"),
+                                  subtitle: Text(
+                                      "${user.serviceType!.isEmpty ? "" : "Service: ${user.serviceType!.join(', ')} | "}Authority: ${user.userType}"),
+                                  trailing: IconButton(
+                                      onPressed: () {
+                                        deleteUser(user.id!);
+                                      },
+                                      icon: Icon(Icons.delete)),
+                                );
+                              }),
+                        )
+                      : Container(
+                          height: 400,
+                          child: Text("No users found",
+                              style: TextStyle(color: Colors.grey)),
+                        )
+                  : Center(
+                      child: Container(
+                        height: 100,
+                        width: 100,
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    );
             },
           )
         ],
@@ -334,9 +464,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   getUserSQL([String? userType, String? serviceType]) async {
-
     try {
-
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
 
       final result = await http.get(uri);
@@ -352,19 +480,19 @@ class _AdminScreenState extends State<AdminScreen> {
       }
 
       if (serviceType != null) {
-        newResult = newResult.where((e) => e['serviceType'] == serviceType).toList();
+        newResult =
+            newResult.where((e) => e['serviceType'] == serviceType).toList();
       }
 
       return newResult;
-
-    } catch(e) {
+    } catch (e) {
       print(e);
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
       print(e);
       return [];
     }
-
   }
 
   addUser() {
@@ -373,187 +501,211 @@ class _AdminScreenState extends State<AdminScreen> {
     String userType = "Admin";
     String display = "Select";
 
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text('Add User'),
-      content: StatefulBuilder(
-        builder: (BuildContext context, void Function(void Function()) setStateDialog) {
-          return Container(
-            height: 220,
-            width: 250,
-            child: Column(
-              children: [
-                Container(
-                    child: TextField(
-                      controller: user,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                      ),
-                    )),
-
-                Container(
-                    child: Row(
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text('Add User'),
+              content: StatefulBuilder(
+                builder: (BuildContext context,
+                    void Function(void Function()) setStateDialog) {
+                  return Container(
+                    height: 220,
+                    width: 250,
+                    child: Column(
                       children: [
                         Container(
-                          width: 210,
-                          child: TextField(
-                            obscureText: obscure,
-                            controller: password,
-                            decoration: InputDecoration(
-                                labelText: 'Password'
-                            ),
-                          ),
-                        ),
-                        IconButton(onPressed: () {
-                          obscure = !obscure;
-                          setStateDialog(() {
-
-                          });
-                        }, icon: Icon(obscure == true ? Icons.remove_red_eye: Icons.remove_red_eye_outlined))
-                      ],
-                    )),
-
-                userType == 'Staff' ? Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: ListTile(
-                    title: Text("Service Type: $display"),
-                      onTap: () {
-                        showDialog(context: context, builder: (_) => AlertDialog(
-                          content: Container(
-                            height: 400,
-                            width: 300,
-                            child: FutureBuilder(
-                              future: getServiceSQL(),
-                              builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-
-                                return snapshot.connectionState == ConnectionState.done ? StatefulBuilder(
-                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                    return ListView.builder(
-                                        itemCount: snapshot.data!.length,
-                                        itemBuilder: (context, i) {
-                                          final user = Service.fromJson(snapshot.data![i]);
-                                          return CheckboxListTile(
-                                              title: Text(user.serviceType!),
-                                              value: services.contains(user.serviceType!),
-                                              onChanged: (value) {
-                                                if (value == true) {
-                                                  services.add(user.serviceType!);
-                                                } else {
-                                                  services.remove(user.serviceType!);
-                                                }
-                                                setStateList((){});
-                                              });
-                                        });
-                                  },
-                                ) : Center(
-                                  child: Container(
-                                    height: 100,
-                                    width: 100,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          actions: [
-                            TextButton(onPressed: () {
-                              display = "${services.length == 1 ? "${services.first}" : "${services.length} Services"}";
-                              Navigator.pop(context);
-                              setStateDialog((){});
-                            }, child: Text("Confirm"))
-                          ],
-                        ));
-                      }
-
-                  ),
-                ) : Container(
-                  height: 20,
-                ),
-
-                Row(
-                  spacing: 5,
-                  children: [
-                    GestureDetector(
-                        onTap: () {
-                          userType = "Admin";
-                          setStateDialog((){
-
-                          });
-                        },
-                        child: Container(
-                          height: 50,
-                          width: 100,
-                          child: Card(
-                            child: Center(
-                              child: Text("Admin"),
-                            ),
-                            color: userType == "Admin" ? Colors.redAccent : Colors.white,
-
+                            child: TextField(
+                          controller: user,
+                          decoration: InputDecoration(
+                            labelText: 'Username',
                           ),
                         )),
-                    GestureDetector(
-                        onTap: () {
-                          userType = "Staff";
-                          setStateDialog((){
-
-                          });
-                        },
-                        child: Container(
-                          height: 50,
-                          width: 100,
-                          child: Card(
-                            child: Center(
-                              child: Text("Staff"),
+                        Container(
+                            child: Row(
+                          children: [
+                            Container(
+                              width: 210,
+                              child: TextField(
+                                obscureText: obscure,
+                                controller: password,
+                                decoration:
+                                    InputDecoration(labelText: 'Password'),
+                              ),
                             ),
-                            color: userType == "Staff" ? Colors.redAccent : Colors.white,
-
-                          ),
-                        ))
-                  ],
-                )
+                            IconButton(
+                                onPressed: () {
+                                  obscure = !obscure;
+                                  setStateDialog(() {});
+                                },
+                                icon: Icon(obscure == true
+                                    ? Icons.remove_red_eye
+                                    : Icons.remove_red_eye_outlined))
+                          ],
+                        )),
+                        userType == 'Staff'
+                            ? Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ListTile(
+                                    title: Text("Service Type: $display"),
+                                    onTap: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (_) => AlertDialog(
+                                                content: Container(
+                                                  height: 400,
+                                                  width: 300,
+                                                  child: FutureBuilder(
+                                                    future: getServiceSQL(),
+                                                    builder: (BuildContext
+                                                            context,
+                                                        AsyncSnapshot<
+                                                                List<
+                                                                    Map<String,
+                                                                        dynamic>>>
+                                                            snapshot) {
+                                                      return snapshot
+                                                                  .connectionState ==
+                                                              ConnectionState
+                                                                  .done
+                                                          ? StatefulBuilder(
+                                                              builder: (BuildContext
+                                                                      context,
+                                                                  void Function(
+                                                                          void
+                                                                              Function())
+                                                                      setStateList) {
+                                                                return ListView
+                                                                    .builder(
+                                                                        itemCount: snapshot
+                                                                            .data!
+                                                                            .length,
+                                                                        itemBuilder:
+                                                                            (context,
+                                                                                i) {
+                                                                          final user =
+                                                                              Service.fromJson(snapshot.data![i]);
+                                                                          return CheckboxListTile(
+                                                                              title: Text(user.serviceType!),
+                                                                              value: services.contains(user.serviceType!),
+                                                                              onChanged: (value) {
+                                                                                if (value == true) {
+                                                                                  services.add(user.serviceType!);
+                                                                                } else {
+                                                                                  services.remove(user.serviceType!);
+                                                                                }
+                                                                                setStateList(() {});
+                                                                              });
+                                                                        });
+                                                              },
+                                                            )
+                                                          : Center(
+                                                              child: Container(
+                                                                height: 100,
+                                                                width: 100,
+                                                                child:
+                                                                    CircularProgressIndicator(
+                                                                  color: Colors
+                                                                      .blue,
+                                                                ),
+                                                              ),
+                                                            );
+                                                    },
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                      onPressed: () {
+                                                        display =
+                                                            "${services.length == 1 ? "${services.first}" : "${services.length} Services"}";
+                                                        Navigator.pop(context);
+                                                        setStateDialog(() {});
+                                                      },
+                                                      child: Text("Confirm"))
+                                                ],
+                                              ));
+                                    }),
+                              )
+                            : Container(
+                                height: 20,
+                              ),
+                        Row(
+                          spacing: 5,
+                          children: [
+                            GestureDetector(
+                                onTap: () {
+                                  userType = "Admin";
+                                  setStateDialog(() {});
+                                },
+                                child: Container(
+                                  height: 50,
+                                  width: 100,
+                                  child: Card(
+                                    child: Center(
+                                      child: Text("Admin"),
+                                    ),
+                                    color: userType == "Admin"
+                                        ? Colors.redAccent
+                                        : Colors.white,
+                                  ),
+                                )),
+                            GestureDetector(
+                                onTap: () {
+                                  userType = "Staff";
+                                  setStateDialog(() {});
+                                },
+                                child: Container(
+                                  height: 50,
+                                  width: 100,
+                                  child: Card(
+                                    child: Center(
+                                      child: Text("Staff"),
+                                    ),
+                                    color: userType == "Staff"
+                                        ? Colors.redAccent
+                                        : Colors.white,
+                                  ),
+                                ))
+                          ],
+                        )
+                      ],
+                    ),
+                  );
+                },
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      try {
+                        addUserSQL(services.toString(), userType);
+                      } catch (e) {
+                        print(e);
+                      }
+                      clearUserFields();
+                    },
+                    child: Text("Add User"))
               ],
-            ),
-          );
-        },
-      ),
-      actions: [
-        TextButton(onPressed: () {
-          try {
-            addUserSQL(services.toString(), userType);
-          } catch(e) {
-            print(e);
-          }
-          clearUserFields();
-        }, child: Text("Add User"))
-      ],
-    ));
+            ));
   }
 
   addUserSQL(String services, String userType) async {
     final uri = Uri.parse('http://$site/queueing_api/api_user.php');
     final body = jsonEncode({
-        "username": "${user.text}",
-        "pass": "${password.text}",
-        "serviceType": "${services}",
-        "userType": "${userType}"
+      "username": "${user.text}",
+      "pass": "${password.text}",
+      "serviceType": "${services}",
+      "userType": "${userType}"
     });
 
     final result = await http.post(uri, body: body);
     print("result: ${result.body}");
 
-
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Added")));
-    setState(() {
-
-    });
-
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("User Added")));
+    setState(() {});
   }
 
-
   deleteUser(int i) async {
-
     final uri = Uri.parse('http://$site/queueing_api/api_user.php');
     final body = jsonEncode({'id': '$i'});
 
@@ -561,14 +713,10 @@ class _AdminScreenState extends State<AdminScreen> {
 
     print("result: ${result.body}");
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Deleted")));
-    setState(() {
-
-    });
-
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("User Deleted")));
+    setState(() {});
   }
-
-
 
   stationsView() {
     return Container(
@@ -576,46 +724,64 @@ class _AdminScreenState extends State<AdminScreen> {
         children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: ElevatedButton(onPressed: () {
-                addStation();
-              }, child: Text("+ Add Station"))),
+              child: ElevatedButton(
+                  onPressed: () {
+                    addStation();
+                  },
+                  child: Text("+ Add Station"))),
           FutureBuilder(
             future: getStationSQL(),
-            builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
-                padding: EdgeInsets.all(10),
-                height: 400,
-                child: ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, i) {
-                      final station = Station.fromJson(snapshot.data![i]);
+            builder: (BuildContext context,
+                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              return snapshot.connectionState == ConnectionState.done
+                  ? snapshot.data!.isNotEmpty
+                      ? Container(
+                          padding: EdgeInsets.all(10),
+                          height: 400,
+                          child: ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, i) {
+                                final station =
+                                    Station.fromJson(snapshot.data![i]);
 
-                      return ListTile(
-                        title: Text("${station.stationName} #${station.stationNumber}"),
-                        subtitle: Row(
-                          children: [
-                            Text("${station.serviceType} | "),
-                            station.inSession == 1 ? Text("In Session: ${station.userInSession}", style: TextStyle(color: Colors.red)) : Text("Available", style: TextStyle(color: Colors.green))
-                          ],
+                                return ListTile(
+                                  title: Text(
+                                      "${station.stationName} #${station.stationNumber}"),
+                                  subtitle: Row(
+                                    children: [
+                                      Text("${station.serviceType} | "),
+                                      station.inSession == 1
+                                          ? Text(
+                                              "In Session: ${station.userInSession}",
+                                              style:
+                                                  TextStyle(color: Colors.red))
+                                          : Text("Available",
+                                              style: TextStyle(
+                                                  color: Colors.green))
+                                    ],
+                                  ),
+                                  trailing: IconButton(
+                                      onPressed: () {
+                                        deleteStation(station.id!);
+                                      },
+                                      icon: Icon(Icons.delete)),
+                                );
+                              }),
+                        )
+                      : Container(
+                          height: 400,
+                          child: Text("No stations found",
+                              style: TextStyle(color: Colors.grey)),
+                        )
+                  : Center(
+                      child: Container(
+                        height: 100,
+                        width: 100,
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
                         ),
-                        trailing: IconButton(onPressed: () {
-                          deleteStation(station.id!);
-                        }, icon: Icon(Icons.delete)),
-
-                      );
-                    }),
-              ) : Container(
-                height: 400,
-                child: Text("No stations found", style: TextStyle(color: Colors.grey)),
-              ) : Center(
-                child: Container(
-                  height: 100,
-                  width: 100,
-                  child: CircularProgressIndicator(
-                    color: Colors.blue,
-                  ),
-                ),
-              );
+                      ),
+                    );
             },
           )
         ],
@@ -624,54 +790,54 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   assignStaff(Station station) {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text("Assign Staff (${station.serviceType})"),
+              content: FutureBuilder(
+                future: getUserSQL('Staff', station.serviceType),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                  return Container(
+                    height: 400,
+                    width: 300,
+                    child: snapshot.connectionState == ConnectionState.done
+                        ? ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, i) {
+                              final name = snapshot.data![i]['username'];
 
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text("Assign Staff (${station.serviceType})"),
-      content: FutureBuilder(
-        future: getUserSQL('Staff', station.serviceType),
-        builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-          return Container(
-            height: 400,
-            width: 300,
-            child: snapshot.connectionState == ConnectionState.done ? ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, i) {
-                  final name = snapshot.data![i]['username'];
+                              return ListTile(
+                                title: Text(name),
+                                onTap: () async {
+                                  await station.update({
+                                    'userInSession': "$name",
+                                  });
 
-                  return ListTile(
-                    title: Text(name),
-                    onTap: () async {
-                      await station.update({
-                        'userInSession': "$name",
-                      });
-
-                      setState(() {
-
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User assigned")));
-                      Navigator.pop(context);
-                    },
+                                  setState(() {});
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("User assigned")));
+                                  Navigator.pop(context);
+                                },
+                              );
+                            })
+                        : Center(
+                            child: Container(
+                              height: 100,
+                              width: 100,
+                              child: CircularProgressIndicator(
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
                   );
-                }) : Center(
-              child: Container(
-                height: 100,
-                width: 100,
-                child: CircularProgressIndicator(
-                  color: Colors.blue,
-                ),
+                },
               ),
-            ),
-          );
-        },
-      ),
-    ));
+            ));
   }
 
-
   getStationSQL() async {
-
     try {
-
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
 
       final result = await http.get(uri);
@@ -680,119 +846,150 @@ class _AdminScreenState extends State<AdminScreen> {
 
       print("response1: $response");
 
-      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+      response.sort((a, b) => int.parse(a['id'].toString())
+          .compareTo(int.parse(b['id'].toString())));
 
       print("response2: $response");
 
       return response;
-    } catch(e) {
+    } catch (e) {
       print(e);
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
       print(e);
       return [];
     }
-
   }
-
 
   addStation() {
     String display = "Select";
 
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text('Add Station'),
-      content: StatefulBuilder(
-        builder: (BuildContext context, void Function(void Function()) setStateDialog) {
-          return Container(
-            height: 180,
-            width: 250,
-            child: Column(
-              children: [
-                Container(
-                    child: TextField(
-                      controller: stationName,
-                      decoration: InputDecoration(
-                        labelText: 'Station Name',
-                      ),
-                    )),
-
-                Container(
-                    child: TextField(
-                      controller: stationNumber,
-                      decoration: InputDecoration(
-                          labelText: 'Station Number'
-                      ),
-                    )),
-
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: ListTile(
-                      title: Text("Service Type: $display"),
-                      onTap: () {
-                        showDialog(context: context, builder: (_) => AlertDialog(
-                          content: Container(
-                            height: 300,
-                            width: 200,
-                            child: FutureBuilder(
-                              future: getServiceSQL(),
-                              builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
-                                  height: 300,
-                                  width: 200,
-                                  child: ListView.builder(
-                                      itemCount: snapshot.data!.length,
-                                      itemBuilder: (context, i) {
-                                        final name = snapshot.data![i]['serviceType'];
-
-                                        return ListTile(
-                                          title: Text(name),
-                                          onTap: () {
-                                            Navigator.pop(context);
-                                            display = name;
-                                            setStateDialog((){});
-                                          },
-                                        );
-                                      }),
-
-                                ) : Text("No Services Found", style: TextStyle(color: Colors.grey)) : Container(
-                                  height: 100,
-                                  width: 100,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.blue,
-                                  ),
-                                );
-                              },
-                            ),
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text('Add Station'),
+              content: StatefulBuilder(
+                builder: (BuildContext context,
+                    void Function(void Function()) setStateDialog) {
+                  return Container(
+                    height: 180,
+                    width: 250,
+                    child: Column(
+                      children: [
+                        Container(
+                            child: TextField(
+                          controller: stationName,
+                          decoration: InputDecoration(
+                            labelText: 'Station Name',
                           ),
-                        ));
+                        )),
+                        Container(
+                            child: TextField(
+                          controller: stationNumber,
+                          decoration:
+                              InputDecoration(labelText: 'Station Number'),
+                        )),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: ListTile(
+                              title: Text("Service Type: $display"),
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                          content: Container(
+                                            height: 300,
+                                            width: 200,
+                                            child: FutureBuilder(
+                                              future: getServiceSQL(),
+                                              builder: (BuildContext context,
+                                                  AsyncSnapshot<
+                                                          List<
+                                                              Map<String,
+                                                                  dynamic>>>
+                                                      snapshot) {
+                                                return snapshot
+                                                            .connectionState ==
+                                                        ConnectionState.done
+                                                    ? snapshot.data!.isNotEmpty
+                                                        ? Container(
+                                                            height: 300,
+                                                            width: 200,
+                                                            child: ListView
+                                                                .builder(
+                                                                    itemCount:
+                                                                        snapshot
+                                                                            .data!
+                                                                            .length,
+                                                                    itemBuilder:
+                                                                        (context,
+                                                                            i) {
+                                                                      final name =
+                                                                          snapshot.data![i]
+                                                                              [
+                                                                              'serviceType'];
+
+                                                                      return ListTile(
+                                                                        title: Text(
+                                                                            name),
+                                                                        onTap:
+                                                                            () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                          display =
+                                                                              name;
+                                                                          setStateDialog(
+                                                                              () {});
+                                                                        },
+                                                                      );
+                                                                    }),
+                                                          )
+                                                        : Text(
+                                                            "No Services Found",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .grey))
+                                                    : Container(
+                                                        height: 100,
+                                                        width: 100,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                          color: Colors.blue,
+                                                        ),
+                                                      );
+                                              },
+                                            ),
+                                          ),
+                                        ));
+                              }),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      try {
+                        addStationSQL(display);
+                      } catch (e) {
+                        print(e);
                       }
-
-                  ),
-                ),
-
+                      clearUserFields();
+                    },
+                    child: Text("Add Station"))
               ],
-            ),
-          );
-        },
-      ),
-      actions: [
-        TextButton(onPressed: () {
-          try {
-            addStationSQL(display);
-          } catch(e) {
-            print(e);
-          }
-          clearUserFields();
-        }, child: Text("Add Station"))
-      ],
-    ));
+            ));
   }
 
   addStationSQL(String serviceType) async {
     final uri = Uri.parse('http://$site/queueing_api/api_station.php');
     final body = jsonEncode({
       "stationNumber": "${stationNumber.text}",
-      "stationName": "${stationName.text[0].toUpperCase() + stationName.text.substring(1).toLowerCase()}",
+      "stationName":
+          "${stationName.text[0].toUpperCase() + stationName.text.substring(1).toLowerCase()}",
       "serviceType": serviceType,
       "inSession": 0,
       "userInSession": "",
@@ -804,18 +1001,13 @@ class _AdminScreenState extends State<AdminScreen> {
     final result = await http.post(uri, body: body);
     print("result: ${result.body}");
 
-
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Added")));
-    setState(() {
-
-    });
-
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Station Added")));
+    setState(() {});
   }
 
-
   deleteStation(int i) async {
-
     final uri = Uri.parse('http://$site/queueing_api/api_station.php');
     final body = jsonEncode({'id': '$i'});
 
@@ -823,13 +1015,8 @@ class _AdminScreenState extends State<AdminScreen> {
 
     print("result: ${result.body}");
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Deleted")));
-    setState(() {
-
-    });
-
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("User Deleted")));
+    setState(() {});
   }
-
 }
-
-
