@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         PointerDeviceKind.touch,
       }),
       debugShowCheckedModeBanner: false,
-      title: 'queueing',
+      title: 'Ombudsman Queue App',
       theme: ThemeData(
         fontFamily: 'Inter',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey),

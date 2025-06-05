@@ -17,6 +17,37 @@ class StaffScreen extends StatefulWidget {
 }
 
 class _StaffScreenState extends State<StaffScreen> {
+
+  late Timer update;
+  int stationChanges = 0;
+
+  @override
+  void initState() {
+
+    update = Timer.periodic(Duration(seconds: 4), (value) async {
+
+      List<Station> stations = [];
+
+      final List<dynamic> result = await getStationSQL();
+
+      List<dynamic> sorted = result.where((e) => int.parse(e['inSession']) == 1).toList();
+
+      if (sorted.length != stationChanges) {
+
+        print("Change: $stationChanges == Sort: ${sorted.length}");
+        stationChanges = sorted.length;
+        setState(() {
+
+        });
+      } else {
+        print("Same: $stationChanges == Sort: ${sorted.length}");
+      }
+
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,8 +175,12 @@ class _StaffSessionState extends State<StaffSession> {
 
   @override
   void initState() {
-    pingTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
-      await widget.station.update({"sessionPing": DateTime.now().toString()});
+    pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
+      await widget.station.update({
+        "sessionPing": DateTime.now().toString(),
+        "inSession": 1,
+        "userInSession": widget.user.username,
+      });
     });
     super.initState();
   }
@@ -176,8 +211,8 @@ class _StaffSessionState extends State<StaffSession> {
                         builder: (BuildContext context, void Function(void Function()) setState) {
                           return FutureBuilder(
                             future: getServingTicketSQL(),
-                            builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
-                              return snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ? Card(
+                            builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshotServing) {
+                              return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Card(
                                 clipBehavior: Clip.antiAlias,
                                 child: Padding(
                                   padding: const EdgeInsets.all(30.0),
@@ -186,10 +221,10 @@ class _StaffSessionState extends State<StaffSession> {
                                     width: 250,
                                     child: Column(
                                       children: [
-                                        Text("${snapshot.data!.first.serviceType}",
+                                        Text("${snapshotServing.data!.last.serviceType}",
                                             style: TextStyle(fontSize: 30)),
                                         Text(
-                                            "${snapshot.data!.first.serviceCode}${snapshot.data![0].number}",
+                                            "${snapshotServing.data!.last.serviceCode}${snapshotServing.data!.last.number}",
                                             style: TextStyle(fontSize: 30)),
                                       ],
                                     ),
@@ -210,7 +245,7 @@ class _StaffSessionState extends State<StaffSession> {
                         children: [
                           ElevatedButton(
                               onPressed: () {
-                                final timestamp = DateTime.now();
+                                final timestamp = DateTime.now().toString();
 
                                 snapshot.data![0].update({
                                   "id": snapshot.data![0].id,
@@ -267,7 +302,7 @@ class _StaffSessionState extends State<StaffSession> {
           .toList();
       List<Ticket> newTickets = [];
 
-      print("serviceType: ${widget.user.serviceType}");
+      print("serviceType: ${widget.station.serviceType}");
 
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
@@ -309,8 +344,8 @@ class _StaffSessionState extends State<StaffSession> {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
 
-      newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
-          .compareTo(DateTime.parse(b.timeCreated!)));
+      newTickets.sort((a, b) => DateTime.parse(a.timeTaken!)
+          .compareTo(DateTime.parse(b.timeTaken!)));
 
       print("newTickets: ${newTickets.length}");
 

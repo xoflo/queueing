@@ -152,7 +152,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                               child: Column(
                                                 children: [
                                                   Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30)),
-                                                  Text("${snapshot.data!.last.serviceCode}${snapshot.data![0].number}", style: TextStyle(fontSize: 30)),
+                                                  Text("${snapshot.data!.last.serviceCode}${snapshot.data!.last.number}", style: TextStyle(fontSize: 30)),
                                                 ],
                                               ),
                                             ),
@@ -229,7 +229,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
 
-      newTickets.sort((a,b) => DateTime.parse(a.timeCreated!).compareTo(DateTime.parse(b.timeCreated!)));
+      newTickets.sort((a,b) => DateTime.parse(a.timeTaken!).compareTo(DateTime.parse(b.timeTaken!)));
 
       return newTickets;
 
