@@ -173,6 +173,8 @@ class StaffSession extends StatefulWidget {
 class _StaffSessionState extends State<StaffSession> {
   late Timer pingTimer;
 
+  Ticket? serving;
+
   @override
   void initState() {
     pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
@@ -212,24 +214,30 @@ class _StaffSessionState extends State<StaffSession> {
                           return FutureBuilder(
                             future: getServingTicketSQL(),
                             builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshotServing) {
-                              return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Card(
-                                clipBehavior: Clip.antiAlias,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(30.0),
-                                  child: Container(
-                                    height: 350,
-                                    width: 250,
-                                    child: Column(
-                                      children: [
-                                        Text("${snapshotServing.data!.last.serviceType}",
-                                            style: TextStyle(fontSize: 30)),
-                                        Text(
-                                            "${snapshotServing.data!.last.serviceCode}${snapshotServing.data!.last.number}",
-                                            style: TextStyle(fontSize: 30)),
-                                      ],
+                              return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Builder(
+                                builder: (context) {
+                                  serving = Ticket.fromJson(snapshotServing.data!.last);
+
+                                  return Card(
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(30.0),
+                                      child: Container(
+                                        height: 350,
+                                        width: 250,
+                                        child: Column(
+                                          children: [
+                                            Text("${snapshotServing.data!.last.serviceType}",
+                                                style: TextStyle(fontSize: 30)),
+                                            Text(
+                                                "${snapshotServing.data!.last.serviceCode}${snapshotServing.data!.last.number}",
+                                                style: TextStyle(fontSize: 30)),
+                                          ],
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                }
                               ): Container() : Container(
                                 height: 100,
                                 width: 100,
@@ -247,8 +255,13 @@ class _StaffSessionState extends State<StaffSession> {
                               onPressed: () {
                                 final timestamp = DateTime.now().toString();
 
+                                if (serving != null) {
+                                  serving!.update({
+                                    "timestamp" : timestamp
+                                  });
+                                }
+
                                 snapshot.data![0].update({
-                                  "id": snapshot.data![0].id,
                                   "userAssigned": widget.user.username,
                                   "status": "Serving",
                                   "stationName": widget.station.stationName,
@@ -263,10 +276,37 @@ class _StaffSessionState extends State<StaffSession> {
                               child: Text("Call Next")),
                           SizedBox(width: 10),
                           ElevatedButton(
-                              onPressed: () {}, child: Text("Transfer")),
+                              onPressed: () {
+                                showDialog(context: context, builder: (_) => AlertDialog(
+                                  title: Text("Select Station to Transfer"),
+                                  content: Container(
+                                    height: 400,
+                                    width: 400,
+                                    child: FutureBuilder(
+                                        future: getStationSQL(),
+                                        builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                      return ListView.builder(
+                                          itemCount: snapshot.data!.length,
+                                          itemBuilder: (context, i) {
+                                        final station = Station.fromJson(snapshot.data![i]);
+
+                                        return ListTile(
+                                          title: Text("Station"),
+                                        );
+                                      });
+                                    }),
+                                  ),
+                                ));
+                              }, child: Text("Transfer")),
                           SizedBox(width: 10),
                           ElevatedButton(
-                              onPressed: () {}, child: Text("Call Again")),
+                              onPressed: () {
+                                if (serving != null) {
+                                  serving!.update({
+                                    "callCheck": 0
+                                  });
+                                }
+                              }, child: Text("Call Again")),
                         ],
                       )
                     ],
@@ -351,6 +391,22 @@ class _StaffSessionState extends State<StaffSession> {
 
       return newTickets;
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+  }
+
+  getStationSQL() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_station.php');
+      final result = await http.get(uri);
+      final response = jsonDecode(result.body);
+      return response;
+    } catch (e) {
+      print(e);
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
       print(e);
