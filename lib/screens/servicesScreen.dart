@@ -26,13 +26,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Opacity(
-            opacity: 0.3,
-            child: Container(
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                child: Image.asset('images/logo.png', scale: 0.8)),
-          ),
+          logoBackground(context),
           Column(
             children: [
               Container(

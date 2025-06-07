@@ -28,14 +28,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          MediaQuery.of(context).size.width > 1500 ? Opacity(
-            opacity: 0.3,
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child: Image.asset('images/logo.png', scale: 0.8)
-            ),
-          ) : Container(),
+          MediaQuery.of(context).size.width > 1500 ? logoBackground(context) : Container(),
           Column(
             children: [
               MediaQuery.of(context).size.width > 1500 ? Column(
@@ -130,7 +123,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 builder: (BuildContext context, void Function(void Function()) setStateCard) {
                                   return Container(
                                     height: 400,
-                                    width: MediaQuery.of(context).size.width * 1/4 - 50,
+                                    width: MediaQuery.of(context).size.width * 1/4 - 100,
                                     child: Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child:
@@ -189,7 +182,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       Text("This display only supports TV Display use", style: TextStyle(fontSize: 30, color: Colors.grey), textAlign: TextAlign.center),
                     ],
                   )),
-              Container(
+              MediaQuery.of(context).size.width > 1500 ? Container(
                 height: 50,
                 child: Marquee(
                   text: '    Office of the Ombudsman, Davao City    ',
@@ -205,9 +198,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                   decelerationDuration: Duration(milliseconds: 500),
                   decelerationCurve: Curves.easeOut,
                 ),
-              )
-          
-          
+              ) : Container()
             ],
           ),
         ],

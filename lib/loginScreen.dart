@@ -28,7 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: MediaQuery.of(context).size.width < 600 || MediaQuery.of(context).size.height < 600 ? Container(
+        child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
+      ) : Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -37,7 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Image.asset('images/logo.png'),
               ),
               SizedBox(height: 50),
-              Text("Ombudsman Queueing", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
+              Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
+              Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500)),
               SizedBox(height: 20),
               Container(
                   width: 250,

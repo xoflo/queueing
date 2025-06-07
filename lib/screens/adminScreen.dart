@@ -39,7 +39,9 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Align(
+      body: MediaQuery.of(context).size.width < 500 || MediaQuery.of(context).size.height < 500 ? Container(
+        child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
+      ) : Align(
         alignment: Alignment.topLeft,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
