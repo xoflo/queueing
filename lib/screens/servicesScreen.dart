@@ -200,7 +200,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "priority": priority,
         "priorityType": "$priorityType",
         "printStatus": 1,
-        "callCheck": 0
+        "callCheck": 0,
+        "ticketName": "${name.text}"
       };
 
       final result = await http.post(uri, body: jsonEncode(body));
