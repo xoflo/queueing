@@ -24,13 +24,15 @@ class _StaffScreenState extends State<StaffScreen> {
   @override
   void initState() {
 
-    update = Timer.periodic(Duration(seconds: 4), (value) async {
+    update = Timer.periodic(Duration(seconds: 2, milliseconds: 500), (value) async {
 
       List<Station> stations = [];
 
       final List<dynamic> result = await getStationSQL();
 
-      List<dynamic> sorted = result.where((e) => int.parse(e['inSession']) == 1).toList();
+
+      /*
+       List<dynamic> sorted = result.where((e) => int.parse(e['inSession']) == 1).toList();
 
       if (sorted.length != stationChanges) {
 
@@ -42,6 +44,25 @@ class _StaffScreenState extends State<StaffScreen> {
       } else {
         print("Same: $stationChanges == Sort: ${sorted.length}");
       }
+       */
+
+      List<dynamic> pingSorted = result.where((e) => e['sessionPing'] != "").toList();
+
+      for (int i = 0; i < pingSorted.length; i++) {
+        final station = Station.fromJson(pingSorted[i]);
+
+        final pingDate = DateTime.parse(station.sessionPing!);
+        if (DateTime.now().difference(pingDate).inSeconds > 5) {
+          station.update({
+            'inSession': 0,
+            'userInSession': "",
+            'sessionPing': ""
+          });
+          setState(() {});
+        }
+      }
+
+
 
     });
 
@@ -73,28 +94,29 @@ class _StaffScreenState extends State<StaffScreen> {
                         child: GridView.builder(
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 5),
+                                    crossAxisCount: MediaQuery.of(context).size.width < 700 ? 3 : 5),
                             itemCount: snapshot.data!.length,
                             itemBuilder: (context, i) {
                               final station =
                                   Station.fromJson(snapshot.data![i]);
                               return InkWell(
                                 child: Card(
-                                    child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text("${station.serviceType}"),
-                                    Text(
-                                        "${station.stationName} ${station.stationNumber}"),
-                                    station.inSession == 0
-                                        ? Text("Available",
-                                            style:
-                                                TextStyle(color: Colors.green))
-                                        : Text("${station.userInSession}",
-                                            style: TextStyle(
-                                                color: Colors.redAccent))
-                                  ],
-                                )),
+                                    child: Container(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text("${station.serviceType}"),
+                                          Text("${station.stationName} ${station.stationNumber}"),
+                                      station.inSession == 0
+                                          ? Text("Available",
+                                              style:
+                                                  TextStyle(color: Colors.green))
+                                          : Text("${station.userInSession}",
+                                              style: TextStyle(
+                                                  color: Colors.redAccent))
+                                                                        ],
+                                                                      ),
+                                    )),
                                 onTap: () async {
                                   final timestamp = DateTime.now().toString();
 
@@ -261,15 +283,44 @@ class _StaffSessionState extends State<StaffSession> {
                                   });
                                 }
 
-                                snapshot.data![0].update({
-                                  "userAssigned": widget.user.username,
-                                  "status": "Serving",
-                                  "stationName": widget.station.stationName,
-                                  "stationNumber": widget.station.stationNumber,
-                                  "log":
+                                if (snapshot.data!.isNotEmpty) {
+                                  if (serving != null) {
+                                    showDialog(context: context, builder: (_) => AlertDialog(
+                                      title: Text("Confirm Done?"),
+                                      content: Container(
+                                        height: 300,
+                                        width: 300),
+                                      actions: [
+                                        TextButton(onPressed: () {
+                                          snapshot.data![0].update({
+                                            "userAssigned": widget.user.username,
+                                            "status": "Serving",
+                                            "stationName": widget.station.stationName,
+                                            "stationNumber": widget.station.stationNumber,
+                                            "log":
+                                            "${snapshot.data![0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                            "timeTaken": timestamp
+                                          });
+                                        }, child: Text("Confirm"))
+                                      ],
+                                    ));
+                                  } else {
+                                    snapshot.data![0].update({
+                                      "userAssigned": widget.user.username,
+                                      "status": "Serving",
+                                      "stationName": widget.station.stationName,
+                                      "stationNumber": widget.station.stationNumber,
+                                      "log":
                                       "${snapshot.data![0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                  "timeTaken": timestamp
-                                });
+                                      "timeTaken": timestamp
+                                    });
+                                  }
+
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
+                                }
+
+
 
                                 setState(() {});
                               },
@@ -277,26 +328,41 @@ class _StaffSessionState extends State<StaffSession> {
                           SizedBox(width: 10),
                           ElevatedButton(
                               onPressed: () {
-                                showDialog(context: context, builder: (_) => AlertDialog(
-                                  title: Text("Select Station to Transfer"),
-                                  content: Container(
-                                    height: 400,
-                                    width: 400,
-                                    child: FutureBuilder(
-                                        future: getStationSQL(),
-                                        builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                      return ListView.builder(
-                                          itemCount: snapshot.data!.length,
-                                          itemBuilder: (context, i) {
-                                        final station = Station.fromJson(snapshot.data![i]);
+                                if (serving != null) {
+                                  showDialog(context: context, builder: (_) => AlertDialog(
+                                    title: Text("Select Station to Transfer"),
+                                    content: Container(
+                                      height: 400,
+                                      width: 400,
+                                      child: FutureBuilder(
+                                          future: getStationSQL(),
+                                          builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                            return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
+                                                itemCount: snapshot.data!.length,
+                                                itemBuilder: (context, i) {
+                                                  final station = Station.fromJson(snapshot.data![i]);
 
-                                        return ListTile(
-                                          title: Text("Station"),
-                                        );
-                                      });
-                                    }),
-                                  ),
-                                ));
+                                                  return ListTile(
+                                                    title: Text("${station.stationName} ${station.stationNumber} | ${station.serviceType}"),
+                                                    onTap: () {
+
+                                                    },
+                                                  );
+                                                }) : Center(
+                                              child: Text("No Stations", style: TextStyle(color: Colors.grey)),
+                                            ) : Center(
+                                              child: Container(
+                                                height: 50,
+                                                width: 50,
+                                                child: CircularProgressIndicator(),
+                                              ),
+                                            );
+                                          }),
+                                    ),
+                                  ));
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being servied at the moment.")));
+                                }
                               }, child: Text("Transfer")),
                           SizedBox(width: 10),
                           ElevatedButton(
@@ -305,6 +371,8 @@ class _StaffSessionState extends State<StaffSession> {
                                   serving!.update({
                                     "callCheck": 0
                                   });
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment")));
                                 }
                               }, child: Text("Call Again")),
                         ],
