@@ -24,109 +24,120 @@ class _ServicesScreenState extends State<ServicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 100,
-            child: StatefulBuilder(
-              builder: (BuildContext context, void Function(void Function()) setStateRow) {
-                return Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Row(
-                    spacing: 10,
-                    children: [
-                      Container(
-                        width: (MediaQuery.of(context).size.width * 1/2) - 40,
-                        child: TextField(
-                          controller: name,
-                          decoration: InputDecoration(
-                              labelText: 'Name (Optional)',
-                              labelStyle: TextStyle(color: Colors.grey)
+          Opacity(
+            opacity: 0.3,
+            child: Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                child: Image.asset('images/logo.png', scale: 0.8)),
+          ),
+          Column(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                height: 100,
+                child: StatefulBuilder(
+                  builder: (BuildContext context, void Function(void Function()) setStateRow) {
+                    return Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        spacing: 10,
+                        children: [
+                          Container(
+                            width: (MediaQuery.of(context).size.width * 1/2) - 40,
+                            child: TextField(
+                              controller: name,
+                              decoration: InputDecoration(
+                                  labelText: 'Name (Optional)',
+                                  labelStyle: TextStyle(color: Colors.grey)
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      Text("Priority:", style: TextStyle(fontSize: 30)),
-                      Container(
-                        height: 50,
-                        width: (MediaQuery.of(context).size.width * 1/2) - 120,
-                        child: FutureBuilder(
-                          future: getPriority(),
-                          builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                            return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? StatefulBuilder(
-                              builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                return ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: snapshot.data!.length,
-                                    itemBuilder: (context, i) {
-                                      final Priority priority = Priority.fromJson(snapshot.data![i]);
+                          Text("Priority:", style: TextStyle(fontSize: 30)),
+                          Container(
+                            height: 50,
+                            width: (MediaQuery.of(context).size.width * 1/2) - 120,
+                            child: FutureBuilder(
+                              future: getPriority(),
+                              builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? StatefulBuilder(
+                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                    return ListView.builder(
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: snapshot.data!.length,
+                                        itemBuilder: (context, i) {
+                                          final Priority priority = Priority.fromJson(snapshot.data![i]);
 
-                                      return Container(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            if (priorityType == priority.priorityName!) {
-                                              priorityType = "None";
-                                              setStateList((){});
-                                            } else {
-                                              priorityType = priority.priorityName!;
-                                              setStateList((){});
-                                            }
+                                          return Container(
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                if (priorityType == priority.priorityName!) {
+                                                  priorityType = "None";
+                                                  setStateList((){});
+                                                } else {
+                                                  priorityType = priority.priorityName!;
+                                                  setStateList((){});
+                                                }
 
-                                          },
-                                          child: Card(
-                                            color: colorHandler(priority.priorityName!),
-                                            clipBehavior: Clip.antiAlias,
-                                            child: Center(
-                                              child: Padding(
-                                                padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
-                                                child: Text(priority.priorityName!),
+                                              },
+                                              child: Card(
+                                                color: colorHandler(priority.priorityName!),
+                                                clipBehavior: Clip.antiAlias,
+                                                child: Center(
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
+                                                    child: Text(priority.priorityName!),
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      );
-                                    });
+                                          );
+                                        });
+                                  },
+                                ) : Container(
+                                  child: Text("No Priority Types Added", style: TextStyle(color: Colors.grey)),
+                                ) : Container();
                               },
-                            ) : Container(
-                              child: Text("No Priority Types Added", style: TextStyle(color: Colors.grey)),
-                            ) : Container();
-                          },
-                        )
-                      )
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          Container(
-            height: MediaQuery.of(context).size.height - 100,
-            child: FutureBuilder(
-              future: getServiceSQL(),
-              builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                return snapshot.connectionState == ConnectionState.done ? ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, i){
-                      final service = Service.fromJson(snapshot.data![i]);
-                      return Container(
-                        padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
-                        height: 200,
-                        child: ElevatedButton(onPressed: () {
-                          addTicketSQL(service.serviceType!,service.serviceCode!, (priorityType == "None" ? 0 : 1));
-                        }, child: Padding(padding: EdgeInsets.all(20),
-                        child: Text(service.serviceType!, style: TextStyle(fontSize: 80)))),
-                      );
-                    }) : Center(
-                  child: Container(
-                    height: 100,
-                    width: 100,
-                    child: CircularProgressIndicator(
-                      color: Colors.blue,
-                    ),
-                  ),
-                );
-              },
-            ),
+                            )
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Container(
+                height: MediaQuery.of(context).size.height - 100,
+                child: FutureBuilder(
+                  future: getServiceSQL(),
+                  builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                    return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, i){
+                          final service = Service.fromJson(snapshot.data![i]);
+                          return Container(
+                            padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
+                            height: 200,
+                            child: ElevatedButton(onPressed: () {
+                              addTicketSQL(service.serviceType!,service.serviceCode!, (priorityType == "None" ? 0 : 1));
+                            }, child: Padding(padding: EdgeInsets.all(20),
+                            child: Text(service.serviceType!, style: TextStyle(fontSize: 80)))),
+                          );
+                        }) : Center(
+                      child: Container(
+                        height: 100,
+                        width: 100,
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       )
