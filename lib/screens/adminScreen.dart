@@ -110,7 +110,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   colorHandler(int i, int type) {
     if (i == type) {
-      return Colors.red;
+      return Colors.blueGrey;
     } else {
       return Colors.grey;
     }

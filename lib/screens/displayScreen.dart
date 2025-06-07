@@ -28,14 +28,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Opacity(
+          MediaQuery.of(context).size.width > 1500 ? Opacity(
             opacity: 0.3,
             child: Container(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
               child: Image.asset('images/logo.png', scale: 0.8)
             ),
-          ),
+          ) : Container(),
           Column(
             children: [
               MediaQuery.of(context).size.width > 1500 ? Column(
@@ -51,29 +51,19 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         final List<Ticket> retrieved = await getTicketSQL();
           
                         if (retrieved.length != ticketsLength) {
-          
                           final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
-                          print("toUpdateLength: ${toUpdate.length}");
-          
-                          toUpdate.forEach((value){
-                            print("update id: ${value.id} call: ${value.callCheck}");
-                          });
                           if (toUpdate.isNotEmpty) {
-                            print("toUpdateLength: ${toUpdate.length}");
                             for (int i = 0; i < toUpdate.length; i++) {
                               await toUpdate[i].update({
                                 "id": toUpdate[i].id,
                                 "callCheck": 1
                               });
                             }
-          
                             ticketsLength = retrieved.length;
                             AudioPlayer player = AudioPlayer();
                             player.play(AssetSource('sound.mp3'));
                             print("Sound");
-          
                             setStateHere((){});
-          
                           }
           
                           ticketsLength = retrieved.length;
