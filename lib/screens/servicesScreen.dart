@@ -6,6 +6,7 @@ import 'package:queueing/models/service.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/priority.dart';
 import '../models/ticket.dart';
 
 class ServicesScreen extends StatefulWidget {
@@ -50,24 +51,45 @@ class _ServicesScreenState extends State<ServicesScreen> {
                         height: 50,
                         width: (MediaQuery.of(context).size.width * 1/2) - 120,
                         child: FutureBuilder(
-                          future: null,
-                          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                            return snapshot.connectionState == ConnectionState.done ? ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: 20,
-                                itemBuilder: (context, i) {
-                                  return Container(
-                                    child: Card(
-                                      clipBehavior: Clip.antiAlias,
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
-                                          child: Text("Mangekyou"),
+                          future: getPriority(),
+                          builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                            return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? StatefulBuilder(
+                              builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                return ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, i) {
+                                      final Priority priority = Priority.fromJson(snapshot.data![i]);
+
+                                      return Container(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (priorityType == priority.priorityName!) {
+                                              priorityType = "None";
+                                              setStateList((){});
+                                            } else {
+                                              priorityType = priority.priorityName!;
+                                              setStateList((){});
+                                            }
+
+                                          },
+                                          child: Card(
+                                            color: colorHandler(priority.priorityName!),
+                                            clipBehavior: Clip.antiAlias,
+                                            child: Center(
+                                              child: Padding(
+                                                padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
+                                                child: Text(priority.priorityName!),
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  );
-                                }) : Container();
+                                      );
+                                    });
+                              },
+                            ) : Container(
+                              child: Text("No Priority Types Added", style: TextStyle(color: Colors.grey)),
+                            ) : Container();
                           },
                         )
                       )
@@ -90,7 +112,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                         padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
                         height: 200,
                         child: ElevatedButton(onPressed: () {
-                          addTicketSQL(service.serviceType!,service.serviceCode!, 0);
+                          addTicketSQL(service.serviceType!,service.serviceCode!, (priorityType == "None" ? 0 : 1));
                         }, child: Padding(padding: EdgeInsets.all(20),
                         child: Text(service.serviceType!, style: TextStyle(fontSize: 80)))),
                       );
@@ -111,6 +133,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
     );
   }
 
+  colorHandler(String priority) {
+    if (priority == priorityType) {
+      return Colors.blueGrey;
+    } else {
+      return Colors.white70;
+    }
+  }
 
 
   toDateTime(DateTime date) {
@@ -169,7 +198,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "status": "Pending",
         "log": "$timestamp: ticketGenerated",
         "priority": priority,
-        "priorityType": "",
+        "priorityType": "$priorityType",
         "printStatus": 1,
         "callCheck": 0
       };
@@ -206,6 +235,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
       print(e);
       return [];
     }
+  }
 
+  getPriority() async {
+    final uri = Uri.parse('http://$site/queueing_api/api_priorities.php');
+    final result = await http.get(uri);
+    final response = jsonDecode(result.body);
+    return response;
   }
 }

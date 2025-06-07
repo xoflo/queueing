@@ -190,6 +190,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                             return Container(
                                               height: 300,
                                               child: snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
+                                                itemCount: snapshot.data!.length,
                                                   itemBuilder: (context, i) {
                                                     final priority =
                                                     Priority.fromJson(
@@ -278,7 +279,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   addPriority(String name) async {
     final uri = Uri.parse('http://$site/queueing_api/api_priorities.php');
-    final body = jsonEncode({'name': name});
+    final body = jsonEncode({'priorityName': name});
     final result = await http.post(uri, body: body);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Priority '$name' added.")));
@@ -287,7 +288,8 @@ class _AdminScreenState extends State<AdminScreen> {
   getPriority() async {
     final uri = Uri.parse('http://$site/queueing_api/api_priorities.php');
     final result = await http.get(uri);
-    return jsonDecode(result.body);
+    final response = jsonDecode(result.body);
+    return response;
   }
 
   deletePriority(int i) async {
