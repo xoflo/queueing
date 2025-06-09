@@ -25,27 +25,7 @@ class _StaffScreenState extends State<StaffScreen> {
   void initState() {
 
     update = Timer.periodic(Duration(seconds: 2, milliseconds: 500), (value) async {
-
-      List<Station> stations = [];
-
       final List<dynamic> result = await getStationSQL();
-
-
-      /*
-       List<dynamic> sorted = result.where((e) => int.parse(e['inSession']) == 1).toList();
-
-      if (sorted.length != stationChanges) {
-
-        print("Change: $stationChanges == Sort: ${sorted.length}");
-        stationChanges = sorted.length;
-        setState(() {
-
-        });
-      } else {
-        print("Same: $stationChanges == Sort: ${sorted.length}");
-      }
-       */
-
       List<dynamic> pingSorted = result.where((e) => e['sessionPing'] != "").toList();
 
       for (int i = 0; i < pingSorted.length; i++) {
@@ -61,9 +41,6 @@ class _StaffScreenState extends State<StaffScreen> {
           setState(() {});
         }
       }
-
-
-
     });
 
     super.initState();
@@ -309,14 +286,6 @@ class _StaffSessionState extends State<StaffSession> {
                             children: [
                               ElevatedButton(
                                   onPressed: () {
-                                    final timestamp = DateTime.now().toString();
-
-                                    if (serving != null) {
-                                      serving!.update({
-                                        "timestamp" : timestamp
-                                      });
-                                    }
-
                                     if (snapshot.data!.isNotEmpty) {
                                       if (serving != null) {
                                         showDialog(context: context, builder: (_) => AlertDialog(
@@ -326,6 +295,14 @@ class _StaffSessionState extends State<StaffSession> {
                                             width: 300),
                                           actions: [
                                             TextButton(onPressed: () {
+                                              final timestamp = DateTime.now().toString();
+
+                                              serving!.update({
+                                                "status": "Done",
+                                                "timeDone": timestamp,
+                                                "log": "${serving!.log}, $timestamp: ticket session finished"
+                                              });
+
                                               snapshot.data![0].update({
                                                 "userAssigned": widget.user.username,
                                                 "status": "Serving",
@@ -339,6 +316,8 @@ class _StaffSessionState extends State<StaffSession> {
                                           ],
                                         ));
                                       } else {
+                                        final timestamp = DateTime.now().toString();
+
                                         snapshot.data![0].update({
                                           "userAssigned": widget.user.username,
                                           "status": "Serving",
@@ -353,8 +332,6 @@ class _StaffSessionState extends State<StaffSession> {
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                     }
-
-
 
                                     setState(() {});
                                   },
@@ -377,9 +354,17 @@ class _StaffSessionState extends State<StaffSession> {
                                                       final station = Station.fromJson(snapshot.data![i]);
 
                                                       return ListTile(
-                                                        title: Text("${station.stationName} ${station.stationNumber} | ${station.serviceType}"),
+                                                        title: Text(station.serviceType!),
                                                         onTap: () {
+                                                          final timestamp = DateTime.now().toString();
 
+                                                          serving!.update({
+                                                            'log': "${serving!.log}, $timestamp: ticket transferred to ${station.serviceType!}",
+                                                            'status': "Pending",
+                                                            'userAssigned': "",
+                                                            'stationName': "",
+                                                            'stationNumber': ""
+                                                          });
                                                         },
                                                       );
                                                     }) : Center(
