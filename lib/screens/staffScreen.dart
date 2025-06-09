@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
+import 'package:queueing/models/service.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
 import '../models/user.dart';
@@ -73,60 +74,72 @@ class _StaffScreenState extends State<StaffScreen> {
                   builder: (BuildContext context,
                       AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
                     return snapshot.connectionState == ConnectionState.done
-                        ? Container(
-                            height: MediaQuery.of(context).size.height - 110,
-                            child: GridView.builder(
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: MediaQuery.of(context).size.width < 700 ? 3 : 5),
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (context, i) {
-                                  final station =
-                                      Station.fromJson(snapshot.data![i]);
-                                  return InkWell(
-                                    child: Card(
-                                        child: Container(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Text("${station.serviceType}"),
-                                              Text("${station.stationName} ${station.stationNumber}"),
-                                          station.inSession == 0
-                                              ? Text("Available",
-                                                  style:
-                                                      TextStyle(color: Colors.green))
-                                              : Text("${station.userInSession}",
-                                                  style: TextStyle(
-                                                      color: Colors.redAccent))
-                                                                            ],
-                                                                          ),
-                                        )),
-                                    onTap: () async {
-                                      final timestamp = DateTime.now().toString();
-          
-                                      if (station.inSession == 1) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                                content: Text(
-                                                    "Station is currently in session.")));
-                                      } else {
-                                        await station.update({
-                                          "inSession": 1,
-                                          "userInSession": widget.user.username,
-                                          "sessionPing": timestamp
-                                        });
-          
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (_) => StaffSession(
-                                                    user: widget.user,
-                                                    station: station)));
-                                      }
-                                    },
-                                  );
-                                }),
-                          )
+                        ? Builder(
+                          builder: (context) {
+                            List<String> sorted = [];
+
+                            for (int i = 0; i < snapshot.data!.length; i++) {
+                              sorted.add(snapshot.data![i]['serviceType']);
+                            }
+
+                            sorted = sorted.toSet().toList();
+
+                            return Container(
+                                height: MediaQuery.of(context).size.height - 110,
+                                child: GridView.builder(
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: MediaQuery.of(context).size.width < 700 ? 3 : 5),
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, i) {
+                                      final station =
+                                          Station.fromJson(snapshot.data![i]);
+                                      return InkWell(
+                                        child: Card(
+                                            child: Container(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text("${station.serviceType}"),
+                                                  Text("${station.stationName} ${station.stationNumber}"),
+                                              station.inSession == 0
+                                                  ? Text("Available",
+                                                      style:
+                                                          TextStyle(color: Colors.green))
+                                                  : Text("${station.userInSession}",
+                                                      style: TextStyle(
+                                                          color: Colors.redAccent))
+                                                                                ],
+                                                                              ),
+                                            )),
+                                        onTap: () async {
+                                          final timestamp = DateTime.now().toString();
+
+                                          if (station.inSession == 1) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                    content: Text(
+                                                        "Station is currently in session.")));
+                                          } else {
+                                            await station.update({
+                                              "inSession": 1,
+                                              "userInSession": widget.user.username,
+                                              "sessionPing": timestamp
+                                            });
+
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (_) => StaffSession(
+                                                        user: widget.user,
+                                                        station: station)));
+                                          }
+                                        },
+                                      );
+                                    }),
+                              );
+                          }
+                        )
                         : Center(
                             child: Container(
                               height: 100,
@@ -346,20 +359,20 @@ class _StaffSessionState extends State<StaffSession> {
                                           height: 400,
                                           width: 400,
                                           child: FutureBuilder(
-                                              future: getStationSQL(),
+                                              future: getServiceSQL(),
                                               builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
                                                 return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
                                                     itemCount: snapshot.data!.length,
                                                     itemBuilder: (context, i) {
-                                                      final station = Station.fromJson(snapshot.data![i]);
+                                                      final service = Service.fromJson(snapshot.data![i]);
 
                                                       return ListTile(
-                                                        title: Text(station.serviceType!),
+                                                        title: Text(service.serviceType!),
                                                         onTap: () {
                                                           final timestamp = DateTime.now().toString();
 
                                                           serving!.update({
-                                                            'log': "${serving!.log}, $timestamp: ticket transferred to ${station.serviceType!}",
+                                                            'log': "${serving!.log}, $timestamp: ticket transferred to ${service.serviceType}",
                                                             'status': "Pending",
                                                             'userAssigned': "",
                                                             'stationName': "",
@@ -486,6 +499,22 @@ class _StaffSessionState extends State<StaffSession> {
       return [];
     }
   }
+
+  getServiceSQL() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_service.php');
+      final result = await http.get(uri);
+      final response = jsonDecode(result.body);
+      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+
+      return response;
+    } catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+  }
+
 
   getStationSQL() async {
     try {
