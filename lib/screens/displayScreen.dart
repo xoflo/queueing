@@ -28,20 +28,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          MediaQuery.of(context).size.width > 1500 ? Opacity(
-        opacity: 0.2,
-        child: Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('logo.png'),
-                SizedBox(height: 20),
-                Text("Office of the Ombudsman", style: TextStyle(fontSize: 30))
-              ],
-            )),
-      ) : Container(),
+          logoBackground(context),
           Column(
             children: [
               MediaQuery.of(context).size.width > 1500 ? Column(

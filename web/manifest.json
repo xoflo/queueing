@@ -1,11 +1,11 @@
 {
-    "name": "queueing",
-    "short_name": "queueing",
+    "name": "Ombudsman Queueing App",
+    "short_name": "Ombudsman Queueing App",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Ombudsman Queueing App.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

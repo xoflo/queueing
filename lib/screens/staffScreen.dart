@@ -54,22 +54,7 @@ class _StaffScreenState extends State<StaffScreen> {
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
       ) : Stack(
         children: [
-          Container(
-            child: Opacity(
-              opacity: 0.2,
-              child: Container(
-                  height: MediaQuery.of(context).size.height,
-                  width: MediaQuery.of(context).size.width,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset('logo.png'),
-                      SizedBox(height: 20),
-                      Text("Office of the Ombudsman", style: TextStyle(fontSize: 30))
-                    ],
-                  )),
-            ),
-          ),
+          logoBackground(context),
           Container(
             padding: EdgeInsets.all(20),
             child: Column(
@@ -234,20 +219,7 @@ class _StaffSessionState extends State<StaffSession> {
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
       ) : Stack(
         children: [
-        Opacity(
-        opacity: 0.2,
-        child: Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('logo.png'),
-                SizedBox(height: 20),
-                Text("Office of the Ombudsman", style: TextStyle(fontSize: 30))
-              ],
-            )),
-      ),
+        logoBackground(context),
           Container(
             padding: EdgeInsets.all(20),
             child: FutureBuilder(
@@ -478,6 +450,8 @@ class _StaffSessionState extends State<StaffSession> {
 
       newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
           .compareTo(DateTime.parse(b.timeCreated!)));
+
+      newTickets.sort((a, b) => a.priority!.compareTo(b.priority!));
 
       print("newTickets: ${newTickets.length}");
 
