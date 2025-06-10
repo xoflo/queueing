@@ -55,7 +55,20 @@ class _StaffScreenState extends State<StaffScreen> {
       ) : Stack(
         children: [
           Container(
-            child: logoBackground(context),  
+            child: Opacity(
+              opacity: 0.2,
+              child: Container(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset('logo.png'),
+                      SizedBox(height: 20),
+                      Text("Office of the Ombudsman", style: TextStyle(fontSize: 30))
+                    ],
+                  )),
+            ),
           ),
           Container(
             padding: EdgeInsets.all(20),
@@ -221,7 +234,20 @@ class _StaffSessionState extends State<StaffSession> {
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
       ) : Stack(
         children: [
-          logoBackground(context),
+        Opacity(
+        opacity: 0.2,
+        child: Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('logo.png'),
+                SizedBox(height: 20),
+                Text("Office of the Ombudsman", style: TextStyle(fontSize: 30))
+              ],
+            )),
+      ),
           Container(
             padding: EdgeInsets.all(20),
             child: FutureBuilder(
