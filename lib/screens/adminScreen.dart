@@ -1033,7 +1033,7 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() {});
   }
 
-  void addGroup(String name, String assignedGroup) async {
+  addGroup(String name, String assignedGroup) async {
     final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
     final body = jsonEncode({
       "name": name,
@@ -1074,5 +1074,9 @@ class _AdminScreenState extends State<AdminScreen> {
         }, child: Text("Add"))
       ],
     ));
+  }
+
+  getServiceGroups() {
+
   }
 }
