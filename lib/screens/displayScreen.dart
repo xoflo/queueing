@@ -179,6 +179,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       Text("This display only supports TV Display use", style: TextStyle(fontSize: 30, color: Colors.grey), textAlign: TextAlign.center),
                     ],
                   )),
+              SizedBox(height: 100),
               MediaQuery.of(context).size.width > 1500 ? Container(
                 height: 50,
                 child: Marquee(

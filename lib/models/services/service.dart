@@ -2,18 +2,20 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../globals.dart';
+import '../../globals.dart';
 
 class Service {
   int? id;
   String? serviceType;
   String? serviceCode;
+  String? assignedGroup;
 
 
   Service.fromJson(dynamic data) {
     this.id = int.parse(data['id']);
     this.serviceType = data['serviceType'];
     this.serviceCode = data['serviceCode'];
+    this.assignedGroup = data['groupAssigned'];
   }
 
   update(dynamic data) async {
@@ -24,6 +26,7 @@ class Service {
         'id': data['id'] ?? this.id,
         'serviceType' : data['serviceType'] ?? this.serviceType,
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
+        'groupAssigned': data['serviceCode'] ?? this.assignedGroup,
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_service.php');

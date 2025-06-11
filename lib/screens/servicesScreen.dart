@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
-import 'package:queueing/models/service.dart';
+import 'package:queueing/models/services/service.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:http/http.dart' as http;
 

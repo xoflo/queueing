@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
-import 'package:queueing/models/service.dart';
+import 'package:queueing/models/services/service.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/priority.dart';
@@ -146,6 +146,12 @@ class _AdminScreenState extends State<AdminScreen> {
                         addService();
                       },
                       child: Text("+ Add Service")),
+
+                  ElevatedButton(
+                      onPressed: () {
+                        addGroupDialog();
+                      },
+                      child: Text("+ Add Group")),
                   ElevatedButton(
                       onPressed: () {
                         TextEditingController name = TextEditingController();
@@ -252,7 +258,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                   subtitle: Text("Code: $serviceCode"),
                                   trailing: IconButton(
                                       onPressed: () {
-                                        deleteService(id);
+                                        deleteService(int.parse(id));
                                       },
                                       icon: Icon(Icons.delete)),
                                 );
@@ -304,7 +310,8 @@ class _AdminScreenState extends State<AdminScreen> {
 
   deleteService(int i) async {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
-    final body = jsonEncode({'id': '$i'});
+    final body = jsonEncode({'id': i});
+
 
     final result = await http.delete(uri, body: body);
 
@@ -356,7 +363,8 @@ class _AdminScreenState extends State<AdminScreen> {
     final body = jsonEncode({
       'serviceType':
           "${serviceType.text[0].toUpperCase() + serviceType.text.substring(1).toLowerCase()}",
-      'serviceCode': "${serviceCode.text}"
+      'serviceCode': "${serviceCode.text}",
+      'assignedGroup' : "_MAIN_"
     });
 
     final result = await http.post(uri, body: body);
@@ -998,6 +1006,7 @@ class _AdminScreenState extends State<AdminScreen> {
       "inSession": 0,
       "userInSession": "",
       "ticketServing": "",
+      "sessionPing": ""
     });
 
     print("serviceType: $serviceType");
@@ -1022,5 +1031,48 @@ class _AdminScreenState extends State<AdminScreen> {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("User Deleted")));
     setState(() {});
+  }
+
+  void addGroup(String name, String assignedGroup) async {
+    final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
+    final body = jsonEncode({
+      "name": name,
+      "assignedGroup": assignedGroup
+    });
+
+    final result = await http.post(uri, body: body);
+    print("result: ${result.body}");
+
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Group Added")));
+    setState(() {});
+  }
+
+  addGroupDialog() {
+    TextEditingController controller = TextEditingController();
+
+    showDialog(context: context, builder: (_) => AlertDialog(
+      title: Text("Add Group"),
+      content: Container(
+        height: 80,
+        width: 300,
+        child: Column(
+          children: [
+            TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                labelText: 'Group Name'
+              ),
+            )
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () {
+          addGroup(controller.text, '_MAIN_');
+        }, child: Text("Add"))
+      ],
+    ));
   }
 }

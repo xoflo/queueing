@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
-import 'package:queueing/models/service.dart';
+import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
 import '../models/user.dart';
