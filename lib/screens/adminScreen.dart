@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:http/http.dart' as http;
+import 'package:queueing/models/services/serviceGroup.dart';
 
 import '../models/priority.dart';
 import '../models/station.dart';
@@ -18,6 +19,7 @@ class AdminScreen extends StatefulWidget {
 
 class _AdminScreenState extends State<AdminScreen> {
   int screenIndex = 0;
+  String assignedGroups = "_MAIN_";
 
   // Service
 
@@ -234,50 +236,71 @@ class _AdminScreenState extends State<AdminScreen> {
                       child: Text("+ Add Priority Type"))
                 ],
               )),
-          FutureBuilder(
-            future: getServiceSQL(),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done
-                  ? snapshot.data!.isNotEmpty
+          StatefulBuilder(
+            builder: (BuildContext context, void Function(void Function()) setStateList) {
+              return FutureBuilder(
+                future: getServiceGroups(assignedGroups),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<dynamic>> snapshot) {
+                  return snapshot.connectionState == ConnectionState.done
+                      ? snapshot.data!.isNotEmpty
                       ? Container(
-                          padding: EdgeInsets.all(10),
-                          height: 400,
-                          child: ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, i) {
-                                print("$i: ${snapshot.data![i]}");
-                                final serviceType =
-                                    snapshot.data![i]['serviceType'];
-                                final serviceCode =
-                                    snapshot.data![i]['serviceCode'];
-                                final id = snapshot.data![i]['id'];
+                    padding: EdgeInsets.all(10),
+                    height: 400,
+                    child: ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, i) {
 
+                          print("identifier");
+                          print(snapshot.data![i]['serviceType'] != null);
+
+                          return snapshot.data![i]['serviceType'] != null ? Builder(
+                              builder: (context) {
+                                final service = Service.fromJson(snapshot.data![i]);
                                 return ListTile(
-                                  title: Text("Service: $serviceType"),
-                                  subtitle: Text("Code: $serviceCode"),
+                                  title: Text("Service: $serviceType | Code: $serviceCode"),
+                                  subtitle: Text("Service"),
                                   trailing: IconButton(
                                       onPressed: () {
-                                        deleteService(int.parse(id));
+                                        deleteService(service.id!);
                                       },
                                       icon: Icon(Icons.delete)),
                                 );
-                              }),
-                        )
+                              }
+                          ) : Builder(
+                              builder: (context) {
+                                final serviceGroup = ServiceGroup.fromJson(snapshot.data![i]);
+                                return ListTile(
+                                  onTap: () {
+                                    assignedGroups = serviceGroup.name!;
+                                    setStateList((){});
+                                  },
+                                  title: Text(serviceGroup.name!),
+                                  subtitle: Text("Group"),
+                                  trailing: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(Icons.delete)),
+                                );
+                              }
+                          ) ;
+                        }),
+                  )
                       : Container(
-                          height: 400,
-                          child: Text("No services found",
-                              style: TextStyle(color: Colors.grey)),
-                        )
-                  : Center(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        child: CircularProgressIndicator(
-                          color: Colors.blue,
-                        ),
+                    height: 400,
+                    child: Text("No services found",
+                        style: TextStyle(color: Colors.grey)),
+                  )
+                      : Center(
+                    child: Container(
+                      height: 100,
+                      width: 100,
+                      child: CircularProgressIndicator(
+                        color: Colors.blue,
                       ),
-                    );
+                    ),
+                  );
+                },
+              );
             },
           )
         ],
@@ -1076,7 +1099,43 @@ class _AdminScreenState extends State<AdminScreen> {
     ));
   }
 
-  getServiceGroups() {
+  getServiceGroups(String assignedGroup) async {
+    try {
+      final uriGroup = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
+      final resultGroup = await http.get(uriGroup);
+      final List<dynamic> responseGroup = jsonDecode(resultGroup.body);
+
+      final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
+      final resultService = await http.get(uriService);
+      final List<dynamic> responseService = jsonDecode(resultService.body);
+
+      print(responseService);
+      print(responseGroup);
+
+      List<dynamic> resultsToReturn = [];
+
+      for (int i = 0; i < responseGroup.length; i++) {
+        if (responseGroup[i]['assignedGroup'] == assignedGroup){
+          resultsToReturn.addAll(responseGroup[i]);
+        }
+      }
+
+      for (int i = 0; i < responseService.length; i++) {
+        if (responseService[i]['assignedGroup'] == assignedGroup){
+          resultsToReturn.addAll(responseService[i]);
+        }
+      }
+      print('return: $resultsToReturn');
+
+      return resultsToReturn;
+
+
+    } catch(e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
 
   }
 }
