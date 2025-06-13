@@ -9,6 +9,7 @@ class User {
   String? userType;
   List<dynamic>? serviceType;
   String? username;
+  DateTime? loggedIn;
 
 
   User.fromJson(dynamic data) {
@@ -17,6 +18,7 @@ class User {
     this.userType = data['userType'];
     this.serviceType = stringToList(data['serviceType']);
     this.username = data['username'];
+    this.loggedIn = DateTime.parse(data['loggedIn']);
   }
 
   stringToList(String text) {
@@ -42,6 +44,7 @@ class User {
         'userType': data['userType'] ?? this.userType,
         'serviceType': data['serviceType'] ?? this.serviceType,
         'username': data['username'] ?? this.username,
+        'loggedIn': data['loggedIn'] ?? this.loggedIn.toString(),
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');

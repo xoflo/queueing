@@ -110,12 +110,21 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
       } else {
         final user = User.fromJson(sorted[0]);
-        if (user.userType == 'Admin') {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen()));
+
+        print("loggedin");
+        print(user.loggedIn);
+
+        if (user.loggedIn!.difference(DateTime.now()).inSeconds < -5) {
+          if (user.userType == 'Admin') {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen()));
+          }
+          if (user.userType == 'Staff') {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("This user is currently logged-in")));
         }
-        if (user.userType == 'Staff') {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
-        }
+
       }
     } catch(e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong.")));

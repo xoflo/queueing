@@ -29,6 +29,10 @@ class _StaffScreenState extends State<StaffScreen> {
       final List<dynamic> result = await getStationSQL();
       List<dynamic> pingSorted = result.where((e) => e['sessionPing'] != "").toList();
 
+      widget.user.update({
+        'loggedIn': DateTime.now().toString()
+      });
+
       if (pingSorted.length != stationChanges) {
         for (int i = 0; i < pingSorted.length; i++) {
           final station = Station.fromJson(pingSorted[i]);
@@ -51,6 +55,12 @@ class _StaffScreenState extends State<StaffScreen> {
     });
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    update.cancel();
+    super.dispose();
   }
 
   @override
