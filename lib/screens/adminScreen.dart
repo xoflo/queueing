@@ -274,9 +274,6 @@ class _AdminScreenState extends State<AdminScreen> {
                                                   FlickVideoPlayer(flickManager: FlickManager(
                                                       autoPlay: false,
                                                       videoPlayerController: videoController)),
-                                                  TextButton(onPressed: () {
-                                                    videoController.play();
-                                                  }, child: Text("play"))
                                                 ],
                                               ),
                                             );

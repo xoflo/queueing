@@ -29,19 +29,25 @@ class _StaffScreenState extends State<StaffScreen> {
       final List<dynamic> result = await getStationSQL();
       List<dynamic> pingSorted = result.where((e) => e['sessionPing'] != "").toList();
 
-      for (int i = 0; i < pingSorted.length; i++) {
-        final station = Station.fromJson(pingSorted[i]);
+      if (pingSorted.length != stationChanges) {
+        for (int i = 0; i < pingSorted.length; i++) {
+          final station = Station.fromJson(pingSorted[i]);
 
-        final pingDate = DateTime.parse(station.sessionPing!);
-        if (DateTime.now().difference(pingDate).inSeconds > 5) {
-          station.update({
-            'inSession': 0,
-            'userInSession': "",
-            'sessionPing': ""
-          });
-          setState(() {});
+          final pingDate = DateTime.parse(station.sessionPing!);
+          if (DateTime.now().difference(pingDate).inSeconds > 5) {
+            station.update({
+              'inSession': 0,
+              'userInSession': "",
+              'sessionPing': ""
+            });
+            setState(() {});
+          }
         }
+        stationChanges = pingSorted.length;
+        setState(() {});
       }
+
+
     });
 
     super.initState();
