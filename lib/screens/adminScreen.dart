@@ -19,6 +19,7 @@ class AdminScreen extends StatefulWidget {
 
 class _AdminScreenState extends State<AdminScreen> {
   int screenIndex = 0;
+  List<String> lastAssigned = [];
   String assignedGroups = "_MAIN_";
 
   // Service
@@ -241,63 +242,104 @@ class _AdminScreenState extends State<AdminScreen> {
               return FutureBuilder(
                 future: getServiceGroups(assignedGroups),
                 builder: (BuildContext context,
-                    AsyncSnapshot<List<dynamic>> snapshot) {
-                  return snapshot.connectionState == ConnectionState.done
-                      ? snapshot.data!.isNotEmpty
-                      ? Container(
-                    padding: EdgeInsets.all(10),
-                    height: 400,
-                    child: ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, i) {
+                    AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                  return Column(
+                    children: [
+                      lastAssigned.isNotEmpty ? Container(
+                        height: 30,
+                        child: IconButton(onPressed: () {
+                          assignedGroups = lastAssigned.last;
+                          lastAssigned.removeLast();
+                          setStateList((){});
+                        }, icon: Icon(Icons.chevron_left)),
+                      ) : Container(),
+                      snapshot.connectionState == ConnectionState.done
+                          ? snapshot.data!.isNotEmpty
+                          ? Container(
+                        padding: EdgeInsets.all(10),
+                        height: 400,
+                        child: ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, i) {
 
-                          print("identifier");
-                          print(snapshot.data![i]['serviceType'] != null);
+                              print("identifier");
+                              print(snapshot.data![i]['serviceType'] != null);
 
-                          return snapshot.data![i]['serviceType'] != null ? Builder(
-                              builder: (context) {
-                                final service = Service.fromJson(snapshot.data![i]);
-                                return ListTile(
-                                  title: Text("Service: $serviceType | Code: $serviceCode"),
-                                  subtitle: Text("Service"),
-                                  trailing: IconButton(
-                                      onPressed: () {
-                                        deleteService(service.id!);
+                              return snapshot.data![i]['serviceType'] != null ? Builder(
+                                  builder: (context) {
+                                    final service = Service.fromJson(snapshot.data![i]);
+                                    return ListTile(
+                                      title: Text("Service: ${service.serviceType} | Code: ${service.serviceCode}"),
+                                      subtitle: Text("Service"),
+                                      trailing: IconButton(
+                                          onPressed: () {
+                                            showDialog(context: context, builder: (_) => AlertDialog(
+                                              title: Text("Confirm Delete?"),
+                                              content: Container(
+                                                width: 100,
+                                                height: 60,
+                                                child: Text("This service will be gone forever."),
+                                              ),
+                                              actions: [
+                                                TextButton(onPressed: () {
+                                                  deleteService(service.id!);
+                                                }, child: Text("Delete", style: TextStyle(color: Colors.red)))
+                                              ],
+                                            ));
+                                          },
+                                          icon: Icon(Icons.delete)),
+                                    );
+                                  }
+                              ) : Builder(
+                                  builder: (context) {
+                                    final serviceGroup = ServiceGroup.fromJson(snapshot.data![i]);
+                                    return ListTile(
+                                      onTap: () {
+                                        lastAssigned.add(assignedGroups);
+                                        assignedGroups = serviceGroup.name!;
+                                        setStateList((){});
                                       },
-                                      icon: Icon(Icons.delete)),
-                                );
-                              }
-                          ) : Builder(
-                              builder: (context) {
-                                final serviceGroup = ServiceGroup.fromJson(snapshot.data![i]);
-                                return ListTile(
-                                  onTap: () {
-                                    assignedGroups = serviceGroup.name!;
-                                    setStateList((){});
-                                  },
-                                  title: Text(serviceGroup.name!),
-                                  subtitle: Text("Group"),
-                                  trailing: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(Icons.delete)),
-                                );
-                              }
-                          ) ;
-                        }),
-                  )
-                      : Container(
-                    height: 400,
-                    child: Text("No services found",
-                        style: TextStyle(color: Colors.grey)),
-                  )
-                      : Center(
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      child: CircularProgressIndicator(
-                        color: Colors.blue,
-                      ),
-                    ),
+                                      title: Text(serviceGroup.name!),
+                                      subtitle: Text("Group"),
+                                      trailing: IconButton(
+                                          onPressed: () {
+                                            showDialog(context: context, builder: (_) => AlertDialog(
+                                              title: Text("Confirm Delete?"),
+                                              content: Container(
+                                                width: 100,
+                                                height: 60,
+                                                child: Text("This group and the its contents will be gone forever."),
+                                              ),
+                                              actions: [
+                                                TextButton(onPressed: () {
+                                                  deleteGroup(serviceGroup.id!);
+                                                }, child: Text("Delete", style: TextStyle(color: Colors.red)))
+                                              ],
+                                            ));
+                                          },
+                                          icon: Icon(Icons.delete)),
+                                    );
+                                  }
+                              ) ;
+                            }),
+                      )
+                          : Container(
+                        height: 400,
+                        child: Center(
+                          child: Text("No contents found",
+                              style: TextStyle(color: Colors.grey)),
+                        ),
+                      )
+                          : Center(
+                        child: Container(
+                          height: 100,
+                          width: 100,
+                          child: CircularProgressIndicator(
+                            color: Colors.blue,
+                          ),
+                        ),
+                      )
+                    ],
                   );
                 },
               );
@@ -387,7 +429,7 @@ class _AdminScreenState extends State<AdminScreen> {
       'serviceType':
           "${serviceType.text[0].toUpperCase() + serviceType.text.substring(1).toLowerCase()}",
       'serviceCode': "${serviceCode.text}",
-      'assignedGroup' : "_MAIN_"
+      'assignedGroup' : "$assignedGroups",
     });
 
     final result = await http.post(uri, body: body);
@@ -1072,6 +1114,19 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() {});
   }
 
+  deleteGroup(int id) async {
+    final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
+    final body = jsonEncode({'id': '$id'});
+
+    final result = await http.delete(uri, body: body);
+
+    print("result: ${result.body}");
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Group Deleted")));
+    setState(() {});
+  }
+
   addGroupDialog() {
     TextEditingController controller = TextEditingController();
 
@@ -1093,7 +1148,7 @@ class _AdminScreenState extends State<AdminScreen> {
       ),
       actions: [
         TextButton(onPressed: () {
-          addGroup(controller.text, '_MAIN_');
+          addGroup(controller.text, assignedGroups);
         }, child: Text("Add"))
       ],
     ));
@@ -1103,11 +1158,11 @@ class _AdminScreenState extends State<AdminScreen> {
     try {
       final uriGroup = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
       final resultGroup = await http.get(uriGroup);
-      final List<dynamic> responseGroup = jsonDecode(resultGroup.body);
+      List<dynamic> responseGroup = jsonDecode(resultGroup.body);
 
       final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
       final resultService = await http.get(uriService);
-      final List<dynamic> responseService = jsonDecode(resultService.body);
+      List<dynamic> responseService = jsonDecode(resultService.body);
 
       print(responseService);
       print(responseGroup);
@@ -1116,13 +1171,13 @@ class _AdminScreenState extends State<AdminScreen> {
 
       for (int i = 0; i < responseGroup.length; i++) {
         if (responseGroup[i]['assignedGroup'] == assignedGroup){
-          resultsToReturn.addAll(responseGroup[i]);
+          resultsToReturn.add(responseGroup[i]);
         }
       }
 
       for (int i = 0; i < responseService.length; i++) {
         if (responseService[i]['assignedGroup'] == assignedGroup){
-          resultsToReturn.addAll(responseService[i]);
+          resultsToReturn.add(responseService[i]);
         }
       }
       print('return: $resultsToReturn');
