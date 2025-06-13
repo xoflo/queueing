@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 final site = "192.168.1.154:8080";
 
@@ -27,4 +29,18 @@ logoBackground(BuildContext context) {
       ),
     ],
   );
+}
+
+getSettings(BuildContext context) async {
+  try {
+    final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
+    final result = await http.get(uri);
+    final response = jsonDecode(result.body);
+    return response;
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Cannot connect to the server. Please try again.")));
+    print(e);
+    return [];
+  }
 }

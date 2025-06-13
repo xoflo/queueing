@@ -31,7 +31,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Please select a service"),
+            Text("Select Service to Queue", style: TextStyle(fontSize: 30)),
             StatefulBuilder(
               builder: (BuildContext context,
                   void Function(void Function()) setStateList) {
@@ -42,13 +42,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     return Column(
                       children: [
                         lastAssigned.isNotEmpty
-                            ? TextButton(
+                            ? IconButton(
                                 onPressed: () {
                                   assignedGroup = lastAssigned.last;
                                   lastAssigned.removeLast();
                                   setStateList((){});
                                 },
-                                child: Text("Return"))
+                                icon: Icon(Icons.chevron_left))
                             : Container(),
                         snapshot.connectionState == ConnectionState.done
                             ? Container(
@@ -66,36 +66,56 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                           ? Builder(builder: (context) {
                                               final service = Service.fromJson(
                                                   snapshot.data![i]);
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  priorityDialog(service);
-                                                },
-                                                child: Card(
-                                                  child:
-                                                      Column(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        children: [
-                                                          Text(service.serviceType!),
-                                                        ],
-                                                      ),
+                                              return Padding(
+                                                padding: EdgeInsets.all(10),
+                                                child: GestureDetector(
+                                                  onTap: () async {
+                                                    final List<dynamic> result = await getSettings(context);
+                                                    int priority = int.parse(result.where((e) => e['controlName'] == 'Priority Option').toList()[0]['value']);
+                                                    int ticketname = int.parse(result.where((e) => e['controlName'] == 'Ticket Name Option').toList()[0]['value']);
+                                                
+                                                    if (priority == 1) {
+                                                      priorityDialog(service, ticketname);
+                                                    } else {
+                                                      if (ticketname == 1) {
+                                                        nameDialog(service, "None");
+                                                      } else {
+                                                        addTicketSQL(service.serviceType!, service.serviceCode!, "None");
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
+                                                
+                                                      }
+                                                    }
+                                                  },
+                                                  child: Card(
+                                                    child:
+                                                        Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: [
+                                                            Text(service.serviceType!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                          ],
+                                                        ),
+                                                  ),
                                                 ),
                                               );
                                             })
                                           : Builder(builder: (context) {
                                               final group = ServiceGroup.fromJson(
                                                   snapshot.data![i]);
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  lastAssigned.add(assignedGroup);
-                                                  assignedGroup = group.name!;
-                                                  setStateList((){});
-                                                },
-                                                child: Card(
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(group.name!),
-                                                    ],
+                                              return Padding(
+                                                padding: EdgeInsets.all(10),
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    lastAssigned.add(assignedGroup);
+                                                    assignedGroup = group.name!;
+                                                    setStateList((){});
+                                                  },
+                                                  child: Card(
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Text(group.name!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               );
@@ -141,6 +161,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
       actions: [
         TextButton(onPressed: () {
           addTicketSQL(service.serviceType!, service.serviceCode!, priorityType, name.text);
+
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
+          Navigator.pop(context);
         }, child: Text(""
             "Submit"))
       ],
@@ -149,7 +172,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   }
 
-  priorityDialog(Service service) {
+  priorityDialog(Service service, [int? ticketname]) {
     showDialog(context: context, builder: (_) => AlertDialog(
       title: Text("Select priorities (if applicable)"),
       content: FutureBuilder(
@@ -163,17 +186,27 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, i) {
                   final priority = Priority.fromJson(snapshot.data![i]);
-                  return GestureDetector(
-                    onTap: () {
-
-                      addTicketSQL(service.serviceType!,service.serviceCode!, priority.priorityName!);
-                    },
-                    child: Card(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(priority.priorityName!)
-                        ],
+                  return Padding(
+                    padding: EdgeInsets.all(10),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (ticketname == 1) {
+                          Navigator.pop(context);
+                          nameDialog(service, priority.priorityName!);
+                        } else {
+                          addTicketSQL(service.serviceType!,service.serviceCode!, priority.priorityName!);
+                    
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Card(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(priority.priorityName!)
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -266,8 +299,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
       final result = await http.post(uri, body: jsonEncode(body));
       print(result.body);
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
-      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));

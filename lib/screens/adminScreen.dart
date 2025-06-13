@@ -6,6 +6,7 @@ import 'package:queueing/models/services/service.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/models/services/serviceGroup.dart';
 
+import '../models/controls.dart';
 import '../models/priority.dart';
 import '../models/station.dart';
 import '../models/user.dart';
@@ -239,17 +240,41 @@ class _AdminScreenState extends State<AdminScreen> {
                   IconButton(onPressed: () {
                     showDialog(context: context, builder: (_) => AlertDialog(
                       title: Text("Settings"),
-                      content: FutureBuilder(
-                        future: null,
-                        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                          return Container(
-                            height: 400,
-                            width: 400,
-                            child: ListView.builder(itemBuilder: (context, i) {
-                              return ListTile();
-                            }),
-                          );
-                        },
+                      content: Container(
+                        height: 400,
+                        width: 400,
+                        child: StatefulBuilder(
+                          builder: (BuildContext context, void Function(void Function()) setStateSetting) {
+                            return FutureBuilder(
+                              future: getSettings(context),
+                              builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, i) {
+                                  final control = Control.fromJson(snapshot.data![i]);
+
+                                  return ListTile(
+                                    title: Text(control.controlName!),
+                                    trailing: Switch(value: control.value! == 1, onChanged: (value) {
+                                      control.update({
+                                        'id': control.id!,
+                                        'value': control.value! == 1 ? 0 : 1
+                                      });
+                                      setStateSetting((){
+
+                                      });
+                                    }),
+                                  );
+                                }) : Container(
+                                  height: 300,
+                                  child: Center(
+                                    child: Text("No settings"),
+                                  ),
+                                ) : Container();
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ));
                   }, icon: Icon(Icons.settings))
@@ -1211,4 +1236,5 @@ class _AdminScreenState extends State<AdminScreen> {
     }
 
   }
+
 }
