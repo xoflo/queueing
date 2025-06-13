@@ -255,6 +255,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                   return ListTile(
                                     title: Text(control.controlName!),
+                                    subtitle: control.controlName! == "Video in Queue Display" ? Text("File: ") : null,
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
                                       control.update({
                                         'id': control.id!,
