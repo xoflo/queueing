@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'models/media.dart';
+
 final site = "192.168.1.154:8080";
 
 // "localhost:8080"
@@ -42,5 +44,20 @@ getSettings(BuildContext context) async {
         content: Text("Cannot connect to the server. Please try again.")));
     print(e);
     return [];
+  }
+}
+
+getMedia(BuildContext context, String name) async {
+  try {
+    final uri = Uri.parse('http://$site/queueing_api/api_media.php');
+    final result = await http.get(uri);
+    List<dynamic> response = jsonDecode(result.body);
+    final media = Media.fromJson(response.where((e) => e['name'] == name).toList()[0]);
+    return media;
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Cannot connect to the server. Please try again.")));
+    print(e);
+    return null;
   }
 }

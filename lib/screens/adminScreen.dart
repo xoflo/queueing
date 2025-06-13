@@ -1,12 +1,14 @@
 import 'dart:convert';
-
+import 'dart:typed_data';
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/models/services/serviceGroup.dart';
-
+import 'package:video_player/video_player.dart';
 import '../models/controls.dart';
+import '../models/media.dart';
 import '../models/priority.dart';
 import '../models/station.dart';
 import '../models/user.dart';
@@ -24,6 +26,7 @@ class _AdminScreenState extends State<AdminScreen> {
   String assignedGroups = "_MAIN_";
 
   // Service
+
 
   TextEditingController serviceType = TextEditingController();
   TextEditingController serviceCode = TextEditingController();
@@ -255,7 +258,22 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                   return ListTile(
                                     title: Text(control.controlName!),
-                                    subtitle: control.controlName! == "Video in Queue Display" ? Text("File: ") : null,
+                                    subtitle: control.controlName! == "Video in Queue Display" ? TextButton(child: Text("Change Video File"), onPressed: () {
+                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                        content: StatefulBuilder(
+                                          builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                            return Container(
+                                              height: 400,
+                                              width: 400,
+                                              child: Column(
+                                                children: [],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ));
+
+                                    }) : null,
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
                                       control.update({
                                         'id': control.id!,
