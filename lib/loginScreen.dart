@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
         print("loggedin");
         print(user.loggedIn);
 
-        if (user.loggedIn!.difference(DateTime.now()).inSeconds < -5) {
+        if (user.loggedIn!.difference(DateTime.now()).inSeconds < -3) {
           if (user.userType == 'Admin') {
             Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen()));
           }

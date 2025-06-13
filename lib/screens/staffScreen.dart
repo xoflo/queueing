@@ -36,7 +36,6 @@ class _StaffScreenState extends State<StaffScreen> {
       if (pingSorted.length != stationChanges) {
         for (int i = 0; i < pingSorted.length; i++) {
           final station = Station.fromJson(pingSorted[i]);
-
           final pingDate = DateTime.parse(station.sessionPing!);
           if (DateTime.now().difference(pingDate).inSeconds > 5) {
             station.update({
@@ -209,6 +208,8 @@ class _StaffSessionState extends State<StaffSession> {
   late Timer pingTimer;
 
   Ticket? serving;
+  List<Ticket> tickets = [];
+  int ticketLength = 0;
 
   @override
   void initState() {
@@ -218,6 +219,15 @@ class _StaffSessionState extends State<StaffSession> {
         "inSession": 1,
         "userInSession": widget.user.username,
       });
+
+      List<Ticket> retrievedTickets = await getTicketSQL();
+
+      if (ticketLength != retrievedTickets.length) {
+        tickets = retrievedTickets;
+        ticketLength = retrievedTickets.length;
+        setState(() {});
+      }
+
     });
     super.initState();
   }
@@ -238,205 +248,201 @@ class _StaffSessionState extends State<StaffSession> {
         logoBackground(context),
           Container(
             padding: EdgeInsets.all(20),
-            child: FutureBuilder(
-              future: getTicketSQL(),
-              builder:
-                  (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
-                return snapshot.connectionState == ConnectionState.done
-                    ? Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("User In-Session: "),
-                              Text("${widget.user.username}", style: TextStyle(fontWeight: FontWeight.w700))
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("Station: "),
-                              Text("${widget.station.serviceType} | ${widget.station.stationName} ${widget.station.stationNumber}", style: TextStyle(fontWeight: FontWeight.w700))
-                              ],
-                          ),
-                          SizedBox(height: 20),
-                          serving != null ? Text("Serving Ticket: ") : Card(
-                            child: Container(
-                              height: 350,
-                              width: 250,
-                              child: Center(
-                                child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
-                              ),
-                            ),
-                          ),
-                          StatefulBuilder(
-                            builder: (BuildContext context, void Function(void Function()) setState) {
-                              return FutureBuilder(
-                                future: getServingTicketSQL(),
-                                builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshotServing) {
-                                  return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Builder(
-                                    builder: (context) {
-                                      serving = Ticket.fromJson(snapshotServing.data!.last);
+            child: tickets.isNotEmpty ? Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("User In-Session: "),
+                    Text("${widget.user.username}", style: TextStyle(fontWeight: FontWeight.w700))
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Station: "),
+                    Text("${widget.station.serviceType} | ${widget.station.stationName} ${widget.station.stationNumber}", style: TextStyle(fontWeight: FontWeight.w700))
+                  ],
+                ),
+                SizedBox(height: 20),
+                serving != null ? Text("Serving Ticket: ") : Card(
+                  child: Container(
+                    height: 350,
+                    width: 250,
+                    child: Center(
+                      child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
+                    ),
+                  ),
+                ),
+                StatefulBuilder(
+                  builder: (BuildContext context, void Function(void Function()) setState) {
+                    return FutureBuilder(
+                      future: getServingTicketSQL(),
+                      builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshotServing) {
+                        return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Builder(
+                            builder: (context) {
+                              print('servings: ${snapshotServing.data!}');
+                              serving = snapshotServing.data!.last;
 
-                                      return Card(
-                                        clipBehavior: Clip.antiAlias,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(30.0),
-                                          child: Container(
-                                            height: 350,
-                                            width: 250,
-                                            child: Column(
-                                              children: [
-                                                Text("${snapshotServing.data!.last.serviceType}",
-                                                    style: TextStyle(fontSize: 30)),
-                                                Text(
-                                                    "${snapshotServing.data!.last.serviceCode}${snapshotServing.data!.last.number}",
-                                                    style: TextStyle(fontSize: 30)),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  ): Container() : Container(
-                                    height: 100,
-                                    width: 100,
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
+                              return Card(
+                                clipBehavior: Clip.antiAlias,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(30.0),
+                                  child: Container(
+                                    height: 350,
+                                    width: 250,
+                                    child: Column(
+                                      children: [
+                                        Text("${snapshotServing.data!.last.serviceType}",
+                                            style: TextStyle(fontSize: 30)),
+                                        Text(
+                                            "${snapshotServing.data!.last.serviceCode}${snapshotServing.data!.last.number}",
+                                            style: TextStyle(fontSize: 30)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               );
-                            },
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ElevatedButton(
-                                  onPressed: () {
-                                    if (snapshot.data!.isNotEmpty) {
-                                      if (serving != null) {
-                                        showDialog(context: context, builder: (_) => AlertDialog(
-                                          title: Text("Confirm Done?"),
-                                          content: Container(
-                                            height: 300,
-                                            width: 300),
-                                          actions: [
-                                            TextButton(onPressed: () {
-                                              final timestamp = DateTime.now().toString();
+                            }
+                        ): Container() : Container(
+                          height: 100,
+                          width: 100,
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    );
+                  },
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          if (tickets.isNotEmpty) {
+                            if (serving != null) {
+                              showDialog(context: context, builder: (_) => AlertDialog(
+                                title: Text("Confirm Done?"),
+                                content: Container(
+                                    height: 80,
+                                    width: 300),
+                                actions: [
+                                  TextButton(onPressed: () {
+                                    final timestamp = DateTime.now().toString();
 
-                                              serving!.update({
-                                                "status": "Done",
-                                                "timeDone": timestamp,
-                                                "log": "${serving!.log}, $timestamp: ticket session finished"
-                                              });
+                                    serving!.update({
+                                      "status": "Done",
+                                      "timeDone": timestamp,
+                                      "log": "${serving!.log}, $timestamp: ticket session finished"
+                                    });
 
-                                              snapshot.data![0].update({
-                                                "userAssigned": widget.user.username,
-                                                "status": "Serving",
-                                                "stationName": widget.station.stationName,
-                                                "stationNumber": widget.station.stationNumber,
-                                                "log":
-                                                "${snapshot.data![0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                "timeTaken": timestamp
-                                              });
-                                            }, child: Text("Confirm"))
-                                          ],
-                                        ));
-                                      } else {
-                                        final timestamp = DateTime.now().toString();
-
-                                        snapshot.data![0].update({
-                                          "userAssigned": widget.user.username,
-                                          "status": "Serving",
-                                          "stationName": widget.station.stationName,
-                                          "stationNumber": widget.station.stationNumber,
-                                          "log":
-                                          "${snapshot.data![0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                          "timeTaken": timestamp
-                                        });
-                                      }
-
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
-                                    }
+                                    tickets[0].update({
+                                      "userAssigned": widget.user.username,
+                                      "status": "Serving",
+                                      "stationName": widget.station.stationName,
+                                      "stationNumber": widget.station.stationNumber,
+                                      "log":
+                                      "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                      "timeTaken": timestamp
+                                    });
 
                                     setState(() {});
-                                  },
-                                  child: Text("Call Next")),
-                              SizedBox(width: 10),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    if (serving != null) {
-                                      showDialog(context: context, builder: (_) => AlertDialog(
-                                        title: Text("Select Station to Transfer"),
-                                        content: Container(
-                                          height: 400,
-                                          width: 400,
-                                          child: FutureBuilder(
-                                              future: getServiceSQL(),
-                                              builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
-                                                    itemCount: snapshot.data!.length,
-                                                    itemBuilder: (context, i) {
-                                                      final service = Service.fromJson(snapshot.data![i]);
+                                    Navigator.pop(context);
+                                  }, child: Text("Confirm"))
+                                ],
+                              ));
+                            } else {
+                              final timestamp = DateTime.now().toString();
 
-                                                      return ListTile(
-                                                        title: Text(service.serviceType!),
-                                                        onTap: () {
-                                                          final timestamp = DateTime.now().toString();
+                              tickets[0].update({
+                                "userAssigned": widget.user.username,
+                                "status": "Serving",
+                                "stationName": widget.station.stationName,
+                                "stationNumber": widget.station.stationNumber,
+                                "log":
+                                "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                "timeTaken": timestamp
+                              });
+                            }
 
-                                                          serving!.update({
-                                                            'log': "${serving!.log}, $timestamp: ticket transferred to ${service.serviceType}",
-                                                            'status': "Pending",
-                                                            'userAssigned': "",
-                                                            'stationName': "",
-                                                            'stationNumber': ""
-                                                          });
-                                                        },
-                                                      );
-                                                    }) : Center(
-                                                  child: Text("No Stations", style: TextStyle(color: Colors.grey)),
-                                                ) : Center(
-                                                  child: Container(
-                                                    height: 50,
-                                                    width: 50,
-                                                    child: CircularProgressIndicator(),
-                                                  ),
-                                                );
-                                              }),
+                            setState(() {});
+
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
+                          }
+
+                        },
+                        child: Text("Call Next")),
+                    SizedBox(width: 10),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (serving != null) {
+                            showDialog(context: context, builder: (_) => AlertDialog(
+                              title: Text("Select Station to Transfer"),
+                              content: Container(
+                                height: 400,
+                                width: 400,
+                                child: FutureBuilder(
+                                    future: getServiceSQL(),
+                                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                      return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
+                                          itemCount: snapshot.data!.length,
+                                          itemBuilder: (context, i) {
+                                            final service = Service.fromJson(snapshot.data![i]);
+
+                                            return ListTile(
+                                              title: Text(service.serviceType!),
+                                              onTap: () {
+                                                final timestamp = DateTime.now().toString();
+
+                                                serving!.update({
+                                                  'log': "${serving!.log}, $timestamp: ticket transferred to ${service.serviceType}",
+                                                  'status': "Pending",
+                                                  'userAssigned': "",
+                                                  'stationName': "",
+                                                  'stationNumber': ""
+                                                });
+
+                                                Navigator.pop(context);
+                                                setState(() {});
+                                              },
+                                            );
+                                          }) : Center(
+                                        child: Text("No Stations", style: TextStyle(color: Colors.grey)),
+                                      ) : Center(
+                                        child: Container(
+                                          height: 50,
+                                          width: 50,
+                                          child: CircularProgressIndicator(),
                                         ),
-                                      ));
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being servied at the moment.")));
-                                    }
-                                  }, child: Text("Transfer")),
-                              SizedBox(width: 10),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    if (serving != null) {
-                                      serving!.update({
-                                        "callCheck": 0
-                                      });
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
-                                    }
-                                  }, child: Text("Call Again")),
-                            ],
-                          )
-                        ],
-                      )
-                    : Container(
-                        height: 400,
-                        child: Center(
-                          child: Container(
-                            height: 100,
-                            width: 100,
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                      );
-              },
-            ),
+                                      );
+                                    }),
+                              ),
+                            ));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being servied at the moment.")));
+                          }
+                        }, child: Text("Transfer")),
+                    SizedBox(width: 10),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (serving != null) {
+                            serving!.update({
+                              "callCheck": 0
+                            });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
+                          }
+                        }, child: Text("Call Again")),
+                  ],
+                )
+              ],
+            ) : Container(
+              height: 300,
+              child: Center(
+                child: Container()
+              ),
+            )
           ),
         ],
       ),
