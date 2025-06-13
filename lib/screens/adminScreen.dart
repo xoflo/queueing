@@ -234,7 +234,25 @@ class _AdminScreenState extends State<AdminScreen> {
                               ),
                             )));
                       },
-                      child: Text("+ Add Priority Type"))
+                      child: Text("+ Add Priority Type")),
+                  Spacer(),
+                  IconButton(onPressed: () {
+                    showDialog(context: context, builder: (_) => AlertDialog(
+                      title: Text("Settings"),
+                      content: FutureBuilder(
+                        future: null,
+                        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                          return Container(
+                            height: 400,
+                            width: 400,
+                            child: ListView.builder(itemBuilder: (context, i) {
+                              return ListTile();
+                            }),
+                          );
+                        },
+                      ),
+                    ));
+                  }, icon: Icon(Icons.settings))
                 ],
               )),
           StatefulBuilder(

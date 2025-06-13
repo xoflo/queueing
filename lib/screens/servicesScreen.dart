@@ -18,7 +18,6 @@ class ServicesScreen extends StatefulWidget {
 }
 
 class _ServicesScreenState extends State<ServicesScreen> {
-  TextEditingController name = TextEditingController();
 
   List<String> lastAssigned = [];
   String assignedGroup = "_MAIN_";
@@ -125,7 +124,28 @@ class _ServicesScreenState extends State<ServicesScreen> {
     ));
   }
 
-  nameDialog() {
+  nameDialog(Service service, String priorityType) {
+    TextEditingController name = TextEditingController();
+
+    showDialog(context: context, builder: (_) => AlertDialog(
+      title: Text(""),
+      content: Container(
+        height: 100,
+        width: 100,
+        child: TextField(
+          controller: name,
+          decoration: InputDecoration(
+            labelText: "Name")
+          )
+        ),
+      actions: [
+        TextButton(onPressed: () {
+          addTicketSQL(service.serviceType!, service.serviceCode!, priorityType, name.text);
+        }, child: Text(""
+            "Submit"))
+      ],
+      ),
+    );
 
   }
 
@@ -145,6 +165,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   final priority = Priority.fromJson(snapshot.data![i]);
                   return GestureDetector(
                     onTap: () {
+
                       addTicketSQL(service.serviceType!,service.serviceCode!, priority.priorityName!);
                     },
                     child: Card(
@@ -213,7 +234,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-  addTicketSQL(String serviceType, String serviceCode, String priorityType) async {
+  addTicketSQL(String serviceType, String serviceCode, String priorityType, [String? ticketName]) async {
     final String timestamp = DateTime.now().toString();
 
     final List<Ticket> tickets = await getTicketSQL(serviceType);
@@ -239,7 +260,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "priorityType": "$priorityType",
         "printStatus": 1,
         "callCheck": 0,
-        "ticketName": "${name.text}"
+        "ticketName": ticketName ?? ""
       };
 
       final result = await http.post(uri, body: jsonEncode(body));
