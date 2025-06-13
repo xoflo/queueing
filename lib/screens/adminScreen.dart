@@ -258,7 +258,11 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                   return ListTile(
                                     title: Text(control.controlName!),
-                                    subtitle: control.controlName! == "Video in Queue Display" ? TextButton(child: Text("Change Video File"), onPressed: () {
+                                    subtitle: control.controlName! == "Video in Queue Display" ? TextButton(child: Text("Change Video File"), onPressed: () async {
+
+                                      final Media media = await getMedia(context, "Queue Display Video");
+                                      final videoController = VideoPlayerController.networkUrl(Uri.parse(media.link!));
+
                                       showDialog(context: context, builder: (_) => AlertDialog(
                                         content: StatefulBuilder(
                                           builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
@@ -266,7 +270,14 @@ class _AdminScreenState extends State<AdminScreen> {
                                               height: 400,
                                               width: 400,
                                               child: Column(
-                                                children: [],
+                                                children: [
+                                                  FlickVideoPlayer(flickManager: FlickManager(
+                                                      autoPlay: false,
+                                                      videoPlayerController: videoController)),
+                                                  TextButton(onPressed: () {
+                                                    videoController.play();
+                                                  }, child: Text("play"))
+                                                ],
                                               ),
                                             );
                                           },
