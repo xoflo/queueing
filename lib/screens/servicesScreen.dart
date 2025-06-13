@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/services/service.dart';
+import 'package:queueing/models/services/serviceGroup.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,133 +18,162 @@ class ServicesScreen extends StatefulWidget {
 }
 
 class _ServicesScreenState extends State<ServicesScreen> {
-
   TextEditingController name = TextEditingController();
-  String priorityType = "None";
+
+  List<String> lastAssigned = [];
+  String assignedGroup = "_MAIN_";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
+        body: Stack(
+      children: [
         logoBackground(context),
-          Column(
-            children: [
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: 100,
-                child: StatefulBuilder(
-                  builder: (BuildContext context, void Function(void Function()) setStateRow) {
-                    return Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        spacing: 10,
-                        children: [
-                          Container(
-                            width: (MediaQuery.of(context).size.width * 1/2) - 40,
-                            child: TextField(
-                              controller: name,
-                              decoration: InputDecoration(
-                                  labelText: 'Name (Optional)',
-                                  labelStyle: TextStyle(color: Colors.grey)
-                              ),
-                            ),
-                          ),
-                          Text("Priority:", style: TextStyle(fontSize: 30)),
-                          Container(
-                            height: 50,
-                            width: (MediaQuery.of(context).size.width * 1/2) - 120,
-                            child: FutureBuilder(
-                              future: getPriority(),
-                              builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? StatefulBuilder(
-                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                    return ListView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: snapshot.data!.length,
-                                        itemBuilder: (context, i) {
-                                          final Priority priority = Priority.fromJson(snapshot.data![i]);
-
-                                          return Container(
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                if (priorityType == priority.priorityName!) {
-                                                  priorityType = "None";
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Please select a service"),
+            StatefulBuilder(
+              builder: (BuildContext context,
+                  void Function(void Function()) setStateList) {
+                return FutureBuilder(
+                  future: getServiceGroups(assignedGroup),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                    return Column(
+                      children: [
+                        lastAssigned.isNotEmpty
+                            ? TextButton(
+                                onPressed: () {
+                                  assignedGroup = lastAssigned.last;
+                                  lastAssigned.removeLast();
+                                  setStateList((){});
+                                },
+                                child: Text("Return"))
+                            : Container(),
+                        snapshot.connectionState == ConnectionState.done
+                            ? Container(
+                              height: MediaQuery.of(context).size.height - 100,
+                              child: Padding(
+                                padding: const EdgeInsets.all(15.0),
+                                child: GridView.builder(
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: MediaQuery.of(context).size.width > 700 ? 5 : 3),
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, i) {
+                                      return snapshot.data![i]['serviceType'] !=
+                                              null
+                                          ? Builder(builder: (context) {
+                                              final service = Service.fromJson(
+                                                  snapshot.data![i]);
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  priorityDialog(service);
+                                                },
+                                                child: Card(
+                                                  child:
+                                                      Column(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: [
+                                                          Text(service.serviceType!),
+                                                        ],
+                                                      ),
+                                                ),
+                                              );
+                                            })
+                                          : Builder(builder: (context) {
+                                              final group = ServiceGroup.fromJson(
+                                                  snapshot.data![i]);
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  lastAssigned.add(assignedGroup);
+                                                  assignedGroup = group.name!;
                                                   setStateList((){});
-                                                } else {
-                                                  priorityType = priority.priorityName!;
-                                                  setStateList((){});
-                                                }
-
-                                              },
-                                              child: Card(
-                                                color: colorHandler(priority.priorityName!),
-                                                clipBehavior: Clip.antiAlias,
-                                                child: Center(
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
-                                                    child: Text(priority.priorityName!),
+                                                },
+                                                child: Card(
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Text(group.name!),
+                                                    ],
                                                   ),
                                                 ),
-                                              ),
-                                            ),
-                                          );
-                                        });
-                                  },
-                                ) : Container(
-                                  child: Text("No Priority Types Added", style: TextStyle(color: Colors.grey)),
-                                ) : Container();
-                              },
+                                              );
+                                            });
+                                    }),
+                              ),
                             )
-                          )
-                        ],
-                      ),
+                            : Center(
+                                child: Container(
+                                  height: 100,
+                                  width: 100,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              )
+                      ],
                     );
                   },
-                ),
-              ),
-              Container(
-                height: MediaQuery.of(context).size.height - 100,
-                child: FutureBuilder(
-                  future: getServiceSQL(),
-                  builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                    return snapshot.connectionState == ConnectionState.done ? ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, i){
-                          final service = Service.fromJson(snapshot.data![i]);
-                          return Container(
-                            padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
-                            height: 200,
-                            child: ElevatedButton(onPressed: () {
-                              addTicketSQL(service.serviceType!,service.serviceCode!, (priorityType == "None" ? 0 : 1));
-                            }, child: Padding(padding: EdgeInsets.all(20),
-                            child: Text(service.serviceType!, style: TextStyle(fontSize: 80)))),
-                          );
-                        }) : Center(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        child: CircularProgressIndicator(
-                          color: Colors.blue,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      )
-    );
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+    ));
   }
 
-  colorHandler(String priority) {
-    if (priority == priorityType) {
-      return Colors.blueGrey;
-    } else {
-      return Colors.white70;
-    }
+  nameDialog() {
+
+  }
+
+  priorityDialog(Service service) {
+    showDialog(context: context, builder: (_) => AlertDialog(
+      title: Text("Select priorities (if applicable)"),
+      content: FutureBuilder(
+        future: getPriority(),
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+          return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? Container(
+            height: 400,
+            width: 400,
+            child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, i) {
+                  final priority = Priority.fromJson(snapshot.data![i]);
+                  return GestureDetector(
+                    onTap: () {
+                      addTicketSQL(service.serviceType!,service.serviceCode!, priority.priorityName!);
+                    },
+                    child: Card(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(priority.priorityName!)
+                        ],
+                      ),
+                    ),
+                  );
+
+            }),
+          ) : Container(
+            height: 300,
+            child: Center(
+              child: Text(
+                "No Priorites added.",style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ) : Container(
+            height: 300,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        },
+      ),
+    ));
   }
 
 
@@ -152,38 +182,41 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   getTicketSQL(String serviceType) async {
-
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
       final result = await http.get(uri);
 
       final List<dynamic> response = jsonDecode(result.body);
-      final sorted = response.where((e) => e['status'] == "Pending" && toDateTime(DateTime.parse(e['timeCreated'])) == toDateTime(DateTime.now()) && e['serviceType'] == serviceType).toList();
+      final sorted = response
+          .where((e) =>
+              e['status'] == "Pending" &&
+              toDateTime(DateTime.parse(e['timeCreated'])) ==
+                  toDateTime(DateTime.now()) &&
+              e['serviceType'] == serviceType)
+          .toList();
       List<Ticket> newTickets = [];
 
-
-      for (int i = 0; i< sorted.length; i++) {
+      for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
 
-      newTickets.sort((a,b) => DateTime.parse(a.timeCreated!).compareTo(DateTime.parse(b.timeCreated!)));
+      newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
+          .compareTo(DateTime.parse(b.timeCreated!)));
 
       return newTickets;
-
-    } catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
       print(e);
       return [];
     }
-
   }
 
-  addTicketSQL(String serviceType, String serviceCode, int priority) async {
-
+  addTicketSQL(String serviceType, String serviceCode, String priorityType) async {
     final String timestamp = DateTime.now().toString();
 
-    final List<Ticket> tickets =  await getTicketSQL(serviceType);
+    final List<Ticket> tickets = await getTicketSQL(serviceType);
     final number = tickets.length + 1;
     final numberParsed = number.toString().padLeft(4, '0');
     print(numberParsed);
@@ -202,7 +235,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "timeDone": "",
         "status": "Pending",
         "log": "$timestamp: ticketGenerated",
-        "priority": priority,
+        "priority": priorityType != "None" ? 1 : 0,
         "priorityType": "$priorityType",
         "printStatus": 1,
         "callCheck": 0,
@@ -212,32 +245,50 @@ class _ServicesScreenState extends State<ServicesScreen> {
       final result = await http.post(uri, body: jsonEncode(body));
       print(result.body);
 
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
 
-    } catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
       print(e);
     }
   }
 
-
-  getServiceSQL() async {
-
+  getServiceGroups(String assignedGroup) async {
     try {
-      final uri = Uri.parse('http://$site/queueing_api/api_service.php');
+      final uriGroup =
+          Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
+      final resultGroup = await http.get(uriGroup);
+      List<dynamic> responseGroup = jsonDecode(resultGroup.body);
 
-      final result = await http.get(uri);
+      final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
+      final resultService = await http.get(uriService);
+      List<dynamic> responseService = jsonDecode(resultService.body);
 
-      final response = jsonDecode(result.body);
+      print(responseService);
+      print(responseGroup);
 
-      print("response1: $response");
+      List<dynamic> resultsToReturn = [];
 
-      response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+      for (int i = 0; i < responseGroup.length; i++) {
+        if (responseGroup[i]['assignedGroup'] == assignedGroup) {
+          resultsToReturn.add(responseGroup[i]);
+        }
+      }
 
-      print("response2: $response");
+      for (int i = 0; i < responseService.length; i++) {
+        if (responseService[i]['assignedGroup'] == assignedGroup) {
+          resultsToReturn.add(responseService[i]);
+        }
+      }
+      print('return: $resultsToReturn');
 
-      return response;
-    } catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
+      return resultsToReturn;
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
       print(e);
       return [];
     }
@@ -246,7 +297,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
   getPriority() async {
     final uri = Uri.parse('http://$site/queueing_api/api_priorities.php');
     final result = await http.get(uri);
-    final response = jsonDecode(result.body);
+    List<dynamic> response = jsonDecode(result.body);
+    response.add({"priorityName": "None", "id": 999.toString()});
     return response;
   }
 }
