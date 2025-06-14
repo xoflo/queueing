@@ -28,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MediaQuery.of(context).size.width < 600 || MediaQuery.of(context).size.height < 600 ? Container(
+      body: MediaQuery.of(context).size.width < 400 || MediaQuery.of(context).size.height < 400 ? Container(
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
       ) : Center(
         child: Column(
