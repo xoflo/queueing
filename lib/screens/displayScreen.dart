@@ -55,7 +55,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             ticketsLength = retrieved.length;
                             AudioPlayer player = AudioPlayer();
                             player.play(AssetSource('sound.mp3'));
-                            print("Sound");
                             setStateHere((){});
                           }
 
@@ -63,10 +62,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           setStateHere((){});
                         } else {
                           final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
-                          toUpdate.forEach((value){
-                            print("update id: ${value.id} call: ${value.callCheck}");
-                          });
-
                           if (toUpdate.isNotEmpty) {
                             for (int i = 0; i < toUpdate.length; i++) {
                               await toUpdate[i].update({
@@ -78,7 +73,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             ticketsLength = retrieved.length;
                             AudioPlayer player = AudioPlayer();
                             player.play(AssetSource('sound.mp3'));
-                            print("Sound");
 
                             setStateHere((){});
 
