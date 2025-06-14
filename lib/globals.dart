@@ -9,9 +9,9 @@ final site = "192.168.1.154:8080";
 // "localhost:8080"
 // "192.168.1.154:8080"
 
-logoBackground(BuildContext context) {
+logoBackground(BuildContext context, [int? width]) {
   return Stack(
-    children: [MediaQuery.of(context).size.width > 1500
+    children: [MediaQuery.of(context).size.width > (width != null ? width : 1500)
         ? Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,

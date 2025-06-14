@@ -175,12 +175,8 @@ class _StaffScreenState extends State<StaffScreen> {
   getStationSQL() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
-
       final result = await http.get(uri);
-
       final response = jsonDecode(result.body);
-
-      print("response1: $response");
 
       return response;
     } catch (e) {
@@ -211,14 +207,18 @@ class _StaffSessionState extends State<StaffSession> {
   List<Ticket> tickets = [];
   int ticketLength = 0;
 
+  int loadDone = 0;
+
   @override
   void initState() {
-    pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
+    pingTimer = Timer.periodic(Duration(seconds: 1), (timer) async {
       await widget.station.update({
         "sessionPing": DateTime.now().toString(),
         "inSession": 1,
         "userInSession": widget.user.username,
       });
+
+      loadDone = 1;
 
       List<Ticket> retrievedTickets = await getTicketSQL();
 
@@ -241,14 +241,20 @@ class _StaffSessionState extends State<StaffSession> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MediaQuery.of(context).size.width < 600 || MediaQuery.of(context).size.height < 600 ? Container(
+      body: MediaQuery.of(context).size.width < 400 || MediaQuery.of(context).size.height < 400 ? Container(
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
       ) : Stack(
         children: [
-        logoBackground(context),
+        logoBackground(context, 400),
           Container(
             padding: EdgeInsets.all(20),
-            child: tickets.isNotEmpty ? Column(
+            child: loadDone == 0 ? Center(
+              child: Container(
+                height: 100,
+                width: 100,
+                child: CircularProgressIndicator(),
+              ),
+            ) : Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -265,15 +271,6 @@ class _StaffSessionState extends State<StaffSession> {
                   ],
                 ),
                 SizedBox(height: 20),
-                serving != null ? Text("Serving Ticket: ") : Card(
-                  child: Container(
-                    height: 350,
-                    width: 250,
-                    child: Center(
-                      child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
-                    ),
-                  ),
-                ),
                 StatefulBuilder(
                   builder: (BuildContext context, void Function(void Function()) setState) {
                     return FutureBuilder(
@@ -281,10 +278,9 @@ class _StaffSessionState extends State<StaffSession> {
                       builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshotServing) {
                         return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Builder(
                             builder: (context) {
-                              print('servings: ${snapshotServing.data!}');
                               serving = snapshotServing.data!.last;
 
-                              return Card(
+                              return serving != null ? Card(
                                 clipBehavior: Clip.antiAlias,
                                 child: Padding(
                                   padding: const EdgeInsets.all(30.0),
@@ -292,14 +288,23 @@ class _StaffSessionState extends State<StaffSession> {
                                     height: 350,
                                     width: 250,
                                     child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text("${snapshotServing.data!.last.serviceType}",
-                                            style: TextStyle(fontSize: 30)),
+                                            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
                                         Text(
                                             "${snapshotServing.data!.last.serviceCode}${snapshotServing.data!.last.number}",
                                             style: TextStyle(fontSize: 30)),
                                       ],
                                     ),
+                                  ),
+                                ),
+                              ) : Card(
+                                child: Container(
+                                  height: 350,
+                                  width: 250,
+                                  child: Center(
+                                    child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
                                   ),
                                 ),
                               );
@@ -437,13 +442,8 @@ class _StaffSessionState extends State<StaffSession> {
                   ],
                 )
               ],
-            ) : Container(
-              height: 300,
-              child: Center(
-                child: Container()
-              ),
-            )
-          ),
+            ),
+          )
         ],
       ),
     );
@@ -456,16 +456,12 @@ class _StaffSessionState extends State<StaffSession> {
       final result = await http.get(uri);
 
       final List<dynamic> response = jsonDecode(result.body);
-      print("responseLength: ${response.length}");
       final sorted = response
           .where((e) =>
               e['serviceType'] == widget.station.serviceType &&
               e['status'] == "Pending")
           .toList();
       List<Ticket> newTickets = [];
-
-      print("serviceType: ${widget.station.serviceType}");
-
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
@@ -474,8 +470,6 @@ class _StaffSessionState extends State<StaffSession> {
           .compareTo(DateTime.parse(b.timeCreated!)));
 
       newTickets.sort((a, b) => a.priority!.compareTo(b.priority!));
-
-      print("newTickets: ${newTickets.length}");
 
       return newTickets;
     } catch (e) {
@@ -489,11 +483,8 @@ class _StaffSessionState extends State<StaffSession> {
   getServingTicketSQL() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
-
       final result = await http.get(uri);
-
       final List<dynamic> response = jsonDecode(result.body);
-      print("responseLength: ${response.length}");
       final sorted = response
           .where((e) =>
               e['serviceType'] == widget.station.serviceType &&
@@ -501,18 +492,11 @@ class _StaffSessionState extends State<StaffSession> {
               e['userAssigned'] == widget.user.username)
           .toList();
       List<Ticket> newTickets = [];
-
-      print("serviceType: ${widget.user.serviceType}");
-
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
-
       newTickets.sort((a, b) => DateTime.parse(a.timeTaken!)
           .compareTo(DateTime.parse(b.timeTaken!)));
-
-      print("newTickets: ${newTickets.length}");
-
       return newTickets;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
