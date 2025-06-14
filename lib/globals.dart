@@ -12,17 +12,20 @@ final site = "192.168.1.154:8080";
 logoBackground(BuildContext context, [int? width]) {
   return Stack(
     children: [MediaQuery.of(context).size.width > (width != null ? width : 1500)
-        ? Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('images/logo.png'),
-            SizedBox(height: 20),
-            Text("Office of the Ombudsman", style: TextStyle(fontSize: 30))
-          ],
-        ))
+        ? Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('images/logo.png'),
+              SizedBox(height: 20),
+              Text("Office of the Ombudsman", style: TextStyle(fontSize: 30), textAlign: TextAlign.center)
+            ],
+          )),
+        )
         : Container(),
       Container(
         height: MediaQuery.of(context).size.height,
