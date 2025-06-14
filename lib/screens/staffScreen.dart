@@ -34,8 +34,6 @@ class _StaffScreenState extends State<StaffScreen> {
         'loggedIn': DateTime.now().toString()
       });
 
-      print("${pingSorted.length} == $stationChanges");
-
       if (pingSorted.length != stationChanges) {
         stationChanges = pingSorted.length;
         setState(() {});
@@ -45,8 +43,6 @@ class _StaffScreenState extends State<StaffScreen> {
         final station = Station.fromJson(pingSorted[i]);
         final pingDate = DateTime.parse(station.sessionPing!);
 
-        print("diff: ${newTime.difference(pingDate).inSeconds} secs");
-
         if (newTime.difference(pingDate).inSeconds > 3.5) {
           station.update({
             'inSession': 0,
@@ -54,9 +50,7 @@ class _StaffScreenState extends State<StaffScreen> {
             'sessionPing': ""
           });
 
-          setState(() {
-
-          });
+          setState(() {});
         }
       }
     });
@@ -234,17 +228,20 @@ class _StaffSessionState extends State<StaffSession> {
         "userInSession": widget.user.username,
       });
 
-      print('sending');
-
-      loadDone = 1;
-
       List<Ticket> retrievedTickets = await getTicketSQL();
 
       if (ticketLength != retrievedTickets.length) {
+        loadDone = 1;
         tickets = retrievedTickets;
         ticketLength = retrievedTickets.length;
         setState(() {});
+      } else {
+        if (loadDone == 0) {
+          loadDone = 1;
+          setState(() {});
+        }
       }
+
 
     });
     super.initState();
@@ -271,13 +268,7 @@ class _StaffSessionState extends State<StaffSession> {
           logoBackground(context, 400),
             Container(
               padding: EdgeInsets.all(20),
-              child: loadDone == 0 ? Center(
-                child: Container(
-                  height: 100,
-                  width: 100,
-                  child: CircularProgressIndicator(),
-                ),
-              ) : Column(
+              child: loadDone != 0 ?  Column(
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
@@ -310,8 +301,7 @@ class _StaffSessionState extends State<StaffSession> {
                           return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Builder(
                               builder: (context) {
                                 serving = snapshotServing.data!.last;
-
-                                return serving != null ? Card(
+                                return Card(
                                   clipBehavior: Clip.antiAlias,
                                   child: Padding(
                                     padding: const EdgeInsets.all(30.0),
@@ -330,17 +320,17 @@ class _StaffSessionState extends State<StaffSession> {
                                       ),
                                     ),
                                   ),
-                                ) : Card(
-                                  child: Container(
-                                    height: 350,
-                                    width: 250,
-                                    child: Center(
-                                      child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
-                                    ),
-                                  ),
-                                );
+                                ) ;
                               }
-                          ): Container() : Container(
+                          ): Card(
+                            child: Container(
+                              height: 350,
+                              width: 250,
+                              child: Center(
+                                child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
+                              ),
+                            ),
+                          ) : Container(
                             height: 100,
                             width: 100,
                             child: CircularProgressIndicator(),
@@ -473,6 +463,12 @@ class _StaffSessionState extends State<StaffSession> {
                     ],
                   )
                 ],
+              ) : Center(
+                child: Container(
+                  height: 100,
+                  width: 100,
+                  child: CircularProgressIndicator(),
+                ),
               ),
             )
           ],
