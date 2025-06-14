@@ -22,6 +22,8 @@ class Ticket {
   int? callCheck;
   String? ticketName;
 
+  String? codeAndNumber;
+
 
   Ticket.fromJson(dynamic data) {
     this.id = int.parse(data['id']);
@@ -41,6 +43,7 @@ class Ticket {
     this.printStatus = int.parse(data['printStatus']);
     this.callCheck = int.parse(data['callCheck']);
     this.ticketName = data['ticketName'];
+    this.codeAndNumber = "${data['serviceCode']}${data['number']}";
   }
 
   update(dynamic data) async {

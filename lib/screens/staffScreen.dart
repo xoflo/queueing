@@ -43,7 +43,7 @@ class _StaffScreenState extends State<StaffScreen> {
         final station = Station.fromJson(pingSorted[i]);
         final pingDate = DateTime.parse(station.sessionPing!);
 
-        if (newTime.difference(pingDate).inSeconds > 3.5) {
+        if (newTime.difference(pingDate).inSeconds > 2.5) {
           station.update({
             'inSession': 0,
             'userInSession': "",
@@ -221,7 +221,7 @@ class _StaffSessionState extends State<StaffSession> {
 
   @override
   void initState() {
-    pingTimer = Timer.periodic(Duration(seconds: 2, milliseconds: 500), (timer) async {
+    pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
       widget.station.update({
         "sessionPing": DateTime.now().toString(),
         "inSession": 1,
@@ -311,11 +311,20 @@ class _StaffSessionState extends State<StaffSession> {
                                       child: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Text("${snapshotServing.data!.last.serviceType}",
+                                          Text("${serving!.serviceType}",
                                               style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
                                           Text(
-                                              "${snapshotServing.data!.last.serviceCode}${snapshotServing.data!.last.number}",
+                                              serving!.codeAndNumber!,
                                               style: TextStyle(fontSize: 30)),
+                                          Row(
+                                            spacing: 5,
+                                            children: [
+                                              Text("Priority:"),
+                                              Text(
+                                                  serving!.priorityType!,
+                                                  style: TextStyle(fontSize: 20)),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -345,23 +354,24 @@ class _StaffSessionState extends State<StaffSession> {
                     children: [
                       ElevatedButton(
                           onPressed: () {
-                            if (tickets.isNotEmpty) {
-                              if (serving != null) {
-                                showDialog(context: context, builder: (_) => AlertDialog(
-                                  title: Text("Confirm Done?"),
-                                  content: Container(
-                                      height: 80,
-                                      width: 300),
-                                  actions: [
-                                    TextButton(onPressed: () {
-                                      final timestamp = DateTime.now().toString();
 
-                                      serving!.update({
-                                        "status": "Done",
-                                        "timeDone": timestamp,
-                                        "log": "${serving!.log}, $timestamp: ticket session finished"
-                                      });
+                            if (serving != null) {
+                              showDialog(context: context, builder: (_) => AlertDialog(
+                                title: Text("Confirm Done?"),
+                                content: Container(
+                                    height: 80,
+                                    width: 300),
+                                actions: [
+                                  TextButton(onPressed: () {
+                                    final timestamp = DateTime.now().toString();
 
+                                    serving!.update({
+                                      "status": "Done",
+                                      "timeDone": timestamp,
+                                      "log": "${serving!.log}, $timestamp: ticket session finished"
+                                    });
+
+                                    if (tickets.isNotEmpty) {
                                       tickets[0].update({
                                         "userAssigned": widget.user.username,
                                         "status": "Serving",
@@ -371,15 +381,16 @@ class _StaffSessionState extends State<StaffSession> {
                                         "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                         "timeTaken": timestamp
                                       });
+                                    }
 
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    }, child: Text("Confirm"))
-                                  ],
-                                ));
-                              } else {
+                                    setState(() {});
+                                    Navigator.pop(context);
+                                  }, child: Text("Confirm"))
+                                ],
+                              ));
+                            } else {
+                              if (tickets.isNotEmpty) {
                                 final timestamp = DateTime.now().toString();
-
                                 tickets[0].update({
                                   "userAssigned": widget.user.username,
                                   "status": "Serving",
@@ -389,14 +400,12 @@ class _StaffSessionState extends State<StaffSession> {
                                   "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                   "timeTaken": timestamp
                                 });
+
+                                setState(() {});
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                               }
-
-                              setState(() {});
-
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                             }
-
                           },
                           child: Text("Call Next")),
                       SizedBox(width: 10),
@@ -461,7 +470,9 @@ class _StaffSessionState extends State<StaffSession> {
                             }
                           }, child: Text("Call Again")),
                     ],
-                  )
+                  ),
+                  SizedBox(height: 20),
+                  Text("Upcoming Tickets: ${tickets[0].codeAndNumber ?? ""}, ${tickets[1].codeAndNumber ?? ""}, ${tickets[2].codeAndNumber ?? ""}, ${tickets[3].codeAndNumber ?? ""}, ${tickets[4].codeAndNumber ?? ""}")
                 ],
               ) : Center(
                 child: Container(
