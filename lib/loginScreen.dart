@@ -32,69 +32,72 @@ class _LoginScreenState extends State<LoginScreen> {
         width: MediaQuery.of(context).size.width,
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
       ) : Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                height: 300,
-                child: Image.asset('images/logo.png'),
-              ),
-              SizedBox(height: 50),
-              Center(child: Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
-              Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-              SizedBox(height: 20),
-              Container(
-                  width: 250,
-                  child: TextField(
-                    onSubmitted: (value) {
-                      submit();
-                    },
-                    controller: username,
-                    decoration: InputDecoration(
-                      hintText: 'User'
-                    ),
-                  )),
-              Container(
-                  width: 250,
-                  child: TextField(
-                    obscureText: obscure,
-                    controller: pass,
-                    onSubmitted: (value) {
-                      submit();
-                    },
-                    decoration: InputDecoration(
-                        hintText: 'Password'
-                    ),
-                  )),
-              IconButton(onPressed: () {
-                obscure = !obscure;
-                setState(() {
-
-                });
-              }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
-              SizedBox(height: 20),
-              ElevatedButton(onPressed: () {
-                submit();
-              }, child: Text("Log-in")),
-
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
-                  }, child: Text("Queue Display")),
-                  SizedBox(width: 10),
-                  ElevatedButton(onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
-                  }, child: Text("Queue Services")),
-                ],
-              ),
-
-
-
-
-            ]
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 25),
+                Container(
+                  height: MediaQuery.of(context).size.width < 400 ? 150 : 300,
+                  child: Image.asset('images/logo.png'),
+                ),
+                SizedBox(height: 25),
+                Center(child: Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
+                Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
+                SizedBox(height: 20),
+                Container(
+                    width: 250,
+                    child: TextField(
+                      onSubmitted: (value) {
+                        submit();
+                      },
+                      controller: username,
+                      decoration: InputDecoration(
+                        hintText: 'User'
+                      ),
+                    )),
+                Container(
+                    width: 250,
+                    child: TextField(
+                      obscureText: obscure,
+                      controller: pass,
+                      onSubmitted: (value) {
+                        submit();
+                      },
+                      decoration: InputDecoration(
+                          hintText: 'Password'
+                      ),
+                    )),
+                IconButton(onPressed: () {
+                  obscure = !obscure;
+                  setState(() {
+          
+                  });
+                }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
+                SizedBox(height: 20),
+                ElevatedButton(onPressed: () {
+                  submit();
+                }, child: Text("Log-in")),
+          
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
+                    }, child: Text("Queue Display")),
+                    SizedBox(width: 10),
+                    ElevatedButton(onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                    }, child: Text("Queue Services")),
+                  ],
+                ),
+          
+          
+          
+          
+              ]
+          ),
         ),
       )
     );

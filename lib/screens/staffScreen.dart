@@ -70,8 +70,8 @@ class _StaffScreenState extends State<StaffScreen> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        body: MediaQuery.of(context).size.width < 400 || MediaQuery.of(context).size.height < 400 ? Container(
-          child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
+        body: MediaQuery.of(context).size.width < 350 || MediaQuery.of(context).size.height < 600 ? Container(
+          child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30), textAlign: TextAlign.center,)),
         ) : Stack(
           children: [
             logoBackground(context, 400),
@@ -262,8 +262,8 @@ class _StaffSessionState extends State<StaffSession> {
 
       },
       child: Scaffold(
-        body: MediaQuery.of(context).size.width < 400 || MediaQuery.of(context).size.height < 400 ? Container(
-          child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
+        body: MediaQuery.of(context).size.width < 350 || MediaQuery.of(context).size.height < 600 ? Container(
+          child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30), textAlign: TextAlign.center)),
         ) : Stack(
           children: [
           logoBackground(context, 400),
