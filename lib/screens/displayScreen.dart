@@ -39,10 +39,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       child: Text("Now Serving", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700))),
                   StatefulBuilder(
                     builder: (BuildContext context, void Function(void Function()) setStateHere) {
-          
+
                       timer = Timer.periodic(Duration(seconds: 3, milliseconds: 0), (value) async {
                         final List<Ticket> retrieved = await getTicketSQL();
-          
+
                         if (retrieved.length != ticketsLength) {
                           final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
                           if (toUpdate.isNotEmpty) {
@@ -58,7 +58,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             print("Sound");
                             setStateHere((){});
                           }
-          
+
                           ticketsLength = retrieved.length;
                           setStateHere((){});
                         } else {
@@ -66,7 +66,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           toUpdate.forEach((value){
                             print("update id: ${value.id} call: ${value.callCheck}");
                           });
-          
+
                           if (toUpdate.isNotEmpty) {
                             for (int i = 0; i < toUpdate.length; i++) {
                               await toUpdate[i].update({
@@ -74,20 +74,20 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 "callCheck": 1
                               });
                             }
-          
+
                             ticketsLength = retrieved.length;
                             AudioPlayer player = AudioPlayer();
                             player.play(AssetSource('sound.mp3'));
                             print("Sound");
-          
+
                             setStateHere((){});
-          
+
                           }
                         }
-          
-          
+
+
                       });
-          
+
                       return FutureBuilder(
                         future: getTicketSQL(),
                         builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
@@ -140,8 +140,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                   height: 350,
                                                   width: 250,
                                                   child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
-                                                      Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30)),
+                                                      Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
                                                       Text("${snapshot.data!.last.serviceCode}${snapshot.data!.last.number}", style: TextStyle(fontSize: 30)),
                                                     ],
                                                   ),
@@ -150,8 +151,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             );
                                           },
                                         )
-          
-          
+
+
                                     ),
                                   );
                                 },

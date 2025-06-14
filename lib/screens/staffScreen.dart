@@ -361,8 +361,7 @@ class _StaffSessionState extends State<StaffSession> {
                                 showDialog(context: context, builder: (_) => AlertDialog(
                                   title: Text("Confirm Done?"),
                                   content: Container(
-                                      height: 80,
-                                      width: 300),
+                                      height: 40),
                                   actions: [
                                     TextButton(onPressed: () {
                                       final timestamp = DateTime.now().toString();
