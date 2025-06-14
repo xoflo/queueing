@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
+import 'package:queueing/models/media.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
@@ -69,11 +70,11 @@ class _StaffScreenState extends State<StaffScreen> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        body: MediaQuery.of(context).size.width < 600 || MediaQuery.of(context).size.height < 600 ? Container(
+        body: MediaQuery.of(context).size.width < 400 || MediaQuery.of(context).size.height < 400 ? Container(
           child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
         ) : Stack(
           children: [
-            logoBackground(context),
+            logoBackground(context, 400),
             Container(
               padding: EdgeInsets.all(20),
               child: Column(
@@ -281,18 +282,18 @@ class _StaffSessionState extends State<StaffSession> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("User In-Session: "),
-                      Text("${widget.user.username}", style: TextStyle(fontWeight: FontWeight.w700))
+                      Text("User In-Session: ", style: TextStyle(fontSize: 30)),
+                      Text("${widget.user.username}", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30))
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Station: "),
-                      Text("${widget.station.serviceType} | ${widget.station.stationName} ${widget.station.stationNumber}", style: TextStyle(fontWeight: FontWeight.w700))
+                      Text("Station: ", style: TextStyle(fontSize: 30)),
+                      Text("${widget.station.serviceType} | ${widget.station.stationName} ${widget.station.stationNumber}", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30))
                     ],
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 30),
                   StatefulBuilder(
                     builder: (BuildContext context, void Function(void Function()) setState) {
                       return FutureBuilder(
@@ -306,8 +307,8 @@ class _StaffSessionState extends State<StaffSession> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(30.0),
                                     child: Container(
-                                      height: 350,
-                                      width: 250,
+                                      height: 400,
+                                      width: 280,
                                       child: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
@@ -316,13 +317,16 @@ class _StaffSessionState extends State<StaffSession> {
                                           Text(
                                               serving!.codeAndNumber!,
                                               style: TextStyle(fontSize: 30)),
+                                          SizedBox(height: 10),
                                           Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             spacing: 5,
                                             children: [
-                                              Text("Priority:"),
+                                              Text("Priority:",
+                                                  style: TextStyle(fontSize: 15)),
                                               Text(
                                                   serving!.priorityType!,
-                                                  style: TextStyle(fontSize: 20)),
+                                                  style: TextStyle(fontSize: 15)),
                                             ],
                                           ),
                                         ],
@@ -333,8 +337,8 @@ class _StaffSessionState extends State<StaffSession> {
                               }
                           ): Card(
                             child: Container(
-                              height: 350,
-                              width: 250,
+                              height: 400,
+                              width: 280,
                               child: Center(
                                 child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
                               ),
@@ -348,7 +352,7 @@ class _StaffSessionState extends State<StaffSession> {
                       );
                     },
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -455,7 +459,7 @@ class _StaffSessionState extends State<StaffSession> {
                                 ),
                               ));
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being servied at the moment.")));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
                             }
                           }, child: Text("Transfer")),
                       SizedBox(width: 10),
@@ -472,8 +476,26 @@ class _StaffSessionState extends State<StaffSession> {
                     ],
                   ),
                   SizedBox(height: 20),
-                  Text("Upcoming Tickets: ${tickets[0].codeAndNumber ?? ""}, ${tickets[1].codeAndNumber ?? ""}, ${tickets[2].codeAndNumber ?? ""}, ${tickets[3].codeAndNumber ?? ""}, ${tickets[4].codeAndNumber ?? ""}")
-                ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Upcoming Tickets: ", style: TextStyle(fontWeight: FontWeight.w700)),
+                      Container(
+                        height: 40,
+                        width: 300,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: tickets.length,
+                            itemBuilder: (context, i) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                            );
+                        }),
+                      ),
+                    ],
+                  )
+                 ],
               ) : Center(
                 child: Container(
                   height: 100,
