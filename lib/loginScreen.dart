@@ -22,13 +22,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController username = TextEditingController();
   TextEditingController pass = TextEditingController();
-
   bool obscure = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MediaQuery.of(context).size.width < 400 || MediaQuery.of(context).size.height < 400 ? Container(
+      body: MediaQuery.of(context).size.width < 350 || MediaQuery.of(context).size.height < 550 ? Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
       ) : Center(
         child: Column(
@@ -39,8 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Image.asset('images/logo.png'),
               ),
               SizedBox(height: 50),
-              Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
-              Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500)),
+              Center(child: Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
+              Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
               SizedBox(height: 20),
               Container(
                   width: 250,

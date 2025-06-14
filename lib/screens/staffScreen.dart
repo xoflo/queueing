@@ -530,7 +530,8 @@ class _StaffSessionState extends State<StaffSession> {
       newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
           .compareTo(DateTime.parse(b.timeCreated!)));
 
-      newTickets.sort((a, b) => a.priority!.compareTo(b.priority!));
+      newTickets.sort((a, b) => b.priority!.compareTo(a.priority!));
+
 
       return newTickets;
     } catch (e) {
