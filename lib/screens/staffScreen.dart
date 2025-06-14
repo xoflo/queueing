@@ -36,13 +36,18 @@ class _StaffScreenState extends State<StaffScreen> {
 
       print("${pingSorted.length} == $stationChanges");
 
+      if (pingSorted.length != stationChanges) {
+        stationChanges = pingSorted.length;
+        setState(() {});
+      }
+
       for (int i = 0; i < pingSorted.length; i++) {
         final station = Station.fromJson(pingSorted[i]);
         final pingDate = DateTime.parse(station.sessionPing!);
 
         print("diff: ${newTime.difference(pingDate).inSeconds} secs");
 
-        if (newTime.difference(pingDate).inSeconds > 5) {
+        if (newTime.difference(pingDate).inSeconds > 3.5) {
           station.update({
             'inSession': 0,
             'userInSession': "",
