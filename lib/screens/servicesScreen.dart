@@ -1,14 +1,15 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/services/serviceGroup.dart';
-import 'package:queueing/screens/adminScreen.dart';
 import 'package:http/http.dart' as http;
-
 import '../models/priority.dart';
 import '../models/ticket.dart';
+
+import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
+import 'package:esc_pos_utils/esc_pos_utils.dart';
 
 class ServicesScreen extends StatefulWidget {
   const ServicesScreen({super.key});
@@ -17,10 +18,26 @@ class ServicesScreen extends StatefulWidget {
   State<ServicesScreen> createState() => _ServicesScreenState();
 }
 
+
 class _ServicesScreenState extends State<ServicesScreen> {
 
   List<String> lastAssigned = [];
   String assignedGroup = "_MAIN_";
+
+  PrinterBluetoothManager printerManager = PrinterBluetoothManager();
+  List<PrinterBluetooth> _devices = [];
+
+  @override
+  void initState() {
+    if (Platform.isAndroid) {
+      printerManager.scanResults.listen((devices) async {
+        setState(() {
+          _devices = devices;
+        });
+      });
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +290,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
     final List<Ticket> tickets = await getTicketSQL(serviceType);
     final number = tickets.length + 1;
     final numberParsed = number.toString().padLeft(4, '0');
-    print(numberParsed);
 
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
@@ -296,8 +312,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "ticketName": ticketName ?? ""
       };
 
-      final result = await http.post(uri, body: jsonEncode(body));
-      print(result.body);
+      final ticket = Ticket().printTicket(context);
+
+      // final result = await http.post(uri, body: jsonEncode(body));
+     //  print(result.body);
+
+
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -317,10 +337,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
       final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
       final resultService = await http.get(uriService);
       List<dynamic> responseService = jsonDecode(resultService.body);
-
-      print(responseService);
-      print(responseGroup);
-
       List<dynamic> resultsToReturn = [];
 
       for (int i = 0; i < responseGroup.length; i++) {
@@ -334,7 +350,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           resultsToReturn.add(responseService[i]);
         }
       }
-      print('return: $resultsToReturn');
+
 
       return resultsToReturn;
     } catch (e) {
@@ -352,5 +368,58 @@ class _ServicesScreenState extends State<ServicesScreen> {
     List<dynamic> response = jsonDecode(result.body);
     response.add({"priorityName": "None", "id": 999.toString()});
     return response;
+  }
+
+
+  void _startScanDevices() {
+    setState(() {
+      _devices = [];
+    });
+    printerManager.startScan(Duration(seconds: 4));
+  }
+
+  void _stopScanDevices() {
+    printerManager.stopScan();
+  }
+
+  Future<List<int>> demoReceipt(
+      PaperSize paper, CapabilityProfile profile) async {
+    final Generator ticket = Generator(paper, profile);
+    List<int> bytes = [];
+
+    // Print image
+    // final ByteData data = await rootBundle.load('assets/rabbit_black.jpg');
+    // final Uint8List imageBytes = data.buffer.asUint8List();
+    // final Image? image = decodeImage(imageBytes);
+    // bytes += ticket.image(image);
+
+    bytes += ticket.text('GROCERYLY',
+        styles: PosStyles(
+          align: PosAlign.center,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ),
+        linesAfter: 1);
+
+    ticket.feed(2);
+    ticket.cut();
+    return bytes;
+  }
+
+  void _testPrint(PrinterBluetooth printer) async {
+    printerManager.selectPrinter(printer);
+
+
+    const PaperSize paper = PaperSize.mm80;
+    final profile = await CapabilityProfile.load();
+
+    // TEST PRINT
+    // final PosPrintResult res =
+    // await printerManager.printTicket(await testTicket(paper));
+
+    // DEMO RECEIPT
+    final PosPrintResult res =
+    await printerManager.printTicket((await demoReceipt(paper, profile)));
+
   }
 }

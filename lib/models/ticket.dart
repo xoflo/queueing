@@ -1,7 +1,11 @@
 import 'dart:convert';
-
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
+import 'package:flutter/material.dart';
+import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
+
+
 
 class Ticket {
   int? id;
@@ -23,6 +27,10 @@ class Ticket {
   String? ticketName;
 
   String? codeAndNumber;
+
+  Ticket() {
+
+  }
 
 
   Ticket.fromJson(dynamic data) {
@@ -74,5 +82,15 @@ class Ticket {
     } catch(e) {
       print(e);
     }
+  }
+
+  printTicket(BuildContext context) async {
+    try {
+
+
+    } catch(e) {
+      print(e);
+    }
+
   }
 }
