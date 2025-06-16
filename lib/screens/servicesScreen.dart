@@ -75,7 +75,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                               child: DropdownButton(
                                                 items: _getDeviceItems(),
                                                 onChanged: (BluetoothDevice? value) =>
-                                                    setState(() => _device = value),
+                                                    setStateDialog(() => _device = value),
                                                 value: _device,
                                               ),
                                             ),
@@ -394,12 +394,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "ticketName": ticketName ?? ""
       };
 
-      final ticket = Ticket().printTicket(context);
 
-      // final result = await http.post(uri, body: jsonEncode(body));
-     //  print(result.body);
+      final ticket =  Ticket.fromJson(body);
+      testPrint.ticket(ticket);
 
-
+      /*
+        final result = await http.post(uri, body: jsonEncode(body));
+        print(result.body);
+       */
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -455,8 +457,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
 // print
 
   Future<void> initPlatformState() async {
-    // if permission is not granted, kzaki's thermal print plugin will ask for location permission
-    // which will invariably crash the app even if user agrees so we'd better ask it upfront
 
      var statusLocation = Permission.location;
      if (await statusLocation.isGranted != true) {
