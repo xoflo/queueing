@@ -11,37 +11,19 @@ class TestPrint {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
 
   sample() async {
-    //image max 300px X 300px
 
-    ///image from File path
-    String filename = 'yourlogo.png';
-    ByteData bytesData = await rootBundle.load("assets/images/yourlogo.png");
-    String dir = (await getApplicationDocumentsDirectory()).path;
-    File file = await File('$dir/$filename').writeAsBytes(bytesData.buffer
-        .asUint8List(bytesData.offsetInBytes, bytesData.lengthInBytes));
+    try {
 
-    ///image from Asset
-    ByteData bytesAsset = await rootBundle.load("assets/images/yourlogo.png");
-    Uint8List imageBytesFromAsset = bytesAsset.buffer
-        .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
+    } catch(e) {
+      print(e);
+    }
 
-    ///image from Network
-    var response = await http.get(Uri.parse(
-        "https://raw.githubusercontent.com/kakzaki/blue_thermal_printer/master/example/assets/images/yourlogo.png"));
-    Uint8List bytesNetwork = response.bodyBytes;
-    Uint8List imageBytesFromNetwork = bytesNetwork.buffer
-        .asUint8List(bytesNetwork.offsetInBytes, bytesNetwork.lengthInBytes);
 
     bluetooth.isConnected.then((isConnected) {
       if (isConnected == true) {
         bluetooth.printNewLine();
         bluetooth.printCustom("HEADER", Size.boldMedium.val, Align.center.val);
         bluetooth.printNewLine();
-        bluetooth.printImage(file.path); //path of your image/logo
-        bluetooth.printNewLine();
-        bluetooth.printImageBytes(imageBytesFromAsset); //image from Asset
-        bluetooth.printNewLine();
-        bluetooth.printImageBytes(imageBytesFromNetwork); //image from Network
         bluetooth.printNewLine();
         bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
         bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
