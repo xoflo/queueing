@@ -19,45 +19,18 @@ class TestPrint {
 
     bluetooth.isConnected.then((isConnected) {
       if (isConnected == true) {
-        bluetooth.printImageBytes(imageBytesFromAsset);
         bluetooth.printNewLine();
-        bluetooth.printCustom("HEADER", Size.boldMedium.val, Align.center.val);
+        bluetooth.printCustom("Office of the Ombudsman", Size.extraLarge.val, Align.center.val);
         bluetooth.printNewLine();
+        bluetooth.printImageBytes(imageBytesFromAsset); //image from Asset
         bluetooth.printNewLine();
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val,
-            format:
-            "%-15s %15s %n"); //15 is number off character from left or right
+        bluetooth.printCustom("XXXXX", 15, Align.center.val);
         bluetooth.printNewLine();
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldMedium.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldLarge.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.extraLarge.val);
-        bluetooth.printNewLine();
-        bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val);
-        bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val,
-            format:
-            "%-10s %10s %10s %n"); //10 is number off character from left center and right
-        bluetooth.printNewLine();
-        bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val);
-        bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val,
-            format: "%-8s %7s %7s %7s %n");
-        bluetooth.printNewLine();
-        bluetooth.printCustom("čĆžŽšŠ-H-ščđ", Size.bold.val, Align.center.val,
-            charset: "windows-1250");
-        bluetooth.printLeftRight("Številka:", "18000001", Size.bold.val,
-            charset: "windows-1250");
-        bluetooth.printCustom("Body left", Size.bold.val, Align.left.val);
-        bluetooth.printCustom("Body right", Size.medium.val, Align.right.val);
-        bluetooth.printNewLine();
-        bluetooth.printCustom("Thank You", Size.bold.val, Align.center.val);
-        bluetooth.printNewLine();
-
-        bluetooth.printNewLine();
-        bluetooth.printNewLine();
+        bluetooth.printCustom("Time Generated: 12345678", Size.bold.val, Align.left.val);
+        bluetooth.printCustom("Priority: None", Size.bold.val, Align.left.val);
+        bluetooth.printCustom("Name: ", Size.bold.val, Align.left.val);
         bluetooth
-            .paperCut(); //some printer not supported (sometime making image not centered)
-        //bluetooth.drawerPin2(); // or you can use bluetooth.drawerPin5();
+            .paperCut();
       }
     });
   }
