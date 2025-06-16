@@ -35,7 +35,7 @@ class TestPrint {
     });
   }
 
-  printTicket(Ticket ticket) async {
+  ticket(Ticket ticket) async {
     ByteData bytesAsset = await rootBundle.load("assets/images/logo.png");
     Uint8List imageBytesFromAsset = bytesAsset.buffer
         .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
