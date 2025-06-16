@@ -50,7 +50,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       alignment: Alignment.topRight,
                       child: IconButton(onPressed: () {
                         showDialog(context: context, builder: (_) => StatefulBuilder(
-                          builder: (BuildContext context, void Function(void Function()) setState) {
+                          builder: (BuildContext context, void Function(void Function()) setStateDialog) {
                             return AlertDialog(
                                 content: Container(
                                   height: 400,
@@ -88,8 +88,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                           children: <Widget>[
                                             ElevatedButton(
                                               style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-                                              onPressed: () {
-                                                initPlatformState();
+                                              onPressed: () async {
+                                                await initPlatformState();
                                               },
                                               child: const Text(
                                                 'Refresh',
