@@ -377,7 +377,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     final List<Ticket> tickets = await getTicketSQL(serviceType);
     final thisDay = tickets.where((e) => DateTime.parse(e.timeCreated!).day == DateTime.now().day && DateTime.parse(e.timeCreated!).month == DateTime.now().month && DateTime.parse(e.timeCreated!).day == DateTime.now().day).toList();
     final number = thisDay.length + 1;
-    final numberParsed = number.toString().padLeft(4, '0');
+    final numberParsed = number.toString().padLeft(3, '0');
 
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
@@ -402,7 +402,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
 
       testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
-
       /*
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
