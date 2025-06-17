@@ -8,7 +8,6 @@ class Station {
   int? stationNumber;
   int? inSession;
   String? userInSession;
-  String? serviceType;
   String? ticketServing;
   String? stationName;
   String? sessionPing;
@@ -19,7 +18,6 @@ class Station {
     this.stationNumber = int.parse(data['stationNumber']);
     this.inSession = int.parse(data['inSession']);
     this.userInSession = data['userInSession'];
-    this.serviceType = data['serviceType'];
     this.ticketServing = data['ticketServing'];
     this.stationName = data['stationName'];
     this.sessionPing = data['sessionPing'];
@@ -36,7 +34,6 @@ class Station {
         'stationNumber' : data['stationNumber'] ?? this.stationNumber,
         'inSession': data['inSession'] ?? this.inSession,
         'userInSession': data['userInSession'] ?? this.userInSession,
-        'serviceType': data['serviceType'] ?? this.serviceType,
         'ticketServing': data['ticketServing'] ?? this.ticketServing,
         'stationName': data['stationName'] ?? this.stationName,
         'sessionPing': data['sessionPing'] ?? this.sessionPing

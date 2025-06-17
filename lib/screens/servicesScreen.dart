@@ -37,20 +37,20 @@ class _ServicesScreenState extends State<ServicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: FutureBuilder(
-          future: initPlatformState(),
-          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-            return Stack(
+        body: Stack(
+          children: [
+            logoBackground(context),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                logoBackground(context),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(onPressed: () {
-                        showDialog(context: context, builder: (_) => StatefulBuilder(
-                          builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+                Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(onPressed: () {
+                    showDialog(context: context, builder: (_) => StatefulBuilder(
+                      builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+                        return FutureBuilder(
+                          future: initPlatformState(),
+                          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                             return AlertDialog(
                                 content: Container(
                                   height: 400,
@@ -125,121 +125,121 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                   ),
                                 ));
                           },
-                        ));
-                      }, icon: Icon(Icons.settings)),
-                    ),
-                    Text("Select Service to Queue", style: TextStyle(fontSize: 30)),
-                    StatefulBuilder(
-                      builder: (BuildContext context,
-                          void Function(void Function()) setStateList) {
-                        return FutureBuilder(
-                          future: getServiceGroups(assignedGroup),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                            return Column(
-                              children: [
-                                lastAssigned.isNotEmpty
-                                    ? IconButton(
-                                    onPressed: () {
-                                      assignedGroup = lastAssigned.last;
-                                      lastAssigned.removeLast();
-                                      setStateList((){});
-                                    },
-                                    icon: Icon(Icons.chevron_left))
-                                    : Container(),
-                                snapshot.connectionState == ConnectionState.done
-                                    ? Container(
-                                  height: MediaQuery.of(context).size.height - 100,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: GridView.builder(
-                                        gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: MediaQuery.of(context).size.width > 700 ? 5 : 3),
-                                        itemCount: snapshot.data!.length,
-                                        itemBuilder: (context, i) {
-                                          return snapshot.data![i]['serviceType'] !=
-                                              null
-                                              ? Builder(builder: (context) {
-                                            final service = Service.fromJson(
-                                                snapshot.data![i]);
-                                            return Padding(
-                                              padding: EdgeInsets.all(10),
-                                              child: GestureDetector(
-                                                onTap: () async {
-                                                  final List<dynamic> result = await getSettings(context);
-                                                  int priority = int.parse(result.where((e) => e['controlName'] == 'Priority Option').toList()[0]['value']);
-                                                  int ticketname = int.parse(result.where((e) => e['controlName'] == 'Ticket Name Option').toList()[0]['value']);
-
-                                                  if (priority == 1) {
-                                                    priorityDialog(service, ticketname);
-                                                  } else {
-                                                    if (ticketname == 1) {
-                                                      nameDialog(service, "None");
-                                                    } else {
-                                                      addTicketSQL(service.serviceType!, service.serviceCode!, "None");
-                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
-
-                                                    }
-                                                  }
-                                                },
-                                                child: Card(
-                                                  child:
-                                                  Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(service.serviceType!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          })
-                                              : Builder(builder: (context) {
-                                            final group = ServiceGroup.fromJson(
-                                                snapshot.data![i]);
-                                            return Padding(
-                                              padding: EdgeInsets.all(10),
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  lastAssigned.add(assignedGroup);
-                                                  assignedGroup = group.name!;
-                                                  setStateList((){});
-                                                },
-                                                child: Card(
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(group.name!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          });
-                                        }),
-                                  ),
-                                )
-                                    : Center(
-                                  child: Container(
-                                    height: 100,
-                                    width: 100,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            );
-                          },
                         );
                       },
-                    ),
-                  ],
+                    ));
+                  }, icon: Icon(Icons.settings)),
+                ),
+                Text("Select Service to Queue", style: TextStyle(fontSize: 30)),
+                StatefulBuilder(
+                  builder: (BuildContext context,
+                      void Function(void Function()) setStateList) {
+                    return FutureBuilder(
+                      future: getServiceGroups(assignedGroup),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                        return Column(
+                          children: [
+                            lastAssigned.isNotEmpty
+                                ? IconButton(
+                                onPressed: () {
+                                  assignedGroup = lastAssigned.last;
+                                  lastAssigned.removeLast();
+                                  setStateList((){});
+                                },
+                                icon: Icon(Icons.chevron_left))
+                                : Container(),
+                            snapshot.connectionState == ConnectionState.done
+                                ? Container(
+                              height: MediaQuery.of(context).size.height - 100,
+                              child: Padding(
+                                padding: const EdgeInsets.all(15.0),
+                                child: GridView.builder(
+                                    gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: MediaQuery.of(context).size.width > 700 ? 5 : 3),
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, i) {
+                                      return snapshot.data![i]['serviceType'] !=
+                                          null
+                                          ? Builder(builder: (context) {
+                                        final service = Service.fromJson(
+                                            snapshot.data![i]);
+                                        return Padding(
+                                          padding: EdgeInsets.all(10),
+                                          child: GestureDetector(
+                                            onTap: () async {
+                                              final List<dynamic> result = await getSettings(context);
+                                              int priority = int.parse(result.where((e) => e['controlName'] == 'Priority Option').toList()[0]['value']);
+                                              int ticketname = int.parse(result.where((e) => e['controlName'] == 'Ticket Name Option').toList()[0]['value']);
+
+                                              if (priority == 1) {
+                                                priorityDialog(service, ticketname);
+                                              } else {
+                                                if (ticketname == 1) {
+                                                  nameDialog(service, "None");
+                                                } else {
+                                                  addTicketSQL(service.serviceType!, service.serviceCode!, "None");
+                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
+
+                                                }
+                                              }
+                                            },
+                                            child: Card(
+                                              child:
+                                              Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text(service.serviceType!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      })
+                                          : Builder(builder: (context) {
+                                        final group = ServiceGroup.fromJson(
+                                            snapshot.data![i]);
+                                        return Padding(
+                                          padding: EdgeInsets.all(10),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              lastAssigned.add(assignedGroup);
+                                              assignedGroup = group.name!;
+                                              setStateList((){});
+                                            },
+                                            child: Card(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text(group.name!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                    }),
+                              ),
+                            )
+                                : Center(
+                              child: Container(
+                                height: 100,
+                                width: 100,
+                                child: CircularProgressIndicator(
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
-            );
-          },
+            ),
+          ],
         ));
   }
 

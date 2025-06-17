@@ -124,7 +124,6 @@ class _StaffScreenState extends State<StaffScreen> {
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Text("${station.serviceType}"),
                                                     Text("${station.stationName} ${station.stationNumber}"),
                                                 station.inSession == 0
                                                     ? Text("Available",
@@ -288,7 +287,7 @@ class _StaffSessionState extends State<StaffSession> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text("Station: ", style: TextStyle(fontSize: 20)),
-                        Text("${widget.station.serviceType} | ${widget.station.stationName} ${widget.station.stationNumber}", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20))
+                        Text("${widget.station.stationName} ${widget.station.stationNumber}", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20))
                       ],
                     ),
                     SizedBox(height: 30),
@@ -517,7 +516,7 @@ class _StaffSessionState extends State<StaffSession> {
       final List<dynamic> response = jsonDecode(result.body);
       final sorted = response
           .where((e) =>
-              e['serviceType'] == widget.station.serviceType &&
+              e['serviceType'] == widget.user.serviceType &&
               e['status'] == "Pending")
           .toList();
       List<Ticket> newTickets = [];
@@ -544,12 +543,17 @@ class _StaffSessionState extends State<StaffSession> {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final result = await http.get(uri);
       final List<dynamic> response = jsonDecode(result.body);
-      final sorted = response
-          .where((e) =>
-              e['serviceType'] == widget.station.serviceType &&
-              e['status'] == "Serving" &&
-              e['userAssigned'] == widget.user.username)
-          .toList();
+      List<dynamic> sorted = [];
+
+      for (int i = 0; i < widget.user.serviceType!.length; i++) {
+        sorted.addAll(response
+            .where((e) =>
+        e['serviceType'] == widget.user.serviceType![i] &&
+            e['status'] == "Serving" &&
+            e['userAssigned'] == widget.user.username)
+            .toList());
+      }
+
       List<Ticket> newTickets = [];
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));

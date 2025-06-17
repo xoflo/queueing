@@ -896,7 +896,6 @@ class _AdminScreenState extends State<AdminScreen> {
                                       "${station.stationName} #${station.stationNumber}"),
                                   subtitle: Row(
                                     children: [
-                                      Text("${station.serviceType} | "),
                                       station.inSession == 1
                                           ? Text(
                                               "In Session: ${station.userInSession}",
@@ -934,53 +933,6 @@ class _AdminScreenState extends State<AdminScreen> {
         ],
       ),
     );
-  }
-
-  assignStaff(Station station) {
-    showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              title: Text("Assign Staff (${station.serviceType})"),
-              content: FutureBuilder(
-                future: getUserSQL('Staff', station.serviceType),
-                builder: (BuildContext context,
-                    AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                  return Container(
-                    height: 400,
-                    width: 300,
-                    child: snapshot.connectionState == ConnectionState.done
-                        ? ListView.builder(
-                            itemCount: snapshot.data!.length,
-                            itemBuilder: (context, i) {
-                              final name = snapshot.data![i]['username'];
-
-                              return ListTile(
-                                title: Text(name),
-                                onTap: () async {
-                                  await station.update({
-                                    'userInSession': "$name",
-                                  });
-
-                                  setState(() {});
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text("User assigned")));
-                                  Navigator.pop(context);
-                                },
-                              );
-                            })
-                        : Center(
-                            child: Container(
-                              height: 100,
-                              width: 100,
-                              child: CircularProgressIndicator(
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ),
-                  );
-                },
-              ),
-            ));
   }
 
   getStationSQL() async {
