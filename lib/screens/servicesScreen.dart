@@ -252,7 +252,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     TextEditingController name = TextEditingController();
 
     showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text(""),
+      title: Text("Name (Optional)"),
       content: Container(
         height: 60,
         width: 100,
