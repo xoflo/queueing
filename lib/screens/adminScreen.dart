@@ -382,7 +382,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                               ),
                                               actions: [
                                                 TextButton(onPressed: () {
-                                                  deleteGroup(serviceGroup.id!);
+                                                  deleteGroup(serviceGroup.id!, serviceGroup.name!);
                                                 }, child: Text("Delete", style: TextStyle(color: Colors.red)))
                                               ],
                                             ));
@@ -841,7 +841,7 @@ class _AdminScreenState extends State<AdminScreen> {
       "pass": password.text,
       "serviceType": services.toString(),
       "userType": userType,
-      "loggedIn": ""
+      "loggedIn": null
     });
 
     final result = await http.post(uri, body: body);
@@ -1137,13 +1137,26 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() {});
   }
 
-  deleteGroup(int id) async {
+  deleteGroup(int id, String name) async {
     final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
     final body = jsonEncode({'id': '$id'});
 
     final result = await http.delete(uri, body: body);
 
     print("result: ${result.body}");
+
+    final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
+
+    final List<dynamic> services = getServiceSQL();
+
+    final sorted = services.where((e) => e['assignedGroup'].toString() == name.toString()).toList();
+
+    for (int i = 0; i < sorted.length; i++) {
+      final service = Service.fromJson(sorted[i]);
+      final body = jsonEncode({'id': service.id!});
+
+      final result = await http.delete(uriService, body: body);
+    }
 
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Group Deleted")));
