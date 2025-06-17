@@ -339,7 +339,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                   builder: (context) {
                                     final service = Service.fromJson(snapshot.data![i]);
                                     return ListTile(
-                                      title: Text("Service: ${service.serviceType} | Code: ${service.serviceCode}"),
+                                      title: Text("${service.serviceType} (${service.serviceCode})"),
                                       subtitle: Text("Service"),
                                       trailing: IconButton(
                                           onPressed: () {

@@ -455,7 +455,7 @@ class _StaffSessionState extends State<StaffSession> {
                                   ),
                                 ));
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.", textAlign: TextAlign.center)));
                               }
                             }, child: Text("Transfer")),
                         SizedBox(width: 10),
@@ -478,7 +478,7 @@ class _StaffSessionState extends State<StaffSession> {
                         Text("Upcoming Tickets: ", style: TextStyle(fontWeight: FontWeight.w700)),
                         Container(
                           height: 40,
-                          width: MediaQuery.of(context).size.width - 120,
+                          width: MediaQuery.of(context).size.width - 170,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: tickets.length,
