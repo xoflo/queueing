@@ -337,7 +337,7 @@ class _StaffSessionState extends State<StaffSession> {
                                 height: 300,
                                 width: 200,
                                 child: Center(
-                                  child: Text("No ticket to serve at the moment.", style: TextStyle(color: Colors.grey)),
+                                  child: Text("No ticket to serve at the moment.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
                                 ),
                               ),
                             ) : Container(
@@ -455,7 +455,7 @@ class _StaffSessionState extends State<StaffSession> {
                                   ),
                                 ));
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.", textAlign: TextAlign.center)));
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
                               }
                             }, child: Text("Transfer")),
                         SizedBox(width: 10),
@@ -514,11 +514,17 @@ class _StaffSessionState extends State<StaffSession> {
       final result = await http.get(uri);
 
       final List<dynamic> response = jsonDecode(result.body);
-      final sorted = response
-          .where((e) =>
-              e['serviceType'] == widget.user.serviceType &&
-              e['status'] == "Pending")
-          .toList();
+
+      List<dynamic> sorted = [];
+
+      for (int i = 0; i < widget.user.serviceType!.length; i++) {
+        sorted.addAll(response
+            .where((e) =>
+        e['serviceType'].toString() == widget.user.serviceType![i].toString() &&
+            e['status'] == "Pending")
+            .toList());
+      }
+
       List<Ticket> newTickets = [];
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));

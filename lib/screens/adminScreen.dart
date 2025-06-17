@@ -837,10 +837,11 @@ class _AdminScreenState extends State<AdminScreen> {
   addUserSQL(String services, String userType) async {
     final uri = Uri.parse('http://$site/queueing_api/api_user.php');
     final body = jsonEncode({
-      "username": "${user.text}",
-      "pass": "${password.text}",
-      "serviceType": "${services}",
-      "userType": "${userType}"
+      "username": user.text,
+      "pass": password.text,
+      "serviceType": services.toString(),
+      "userType": userType,
+      "loggedIn": ""
     });
 
     final result = await http.post(uri, body: body);
