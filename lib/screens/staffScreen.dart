@@ -89,6 +89,50 @@ class _StaffScreenState extends State<StaffScreen> {
                           Text("Welcome, ${widget.user.username}",
                               style: TextStyle(
                                   fontSize: 30, fontWeight: FontWeight.w700)),
+                          Spacer(),
+                          IconButton(onPressed: () {
+
+                            List<String> servicesSet = [];
+
+                            showDialog(context: context, builder: (_) => AlertDialog(
+                              title: Text("Set Services to Process"),
+                              content: Container(
+                                height: 400,
+                                width: 400,
+                                child: StatefulBuilder(
+                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                    return ListView.builder(
+                                        itemCount: widget.user.serviceType!.length,
+                                        itemBuilder: (context, i) {
+                                          return CheckboxListTile(value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
+
+                                            if (servicesSet.length == 3) {
+                                              if (value == true) {
+                                                servicesSet.removeLast();
+                                                servicesSet.add(widget.user.serviceType![i].toString());
+                                                setStateList((){});
+                                              } else {
+                                                servicesSet.remove(widget.user.serviceType![i].toString());
+                                                setStateList((){});
+                                              }
+                                            }
+
+                                          });
+                                        });
+                                  },
+                                ),
+                              ),
+                              actions: [
+                                TextButton(onPressed: () {
+                                  widget.user.update({
+                                    "servicesSet": servicesSet.toString()
+                                  });
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You will now accomodate the set services.")));
+                                }, child: Text("Confirm"))
+                              ],
+                            ));
+                          }, icon: Icon(Icons.settings))
                         ],
                       )),
                   Divider(),
@@ -181,6 +225,10 @@ class _StaffScreenState extends State<StaffScreen> {
         ),
       ),
     );
+  }
+
+  getServices() async {
+
   }
 
   getStationSQL() async {
@@ -478,7 +526,7 @@ class _StaffSessionState extends State<StaffSession> {
                         Text("Upcoming Tickets: ", style: TextStyle(fontWeight: FontWeight.w700)),
                         Container(
                           height: 40,
-                          width: MediaQuery.of(context).size.width - 170,
+                          width: tickets.length * 60,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: tickets.length,
@@ -544,6 +592,7 @@ class _StaffSessionState extends State<StaffSession> {
       return [];
     }
   }
+
   getServingTicketSQL() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');

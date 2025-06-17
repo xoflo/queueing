@@ -10,6 +10,7 @@ class User {
   List<dynamic>? serviceType;
   String? username;
   DateTime? loggedIn;
+  List<dynamic>? servicesSet;
 
 
   User.fromJson(dynamic data) {
@@ -18,7 +19,14 @@ class User {
     this.userType = data['userType'];
     this.serviceType = stringToList(data['serviceType']);
     this.username = data['username'];
-    this.loggedIn = DateTime.parse(data['loggedIn']);
+    this.servicesSet = stringToList(data['servicesSet']);
+
+    try {
+      this.loggedIn = DateTime.parse(data['loggedIn']);
+    } catch (e) {
+      this.loggedIn = null;
+      print(e);
+    }
   }
 
   stringToList(String text) {
@@ -34,23 +42,20 @@ class User {
   }
 
   update(dynamic data) async {
-    int port = 80;
 
     try {
-
       final body = {
         'id': data['id'] ?? this.id,
         'pass' : data['pass'] ?? this.pass,
         'userType': data['userType'] ?? this.userType,
-        'serviceType': data['serviceType'] ?? this.serviceType,
+        'serviceType': data['serviceType'] ?? this.serviceType.toString(),
         'username': data['username'] ?? this.username,
-        'loggedIn': data['loggedIn'] ?? this.loggedIn.toString(),
+        'loggedIn': data['loggedIn'] ?? this.loggedIn,
+        'servicesSet': data['servicesSet'] ?? this.servicesSet.toString(),
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
-
       final response = await http.put(uri, body: jsonEncode(body));
-
     } catch(e) {
       print(e);
     }

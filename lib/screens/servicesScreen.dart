@@ -400,12 +400,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "ticketName": ticketName ?? ""
       };
 
+      // testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
+      // final result = await http.post(uri, body: jsonEncode(body));
+      // print(result.body);
 
-      testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
-      /*
-        final result = await http.post(uri, body: jsonEncode(body));
-        print(result.body);
-       */
+      final result = await http.post(uri, body: jsonEncode(body));
+      print(result.body);
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
