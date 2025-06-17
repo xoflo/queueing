@@ -254,7 +254,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     showDialog(context: context, builder: (_) => AlertDialog(
       title: Text(""),
       content: Container(
-        height: 100,
+        height: 60,
         width: 100,
         child: TextField(
           controller: name,
@@ -308,7 +308,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(priority.priorityName!)
+                            Text(priority.priorityName!, style: TextStyle(fontSize: 15))
                           ],
                         ),
                       ),
