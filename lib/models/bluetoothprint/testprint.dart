@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import '../ticket.dart';
@@ -35,23 +36,25 @@ class TestPrint {
     });
   }
 
-  ticket(Ticket ticket) async {
-    ByteData bytesAsset = await rootBundle.load("assets/images/logo.png");
+  ticket(String codeAndNumber, String timeCreated, String priority, String ticketname) async {
+    ByteData bytesAsset = await rootBundle.load("images/printLogo.bmp");
     Uint8List imageBytesFromAsset = bytesAsset.buffer
         .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
 
     bluetooth.isConnected.then((isConnected) {
       if (isConnected == true) {
         bluetooth.printNewLine();
-        bluetooth.printCustom("Office of the Ombudsman", Size.extraLarge.val, Align.center.val);
+        bluetooth.printCustom("Office of the Ombudsman", Size.boldLarge.val, Align.center.val);
+        bluetooth.printCustom("Davao City, Philippines", Size.bold.val, Align.center.val);
         bluetooth.printNewLine();
-        bluetooth.printImageBytes(imageBytesFromAsset); //image from Asset
-        bluetooth.printNewLine();
-        bluetooth.printCustom("${ticket.codeAndNumber}", 15, Align.center.val);
-        bluetooth.printNewLine();
-        bluetooth.printCustom("Time Generated: ${ticket.timeCreated}", Size.bold.val, Align.left.val);
-        bluetooth.printCustom("Priority: ${ticket.priority}", Size.bold.val, Align.left.val);
-        bluetooth.printCustom("Name: ${ticket.ticketName}", Size.bold.val, Align.left.val);
+        bluetooth.printCustom("YOUR TICKET NUMBER IS:", Size.medium.val, Align.center.val);
+        List<int> bytes = [0x1D, 0x21, 0x33];
+        bytes += utf8.encode("$codeAndNumber\n");
+        bytes += [0x1D, 0x21, 0x00];
+        bluetooth.writeBytes(Uint8List.fromList(bytes));
+        bluetooth.printCustom("Time: $timeCreated", Size.bold.val, Align.left.val);
+        bluetooth.printCustom("Priority: $priority", Size.bold.val, Align.left.val);
+        bluetooth.printCustom("Name: $ticketname", Size.bold.val, Align.left.val);
         bluetooth
             .paperCut();
       }
