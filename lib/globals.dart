@@ -13,7 +13,7 @@ logoBackground(BuildContext context, [int? width]) {
   return Stack(
     children: [MediaQuery.of(context).size.width > (width != null ? width : 1500)
         ? Padding(
-          padding: const EdgeInsets.all(30.0),
+          padding: const EdgeInsets.all(20.0),
           child: Container(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,

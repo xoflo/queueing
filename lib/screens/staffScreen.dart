@@ -91,11 +91,9 @@ class _StaffScreenState extends State<StaffScreen> {
                                   fontSize: 30, fontWeight: FontWeight.w700)),
                           Spacer(),
                           IconButton(onPressed: () {
-
                             List<String> servicesSet = [];
-
                             showDialog(context: context, builder: (_) => AlertDialog(
-                              title: Text("Set Services to Process"),
+                              title: Text("Services to Accommodate"),
                               content: Container(
                                 height: 400,
                                 width: 400,
@@ -104,8 +102,9 @@ class _StaffScreenState extends State<StaffScreen> {
                                     return ListView.builder(
                                         itemCount: widget.user.serviceType!.length,
                                         itemBuilder: (context, i) {
-                                          return CheckboxListTile(value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
-
+                                          return CheckboxListTile(
+                                              title: Text(servicesSet[i]),
+                                              value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
                                             if (servicesSet.length == 3) {
                                               if (value == true) {
                                                 servicesSet.removeLast();
@@ -116,7 +115,6 @@ class _StaffScreenState extends State<StaffScreen> {
                                                 setStateList((){});
                                               }
                                             }
-
                                           });
                                         });
                                   },

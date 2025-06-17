@@ -19,14 +19,10 @@ class User {
     this.userType = data['userType'];
     this.serviceType = stringToList(data['serviceType']);
     this.username = data['username'];
-    this.servicesSet = stringToList(data['servicesSet']);
+    this.loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
+    this.loggedIn = data['servicesSet'] != null ? stringToList(data['servicesSet']) : null;
 
-    try {
-      this.loggedIn = DateTime.parse(data['loggedIn']);
-    } catch (e) {
-      this.loggedIn = null;
-      print(e);
-    }
+
   }
 
   stringToList(String text) {

@@ -823,7 +823,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 TextButton(
                     onPressed: () {
                       try {
-                        addUserSQL(services.toString(), userType);
+                        addUserSQL(services, userType);
                       } catch (e) {
                         print(e);
                       }
@@ -834,14 +834,18 @@ class _AdminScreenState extends State<AdminScreen> {
             ));
   }
 
-  addUserSQL(String services, String userType) async {
+  addUserSQL(List<String> services, String userType) async {
     final uri = Uri.parse('http://$site/queueing_api/api_user.php');
+
+    final servicesSet = "[${services[0]}, ${services[1]}, ${services[2]}]";
+
     final body = jsonEncode({
       "username": user.text,
       "pass": password.text,
       "serviceType": services.toString(),
       "userType": userType,
-      "loggedIn": null
+      "loggedIn": null,
+      "servicesSet": services.length > 3 ? servicesSet : servicesSet.toString()
     });
 
     final result = await http.post(uri, body: body);
