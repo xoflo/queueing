@@ -47,12 +47,20 @@ logoBackground(BuildContext context, [int? width]) {
   );
 }
 
-getSettings(BuildContext context) async {
+getSettings(BuildContext context, [String? controlName]) async {
   try {
     final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
     final result = await http.get(uri);
     final response = jsonDecode(result.body);
-    return response;
+
+    if (controlName != null) {
+      final result = response.where((e) => e['controlName'] == controlName).toList()[0];
+      final vqd = int.parse(result['value'].toString());
+      print("vqd: $vqd");
+      return vqd;
+    } else {
+      return response;
+    }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Cannot connect to the server. Please try again.")));
