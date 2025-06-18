@@ -91,7 +91,7 @@ class _StaffScreenState extends State<StaffScreen> {
                                   fontSize: 30, fontWeight: FontWeight.w700)),
                           Spacer(),
                           IconButton(onPressed: () {
-                            List<String> servicesSet = [];
+                            List<String> servicesSet =  stringToList(widget.user.serviceType!.toString().);
                             showDialog(context: context, builder: (_) => AlertDialog(
                               title: Text("Services to Accommodate"),
                               content: Container(
@@ -99,11 +99,12 @@ class _StaffScreenState extends State<StaffScreen> {
                                 width: 400,
                                 child: StatefulBuilder(
                                   builder: (BuildContext context, void Function(void Function()) setStateList) {
+
                                     return ListView.builder(
                                         itemCount: widget.user.serviceType!.length,
                                         itemBuilder: (context, i) {
                                           return CheckboxListTile(
-                                              title: Text(servicesSet[i]),
+                                              title: Text(widget.user.serviceType![i]),
                                               value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
                                             if (servicesSet.length == 3) {
                                               if (value == true) {

@@ -20,21 +20,9 @@ class User {
     this.serviceType = stringToList(data['serviceType']);
     this.username = data['username'];
     this.loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
-    this.loggedIn = data['servicesSet'] != null ? stringToList(data['servicesSet']) : null;
+    this.servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet'].toString()) : null;
 
 
-  }
-
-  stringToList(String text) {
-    if (text != "") {
-      String trimmed = text.substring(1, text.length - 1);
-      List<String> parts = trimmed.split(',');
-      List<String> result = parts.map((s) => s.trim().replaceAll('"', '')).toList();
-
-      return result;
-    } else {
-      return [];
-    }
   }
 
   update(dynamic data) async {
@@ -46,12 +34,14 @@ class User {
         'userType': data['userType'] ?? this.userType,
         'serviceType': data['serviceType'] ?? this.serviceType.toString(),
         'username': data['username'] ?? this.username,
-        'loggedIn': data['loggedIn'] ?? this.loggedIn,
+        'loggedIn': data['loggedIn'] ?? this.loggedIn.toString(),
         'servicesSet': data['servicesSet'] ?? this.servicesSet.toString(),
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
+
+      print(response);
     } catch(e) {
       print(e);
     }

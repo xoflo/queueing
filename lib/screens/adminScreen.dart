@@ -14,7 +14,9 @@ import '../models/station.dart';
 import '../models/user.dart';
 
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({super.key});
+  const AdminScreen({super.key, required this.user});
+
+  final User user;
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -563,46 +565,110 @@ class _AdminScreenState extends State<AdminScreen> {
                     addUser();
                   },
                   child: Text("+ Add User"))),
-          FutureBuilder(
-            future: getUserSQL(),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done
-                  ? snapshot.data!.isNotEmpty
+          StatefulBuilder(
+            builder: (BuildContext context, void Function(void Function()) setStateView) {
+              return FutureBuilder(
+                future: getUserSQL(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                  return snapshot.connectionState == ConnectionState.done
+                      ? snapshot.data!.isNotEmpty
                       ? Container(
-                          padding: EdgeInsets.all(10),
-                          height: 400,
-                          child: ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, i) {
-                                final user = User.fromJson(snapshot.data![i]);
+                    padding: EdgeInsets.all(10),
+                    height: 400,
+                    child: ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, i) {
+                          final user = User.fromJson(snapshot.data![i]);
 
-                                return ListTile(
-                                  title: Text("${user.username}"),
-                                  subtitle: Text(
-                                      "${user.serviceType!.isEmpty ? "" : "Service: ${user.serviceType!.join(', ')} | "}Authority: ${user.userType}"),
-                                  trailing: IconButton(
-                                      onPressed: () {
-                                        deleteUser(user.id!);
-                                      },
-                                      icon: Icon(Icons.delete)),
-                                );
-                              }),
-                        )
+                          return ListTile(
+                            title: Text("${user.username}"),
+                            subtitle: Text(
+                                "${user.serviceType!.isEmpty ? "" : user.serviceType!.length > 3 ? "${user.serviceType!.length} Services | " : "Service: ${user.serviceType!.join(', ')} | "}Authority: ${user.userType}"),
+                            trailing: widget.user.username == user.username ? null : IconButton(
+                                onPressed: () {
+                                  deleteUser(user.id!);
+                                },
+                                icon: Icon(Icons.delete)),
+                            onTap: () {
+
+                              widget.user.username == user.username ? null : showDialog(context: context, builder: (_) => Builder(
+                                  builder: (context) {
+                                    List<String> services = stringToList(user.serviceType.toString());
+
+                                    return AlertDialog(
+                                      title: Text("Assign Service Types"),
+                                      content: Container(
+                                        height: 400,
+                                        width: 400,
+                                        child: FutureBuilder(
+                                            future: getServiceSQL(),
+                                            builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                              return StatefulBuilder(
+                                                builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                  return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
+                                                      itemCount: snapshot.data!.length,
+                                                      itemBuilder: (context, i) {
+                                                        final service = Service.fromJson(snapshot.data![i]);
+
+                                                        return CheckboxListTile(
+                                                          title: Text(service.serviceType!),
+                                                          value: services.contains(service.serviceType!.toString()),
+                                                          onChanged: (bool? value) {
+                                                            if (value == true) {
+                                                              services.add(service.serviceType!);
+                                                              setStateList((){});
+                                                            } else {
+                                                              services.remove(service.serviceType!);
+                                                              setStateList((){});
+                                                            }
+                                                          },
+                                                        );
+                                                      }) : Center(
+                                                    child: Container(
+                                                      height: 100,
+                                                      width: 100,
+                                                      child: CircularProgressIndicator(),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            }),
+                                      ),
+                                      actions: [
+                                        TextButton(onPressed: () async {
+                                          await user.update({
+                                            'id': user.id!,
+                                            'serviceType': services.toString()
+                                          });
+                                          setStateView(() {});
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                          Navigator.pop(context);
+                                        }, child: Text("Update"))
+                                      ],
+                                    );
+                                  }
+                              ));
+                            },
+                          );
+                        }),
+                  )
                       : Container(
-                          height: 400,
-                          child: Text("No users found",
-                              style: TextStyle(color: Colors.grey)),
-                        )
-                  : Center(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        child: CircularProgressIndicator(
-                          color: Colors.blue,
-                        ),
+                    height: 400,
+                    child: Text("No users found",
+                        style: TextStyle(color: Colors.grey)),
+                  )
+                      : Center(
+                    child: Container(
+                      height: 100,
+                      width: 100,
+                      child: CircularProgressIndicator(
+                        color: Colors.blue,
                       ),
-                    );
+                    ),
+                  );
+                },
+              );
             },
           )
         ],
@@ -763,7 +829,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                   TextButton(
                                                       onPressed: () {
                                                         display =
-                                                            "${services.length == 1 ? "${services.first}" : "${services.length} Services"}";
+                                                            services.length == 1 ? services.first : "${services.length} Services";
                                                         Navigator.pop(context);
                                                         setStateDialog(() {});
                                                       },
@@ -837,7 +903,7 @@ class _AdminScreenState extends State<AdminScreen> {
   addUserSQL(List<String> services, String userType) async {
     final uri = Uri.parse('http://$site/queueing_api/api_user.php');
 
-    final servicesSet = "[${services[0]}, ${services[1]}, ${services[2]}]";
+    print("servicez: ${services.toString()}");
 
     final body = jsonEncode({
       "username": user.text,
@@ -845,7 +911,7 @@ class _AdminScreenState extends State<AdminScreen> {
       "serviceType": services.toString(),
       "userType": userType,
       "loggedIn": null,
-      "servicesSet": services.length > 3 ? servicesSet : servicesSet.toString()
+      "servicesSet": services.length > 3 ? "[${services[0]}, ${services[1]}, ${services[2]}]" : services.toString()
     });
 
     final result = await http.post(uri, body: body);

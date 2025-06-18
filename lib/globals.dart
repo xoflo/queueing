@@ -8,6 +8,17 @@ final site = "192.168.1.154:8080";
 
 // "localhost:8080"
 // "192.168.1.154:8080"
+stringToList(String text) {
+  if (text != "") {
+    String trimmed = text.substring(1, text.length - 1);
+    List<String> parts = trimmed.split(',');
+    List<String> result = parts.map((s) => s.trim().replaceAll('"', '')).toList();
+
+    return result;
+  } else {
+    return [];
+  }
+}
 
 logoBackground(BuildContext context, [int? width]) {
   return Stack(
@@ -64,3 +75,4 @@ getMedia(BuildContext context, String name) async {
     return null;
   }
 }
+

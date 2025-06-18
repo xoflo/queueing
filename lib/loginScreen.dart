@@ -92,10 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     }, child: Text("Queue Services")),
                   ],
                 ),
-          
-          
-          
-          
+
               ]
           ),
         ),
@@ -108,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final result = await http.get(uri);
       final users = jsonDecode(result.body);
-      final sorted = users.where((e) => e['username'] == username.text && e['pass'] == pass.text).toList();
+      final sorted = users.where((e) => e['username'] == username.text.trim() && e['pass'] == pass.text.trim()).toList();
       print(sorted);
       if (sorted.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
@@ -118,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (user.loggedIn == null || user.loggedIn!.difference(DateTime.now()).inSeconds < -3) {
           if (user.userType == 'Admin') {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen(user: user)));
           }
           if (user.userType == 'Staff') {
             Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen(user: user)));

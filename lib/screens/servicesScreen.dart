@@ -439,7 +439,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
         }
       }
 
-
       return resultsToReturn;
     } catch (e) {
       print(e);
