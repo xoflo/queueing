@@ -108,7 +108,6 @@ class _StaffScreenState extends State<StaffScreen> {
                                 width: 400,
                                 child: StatefulBuilder(
                                   builder: (BuildContext context, void Function(void Function()) setStateList) {
-
                                     return ListView.builder(
                                         itemCount: widget.user.serviceType!.length,
                                         itemBuilder: (context, i) {
@@ -125,8 +124,6 @@ class _StaffScreenState extends State<StaffScreen> {
                                               servicesSet.remove(widget.user.serviceType![i].toString());
                                               setStateList((){});
                                             }
-
-
                                           });
                                         });
                                   },
