@@ -584,74 +584,145 @@ class _AdminScreenState extends State<AdminScreen> {
                           return ListTile(
                             title: Text("${user.username}"),
                             subtitle: Text(
-                                "${user.serviceType!.isEmpty ? "" : user.serviceType!.length > 3 ? "${user.serviceType!.length} Services | " : "Service: ${user.serviceType!.join(', ')} | "}Authority: ${user.userType}"),
+                                "${user.userType}${user.serviceType!.isEmpty ? "" : user.serviceType!.length > 3 ? " | ${user.serviceType!.length} Services" : " | Service: ${user.serviceType!.join(', ')}"}"
+                            ,style: TextStyle(color: Colors.grey),
+                            ),
                             trailing: widget.user.username == user.username ? null : IconButton(
                                 onPressed: () {
                                   deleteUser(user.id!);
                                 },
                                 icon: Icon(Icons.delete)),
                             onTap: () {
+                              if (widget.user.username == user.username) {
 
-                              widget.user.username == user.username ? null : showDialog(context: context, builder: (_) => Builder(
-                                  builder: (context) {
-                                    List<String> services = stringToList(user.serviceType.toString());
+                              } else {
+                                showDialog(context: context, builder: (_) => AlertDialog(
+                                  title: Text("Edit User"),
+                                  content: Container(
+                                    height: 200,
+                                    width: 200,
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          title: Text("Username and Password"),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            showDialog(context: context, builder: (_) => Builder(
+                                              builder: (context) {
 
-                                    return AlertDialog(
-                                      title: Text("Assign Service Types"),
-                                      content: Container(
-                                        height: 400,
-                                        width: 400,
-                                        child: FutureBuilder(
-                                            future: getServiceSQL(),
-                                            builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                              return StatefulBuilder(
-                                                builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                                  return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
-                                                      itemCount: snapshot.data!.length,
-                                                      itemBuilder: (context, i) {
-                                                        final service = Service.fromJson(snapshot.data![i]);
+                                                final userController = TextEditingController();
+                                                final passController = TextEditingController();
 
-                                                        return CheckboxListTile(
-                                                          title: Text(service.serviceType!),
-                                                          value: services.contains(service.serviceType!.toString()),
-                                                          onChanged: (bool? value) {
-                                                            if (value == true) {
-                                                              services.add(service.serviceType!);
-                                                              setStateList((){});
-                                                            } else {
-                                                              services.remove(service.serviceType!);
-                                                              setStateList((){});
-                                                            }
-                                                          },
-                                                        );
-                                                      }) : Center(
-                                                    child: Container(
-                                                      height: 100,
-                                                      width: 100,
-                                                      child: CircularProgressIndicator(),
+                                                return AlertDialog(
+                                                  title: Text("Username & Password"),
+                                                  content: Container(
+                                                    height: 120,
+                                                    width: 200,
+                                                    child: Column(
+                                                      children: [
+                                                        TextField(
+                                                          decoration: InputDecoration(
+                                                            labelText: "Username"
+                                                          ),
+                                                          controller: userController,
+                                                        ),
+                                                        TextField(
+                                                          decoration: InputDecoration(
+                                                              labelText: "Password"
+                                                          ),
+                                                          controller: passController,
+                                                        ),
+                                                      ],
                                                     ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(onPressed: () {
+                                                      user.update({
+                                                        'username': userController.text,
+                                                        'pass': userController.text
+                                                      });
+
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                                      setStateView((){});
+                                                    }, child: Text("Update"))
+                                                  ],
+                                                );
+                                              }
+                                            ));
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: Text("Assigned Services"),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            showDialog(context: context, builder: (_) => Builder(
+                                                builder: (context) {
+                                                  List<String> services = stringToList(user.serviceType.toString());
+
+                                                  return AlertDialog(
+                                                    title: Text("Assign Service Types"),
+                                                    content: Container(
+                                                      height: 400,
+                                                      width: 400,
+                                                      child: FutureBuilder(
+                                                          future: getServiceSQL(),
+                                                          builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                            return StatefulBuilder(
+                                                              builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                                return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
+                                                                    itemCount: snapshot.data!.length,
+                                                                    itemBuilder: (context, i) {
+                                                                      final service = Service.fromJson(snapshot.data![i]);
+
+                                                                      return CheckboxListTile(
+                                                                        title: Text(service.serviceType!),
+                                                                        value: services.contains(service.serviceType!.toString()),
+                                                                        onChanged: (bool? value) {
+                                                                          if (value == true) {
+                                                                            services.add(service.serviceType!);
+                                                                            setStateList((){});
+                                                                          } else {
+                                                                            services.remove(service.serviceType!);
+                                                                            setStateList((){});
+                                                                          }
+                                                                        },
+                                                                      );
+                                                                    }) : Center(
+                                                                  child: Container(
+                                                                    height: 100,
+                                                                    width: 100,
+                                                                    child: CircularProgressIndicator(),
+                                                                  ),
+                                                                );
+                                                              },
+                                                            );
+                                                          }),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(onPressed: () async {
+                                                        final servicesSetToAdd = services.length > 3 ? '[${services[0]}, ${services[1]}, ${services[2]}]' : services.toString();
+                                                        await user.update({
+                                                          'id': user.id!,
+                                                          'serviceType': services.toString(),
+                                                          'servicesSet': servicesSetToAdd
+                                                        });
+                                                        setStateView(() {});
+                                                        widget.user.getUserUpdate();
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                                        Navigator.pop(context);
+                                                      }, child: Text("Update"))
+                                                    ],
                                                   );
-                                                },
-                                              );
-                                            }),
-                                      ),
-                                      actions: [
-                                        TextButton(onPressed: () async {
-                                          final servicesSetToAdd = services.length > 3 ? '[${services[0]}, ${services[1]}, ${services[2]}]' : services.toString();
-                                          await user.update({
-                                            'id': user.id!,
-                                            'serviceType': services.toString(),
-                                            'servicesSet': servicesSetToAdd
-                                          });
-                                          setStateView(() {});
-                                          widget.user.getUserUpdate();
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
-                                          Navigator.pop(context);
-                                        }, child: Text("Update"))
+                                                }
+                                            ));
+                                          },
+                                        )
                                       ],
-                                    );
-                                  }
-                              ));
+                                    ),
+                                  ),
+                                ));
+                              };
                             },
                           );
                         }),
