@@ -1190,7 +1190,7 @@ class _AdminScreenState extends State<AdminScreen> {
     print("result: ${result.body}");
 
     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("User Deleted")));
+        .showSnackBar(SnackBar(content: Text("Station Deleted")));
     setState(() {});
   }
 
