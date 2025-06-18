@@ -214,8 +214,8 @@ class _StaffScreenState extends State<StaffScreen> {
                           )
                           : Center(
                               child: Container(
-                                height: 100,
-                                width: 100,
+                                height: 50,
+                                width: 50,
                                 child: CircularProgressIndicator(
                                   color: Colors.redAccent,
                                 ),
@@ -272,6 +272,10 @@ class _StaffSessionState extends State<StaffSession> {
   int ticketLength = 0;
   int loadDone = 0;
 
+  int callByUpdate = 1;
+  final callByUI = ValueNotifier(1);
+  String callBy = "Time Order";
+
   @override
   void initState() {
     pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
@@ -282,6 +286,12 @@ class _StaffSessionState extends State<StaffSession> {
       });
 
       List<Ticket> retrievedTickets = await getTicketSQL();
+
+      if (callByUpdate == 0) {
+        tickets = retrievedTickets;
+        callByUpdate = 1;
+        callByUI.value = 0;
+      }
 
       if (ticketLength != retrievedTickets.length) {
         loadDone = 1;
@@ -294,8 +304,6 @@ class _StaffSessionState extends State<StaffSession> {
           setState(() {});
         }
       }
-
-
     });
     super.initState();
   }
@@ -394,9 +402,12 @@ class _StaffSessionState extends State<StaffSession> {
                                 ),
                               ),
                             ) : Container(
-                              height: 100,
-                              width: 100,
-                              child: CircularProgressIndicator(),
+                              height: 300,
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: CircularProgressIndicator(),
+                              ),
                             );
                           },
                         );
@@ -497,11 +508,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                 );
                                               }) : Center(
                                             child: Text("No Stations", style: TextStyle(color: Colors.grey)),
-                                          ) : Center(
-                                            child: Container(
-                                              height: 50,
-                                              width: 50,
-                                              child: CircularProgressIndicator(),
+                                          ) : Container(
+                                            height: 300,
+                                            child: Center(
+                                              child: Container(
+                                                height: 50,
+                                                width: 50,
+                                                child: CircularProgressIndicator(),
+                                              ),
                                             ),
                                           );
                                         }),
@@ -525,31 +539,83 @@ class _StaffSessionState extends State<StaffSession> {
                       ],
                     ),
                     SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Upcoming Tickets: ", style: TextStyle(fontWeight: FontWeight.w700)),
-                        Container(
-                          height: 40,
-                          width: tickets.length * 60,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: tickets.length,
-                              itemBuilder: (context, i) {
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                              );
-                          }),
-                        ),
-                      ],
-                    )
+                    ValueListenableBuilder<int>(
+                      valueListenable: callByUI,
+                      builder: (BuildContext context, int value, Widget? child) {
+                        callByUI.value = 1;
+
+                        return StatefulBuilder(
+                          builder: (BuildContext context, void Function(void Function()) setStateTickets) {
+                            return Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("Upcoming Tickets: ", style: TextStyle(fontWeight: FontWeight.w700)),
+                                    Container(
+                                      height: 40,
+                                      width: tickets.length * 60,
+                                      child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: tickets.length,
+                                          itemBuilder: (context, i) {
+                                            return Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                            );
+                                          }),
+                                    ),
+                                  ],
+                                ),
+
+                                Builder(
+                                    builder: (context) {
+                                      List<String> callByList = stringToList(widget.user.servicesSet!.toString());
+                                      callByList.insert(0, "Time Order");
+
+                                      return Container(
+                                        height: 40,
+                                        width: 300,
+                                        child: ElevatedButton(
+                                            child: Text("Call By: $callBy"),
+                                            onPressed: () {
+                                              showDialog(context: context, builder: (_) => AlertDialog(
+                                                content: Container(
+                                                  height: 300,
+                                                  width: 300,
+                                                  child: ListView.builder(
+                                                      itemCount: callByList.length,
+                                                      itemBuilder: (context, i) {
+                                                        return ListTile(
+                                                          title: Text(callByList[i]),
+                                                          onTap: () {
+                                                            callBy = callByList[i];
+                                                            callByUpdate = 0;
+
+                                                            setStateTickets((){});
+                                                            Navigator.pop(context);
+
+                                                          },
+                                                        );
+                                                      }),
+                                                ),
+                                              ));
+                                            }),
+                                      );
+                                    }
+                                )
+                              ],
+                            );
+                          },
+                        ); 
+                      },
+                    ),
                    ],
                 ) : Container(
                   height: MediaQuery.of(context).size.height,
                   child: Center(child: Container(
-                      height: 100,
-                      width: 100,
+                      height: 50,
+                      width: 50,
                       child: CircularProgressIndicator())),
                 ),
               )
@@ -583,11 +649,20 @@ class _StaffSessionState extends State<StaffSession> {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
 
-      newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
-          .compareTo(DateTime.parse(b.timeCreated!)));
+      if (callBy == "Time Order") {
+        newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
+            .compareTo(DateTime.parse(b.timeCreated!)));
+
+        newTickets.sort((a, b) => b.priority!.compareTo(a.priority!));
+      } else {
+        newTickets.sort((a, b) {
+          if ((a.serviceType! == callBy) && (b.serviceType! != callBy)) return -1;
+          if ((a.serviceType! != callBy) && (b.serviceType! == callBy)) return 1;
+          return 0;
+        });
+      }
 
       newTickets.sort((a, b) => b.priority!.compareTo(a.priority!));
-
 
       return newTickets;
     } catch (e) {
@@ -605,10 +680,10 @@ class _StaffSessionState extends State<StaffSession> {
       final List<dynamic> response = jsonDecode(result.body);
       List<dynamic> sorted = [];
 
-      for (int i = 0; i < widget.user.servicesSet!.length; i++) {
+      for (int i = 0; i < widget.user.serviceType!.length; i++) {
         sorted.addAll(response
             .where((e) =>
-        e['serviceType'] == widget.user.servicesSet![i] &&
+        e['serviceType'] == widget.user.serviceType![i] &&
             e['status'] == "Serving" &&
             e['userAssigned'] == widget.user.username)
             .toList());
