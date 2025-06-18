@@ -92,10 +92,11 @@ class _StaffScreenState extends State<StaffScreen> {
                           Spacer(),
                           IconButton(onPressed: () {
                             final firstThree = [widget.user.serviceType![0].toString(), widget.user.serviceType![1].toString(), widget.user.serviceType![2].toString()];
+                            final serviceSetNull = widget.user.serviceType!.length > 3 ? firstThree : stringToList(widget.user.serviceType!.toString());
 
-                            List<String> servicesSet =  widget.user.serviceType!.length > 3 ? firstThree : stringToList(widget.user.serviceType!.toString());
+                            List<String> servicesSet =  widget.user.servicesSet != null ? widget.user.servicesSet : serviceSetNull;
                             showDialog(context: context, builder: (_) => AlertDialog(
-                              title: Text("Services to Accommodate"),
+                              title: Text("Services to Accommodate (3 Max)"),
                               content: Container(
                                 height: 400,
                                 width: 400,
@@ -108,26 +109,29 @@ class _StaffScreenState extends State<StaffScreen> {
                                           return CheckboxListTile(
                                               title: Text(widget.user.serviceType![i]),
                                               value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
-                                            if (servicesSet.length == 3) {
-                                              if (value == true) {
-                                                servicesSet.removeLast();
-                                                servicesSet.add(widget.user.serviceType![i].toString());
-                                                setStateList((){});
-                                              } else {
-                                                servicesSet.remove(widget.user.serviceType![i].toString());
-                                                setStateList((){});
+                                            if (value == true) {
+                                              if (servicesSet.length == 3) {
+                                                servicesSet.removeAt(0);
                                               }
+                                              servicesSet.add(widget.user.serviceType![i].toString());
+                                              setStateList((){});
+                                            } else {
+                                              servicesSet.remove(widget.user.serviceType![i].toString());
+                                              setStateList((){});
                                             }
+
+
                                           });
                                         });
                                   },
                                 ),
                               ),
                               actions: [
-                                TextButton(onPressed: () {
-                                  widget.user.update({
+                                TextButton(onPressed: () async {
+                                  await widget.user.update({
                                     "servicesSet": servicesSet.toString()
                                   });
+                                  await widget.user.getUserUpdate();
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You will now accomodate the set services.")));
                                 }, child: Text("Confirm"))
@@ -566,10 +570,10 @@ class _StaffSessionState extends State<StaffSession> {
 
       List<dynamic> sorted = [];
 
-      for (int i = 0; i < widget.user.serviceType!.length; i++) {
+      for (int i = 0; i < widget.user.servicesSet!.length; i++) {
         sorted.addAll(response
             .where((e) =>
-        e['serviceType'].toString() == widget.user.serviceType![i].toString() &&
+        e['serviceType'].toString() == widget.user.servicesSet![i].toString() &&
             e['status'] == "Pending")
             .toList());
       }
@@ -601,10 +605,10 @@ class _StaffSessionState extends State<StaffSession> {
       final List<dynamic> response = jsonDecode(result.body);
       List<dynamic> sorted = [];
 
-      for (int i = 0; i < widget.user.serviceType!.length; i++) {
+      for (int i = 0; i < widget.user.servicesSet!.length; i++) {
         sorted.addAll(response
             .where((e) =>
-        e['serviceType'] == widget.user.serviceType![i] &&
+        e['serviceType'] == widget.user.servicesSet![i] &&
             e['status'] == "Serving" &&
             e['userAssigned'] == widget.user.username)
             .toList());

@@ -644,6 +644,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                             'servicesSet': servicesSetToAdd
                                           });
                                           setStateView(() {});
+                                          widget.user.getUserUpdate();
                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
                                           Navigator.pop(context);
                                         }, child: Text("Update"))

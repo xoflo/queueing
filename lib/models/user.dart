@@ -41,4 +41,24 @@ class User {
       print(e);
     }
   }
+
+  getUserUpdate() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
+      final response = await http.get(uri);
+      final List<dynamic> result =  jsonDecode(response.body);
+      final data = result.where((e) => int.parse(e['id']) == id).toList()[0];
+
+      id = int.parse(data['id']);
+      pass = data['pass'];
+      userType = data['userType'];
+      serviceType = stringToList(data['serviceType']);
+      username = data['username'];
+      loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
+      servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet'].toString()) : null;
+
+    } catch(e) {
+      print(e);
+    }
+  }
 }
