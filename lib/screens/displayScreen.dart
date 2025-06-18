@@ -84,20 +84,23 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 future: getTicketSQL(),
                                 builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
                                   return snapshot.connectionState == ConnectionState.done ? vqd.data == 1 ?
-                                  Row(
-                                    children: [
-                                      Container(
-                                          color: Colors.red,
-                                          width: MediaQuery.of(context).size.width - 400,
-                                          height: MediaQuery.of(context).size.height - 400),
-                                      SizedBox(width: 30),
-                                      Container(
-                                        width: 300,
-                                        height: 300,
-                                        color: Colors.blue,
-                                        padding: EdgeInsets.all(10),
-                                      )
-                                    ],
+                                  Padding(
+                                    padding: const EdgeInsets.all(15.0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                            color: Colors.red,
+                                            width: MediaQuery.of(context).size.width - 400,
+                                            height: MediaQuery.of(context).size.height - 400),
+                                        SizedBox(width: 30),
+                                        Container(
+                                          width: 300,
+                                          height: 300,
+                                          color: Colors.blue,
+                                          padding: EdgeInsets.all(10),
+                                        )
+                                      ],
+                                    ),
                                   ) : snapshot.data!.length != 0 ?
                                       Row(
                                     children: [
