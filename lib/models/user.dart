@@ -21,12 +21,9 @@ class User {
     this.username = data['username'];
     this.loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
     this.servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet'].toString()) : null;
-
-
   }
 
   update(dynamic data) async {
-
     try {
       final body = {
         'id': data['id'] ?? this.id,
@@ -40,8 +37,6 @@ class User {
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
-
-      print(response);
     } catch(e) {
       print(e);
     }

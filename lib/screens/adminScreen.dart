@@ -637,9 +637,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                       ),
                                       actions: [
                                         TextButton(onPressed: () async {
+                                          final servicesSetToAdd = services.length > 3 ? '[${services[0]}, ${services[1]}, ${services[2]}]' : services.toString();
                                           await user.update({
                                             'id': user.id!,
-                                            'serviceType': services.toString()
+                                            'serviceType': services.toString(),
+                                            'servicesSet': servicesSetToAdd
                                           });
                                           setStateView(() {});
                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));

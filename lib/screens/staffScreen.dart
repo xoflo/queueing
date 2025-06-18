@@ -91,7 +91,9 @@ class _StaffScreenState extends State<StaffScreen> {
                                   fontSize: 30, fontWeight: FontWeight.w700)),
                           Spacer(),
                           IconButton(onPressed: () {
-                            List<String> servicesSet =  stringToList(widget.user.serviceType!.toString().);
+                            final firstThree = [widget.user.serviceType![0].toString(), widget.user.serviceType![1].toString(), widget.user.serviceType![2].toString()];
+
+                            List<String> servicesSet =  widget.user.serviceType!.length > 3 ? firstThree : stringToList(widget.user.serviceType!.toString());
                             showDialog(context: context, builder: (_) => AlertDialog(
                               title: Text("Services to Accommodate"),
                               content: Container(
