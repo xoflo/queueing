@@ -45,90 +45,93 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
                 Align(
                   alignment: Alignment.topRight,
-                  child: IconButton(onPressed: () {
-                    showDialog(context: context, builder: (_) => StatefulBuilder(
-                      builder: (BuildContext context, void Function(void Function()) setStateDialog) {
-                        return FutureBuilder(
-                          future: initPlatformState(),
-                          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                            return AlertDialog(
-                                content: Container(
-                                  height: 400,
-                                  width: 400,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ListView(
-                                      children: <Widget>[
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: <Widget>[
-                                            const SizedBox(width: 10),
-                                            const Text(
-                                              'Device:',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                  child: Padding(
+                    padding: EdgeInsets.all(5),
+                    child: IconButton(onPressed: () {
+                      showDialog(context: context, builder: (_) => StatefulBuilder(
+                        builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+                          return FutureBuilder(
+                            future: initPlatformState(),
+                            builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+                              return AlertDialog(
+                                  content: Container(
+                                    height: 250,
+                                    width: 300,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: ListView(
+                                        children: <Widget>[
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: <Widget>[
+                                              const SizedBox(width: 10),
+                                              const Text(
+                                                'Device:',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(width: 30),
-                                            Expanded(
-                                              child: DropdownButton(
-                                                items: _getDeviceItems(),
-                                                onChanged: (BluetoothDevice? value) =>
-                                                    setStateDialog(() => _device = value),
-                                                value: _device,
+                                              const SizedBox(width: 30),
+                                              Expanded(
+                                                child: DropdownButton(
+                                                  items: _getDeviceItems(),
+                                                  onChanged: (BluetoothDevice? value) =>
+                                                      setStateDialog(() => _device = value),
+                                                  value: _device,
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: <Widget>[
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-                                              onPressed: () async {
-                                                await initPlatformState();
-                                              },
-                                              child: const Text(
-                                                'Refresh',
-                                                style: TextStyle(color: Colors.white),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 20),
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: _connected ? Colors.red : Colors.green),
-                                              onPressed: _connected ? _disconnect : _connect,
-                                              child: Text(
-                                                _connected ? 'Disconnect' : 'Connect',
-                                                style: TextStyle(color: Colors.white),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Padding(
-                                          padding:
-                                          const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-                                            onPressed: () {
-                                              testPrint.sample();
-                                            },
-                                            child: const Text('PRINT TEST',
-                                                style: TextStyle(color: Colors.white)),
+                                            ],
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: <Widget>[
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                                                onPressed: () async {
+                                                  await initPlatformState();
+                                                },
+                                                child: const Text(
+                                                  'Refresh',
+                                                  style: TextStyle(color: Colors.white),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 20),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                    backgroundColor: _connected ? Colors.red : Colors.green),
+                                                onPressed: _connected ? _disconnect : _connect,
+                                                child: Text(
+                                                  _connected ? 'Disconnect' : 'Connect',
+                                                  style: TextStyle(color: Colors.white),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Padding(
+                                            padding:
+                                            const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                                              onPressed: () {
+                                                testPrint.sample();
+                                              },
+                                              child: const Text('PRINT TEST',
+                                                  style: TextStyle(color: Colors.white)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ));
-                          },
-                        );
-                      },
-                    ));
-                  }, icon: Icon(Icons.settings)),
+                                  ));
+                            },
+                          );
+                        },
+                      ));
+                    }, icon: Icon(Icons.settings)),
+                  ),
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -169,7 +172,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                             final service = Service.fromJson(
                                                 snapshot.data![i]);
                                             return Padding(
-                                              padding: EdgeInsets.all(10),
+                                              padding: EdgeInsets.all(3),
                                               child: GestureDetector(
                                                 onTap: () async {
                                                   final List<dynamic> result = await getSettings(context);
