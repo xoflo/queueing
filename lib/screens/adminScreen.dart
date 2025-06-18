@@ -334,9 +334,6 @@ class _AdminScreenState extends State<AdminScreen> {
                             itemCount: snapshot.data!.length,
                             itemBuilder: (context, i) {
 
-                              print("identifier");
-                              print(snapshot.data![i]['serviceType'] != null);
-
                               return snapshot.data![i]['serviceType'] != null ? Builder(
                                   builder: (context) {
                                     final service = Service.fromJson(snapshot.data![i]);
@@ -448,12 +445,7 @@ class _AdminScreenState extends State<AdminScreen> {
   deleteService(int i) async {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
     final body = jsonEncode({'id': i});
-
-
     final result = await http.delete(uri, body: body);
-
-    print("result: ${result.body}");
-
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Service Deleted")));
     setState(() {});
@@ -503,10 +495,7 @@ class _AdminScreenState extends State<AdminScreen> {
       'serviceCode': "${serviceCode.text}",
       'assignedGroup' : "$assignedGroups",
     });
-
     final result = await http.post(uri, body: body);
-    print("result: ${result.body}");
-
     Navigator.pop(context);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Service Added")));
@@ -516,18 +505,10 @@ class _AdminScreenState extends State<AdminScreen> {
   getServiceSQL() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_service.php');
-
       final result = await http.get(uri);
-
       final response = jsonDecode(result.body);
-
-      print("response1: $response");
-
       response.sort((a, b) => int.parse(a['id'].toString())
           .compareTo(int.parse(b['id'].toString())));
-
-      print("response2: $response");
-
       return response;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -594,8 +575,55 @@ class _AdminScreenState extends State<AdminScreen> {
                                 icon: Icon(Icons.delete)),
                             onTap: () {
                               if (widget.user.username == user.username) {
+                                bool obscure = true;
+                                final userController = TextEditingController();
+                                final passController = TextEditingController();
 
+                                showDialog(context: context, builder: (_) => StatefulBuilder(builder: (BuildContext context, void Function(void Function()) setState) {
+                                  return AlertDialog(
+                                    title: Text("Set Admin Password"),
+                                    content: Container(
+                                      height: 90,
+                                      width: 200,
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          TextField(
+                                            obscureText: obscure,
+                                            decoration: InputDecoration(
+
+                                                labelText: "Password"
+                                            ),
+                                            controller: passController,
+                                          ),
+                                          IconButton(onPressed: () {
+                                            obscure = !obscure;
+                                            setState((){
+
+                                            });
+                                          }, icon: Icon(obscure == false ? Icons.remove_red_eye_rounded : Icons.remove_red_eye_outlined))
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(onPressed: () {
+                                        user.update({
+                                          'pass': userController.text
+                                        });
+
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                        setStateView((){});
+                                      }, child: Text("Update"))
+                                    ],
+                                  );
+                                },));
                               } else {
+
+                                bool obscure = true;
+                                final userController = TextEditingController();
+                                final passController = TextEditingController();
+
                                 showDialog(context: context, builder: (_) => AlertDialog(
                                   title: Text("Edit User"),
                                   content: Container(
@@ -607,49 +635,51 @@ class _AdminScreenState extends State<AdminScreen> {
                                           title: Text("Username and Password"),
                                           onTap: () {
                                             Navigator.pop(context);
-                                            showDialog(context: context, builder: (_) => Builder(
-                                              builder: (context) {
-
-                                                final userController = TextEditingController();
-                                                final passController = TextEditingController();
-
-                                                return AlertDialog(
-                                                  title: Text("Username & Password"),
-                                                  content: Container(
-                                                    height: 120,
-                                                    width: 200,
-                                                    child: Column(
-                                                      children: [
-                                                        TextField(
-                                                          decoration: InputDecoration(
+                                            showDialog(context: context, builder: (_) => StatefulBuilder(builder: (context, setState) {
+                                              return AlertDialog(
+                                                title: Text("Username & Password"),
+                                                content: Container(
+                                                  height: 140,
+                                                  width: 200,
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      TextField(
+                                                        decoration: InputDecoration(
                                                             labelText: "Username"
-                                                          ),
-                                                          controller: userController,
                                                         ),
-                                                        TextField(
-                                                          decoration: InputDecoration(
-                                                              labelText: "Password"
-                                                          ),
-                                                          controller: passController,
+                                                        controller: userController,
+                                                      ),
+                                                      TextField(
+                                                        obscureText: obscure,
+                                                        decoration: InputDecoration(
+                                                            labelText: "Password"
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  actions: [
-                                                    TextButton(onPressed: () {
-                                                      user.update({
-                                                        'username': userController.text,
-                                                        'pass': userController.text
-                                                      });
+                                                        controller: passController,
+                                                      ),
+                                                      IconButton(onPressed: () {
+                                                        obscure = !obscure;
+                                                        setState((){
 
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
-                                                      setStateView((){});
-                                                    }, child: Text("Update"))
-                                                  ],
-                                                );
-                                              }
-                                            ));
+                                                        });
+                                                      }, icon: Icon(obscure == false ? Icons.remove_red_eye_rounded : Icons.remove_red_eye_outlined))
+                                                    ],
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(onPressed: () {
+                                                    user.update({
+                                                      'username': userController.text,
+                                                      'pass': userController.text
+                                                    });
+
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                                    setStateView((){});
+                                                  }, child: Text("Update"))
+                                                ],
+                                              );
+                                            }));
                                           },
                                         ),
                                         ListTile(
@@ -753,28 +783,19 @@ class _AdminScreenState extends State<AdminScreen> {
   getUserSQL([String? userType, String? serviceType]) async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
-
       final result = await http.get(uri);
-
       final response = jsonDecode(result.body);
-
-      print("response1: $response");
-
       dynamic newResult = response;
-
       if (userType != null) {
         newResult = newResult.where((e) => e['userType'] == 'Staff').toList();
       }
-
       if (serviceType != null) {
         newResult =
             newResult.where((e) => e['serviceType'] == serviceType).toList();
       }
-
       return newResult;
     } catch (e) {
       print(e);
-
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
       print(e);
@@ -785,7 +806,7 @@ class _AdminScreenState extends State<AdminScreen> {
   addUser() {
     bool obscure = true;
     List<String> services = [];
-    String userType = "Admin";
+    String userType = "Staff";
     String display = "Select";
 
     showDialog(
@@ -915,9 +936,11 @@ class _AdminScreenState extends State<AdminScreen> {
                             : Container(
                                 height: 20,
                               ),
+                        /*
                         Row(
                           spacing: 5,
                           children: [
+                            /*
                             GestureDetector(
                                 onTap: () {
                                   userType = "Admin";
@@ -935,6 +958,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                         : Colors.white,
                                   ),
                                 )),
+                             */
                             GestureDetector(
                                 onTap: () {
                                   userType = "Staff";
@@ -954,6 +978,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 ))
                           ],
                         )
+                         */
                       ],
                     ),
                   );
@@ -975,35 +1000,31 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   addUserSQL(List<String> services, String userType) async {
-    final uri = Uri.parse('http://$site/queueing_api/api_user.php');
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
+      final body = jsonEncode({
+        "username": user.text,
+        "pass": password.text,
+        "serviceType": services.toString(),
+        "userType": userType,
+        "loggedIn": null,
+        "servicesSet": services.length > 3 ? "[${services[0]}, ${services[1]}, ${services[2]}]" : services.toString()
+      });
 
-    print("servicez: ${services.toString()}");
-
-    final body = jsonEncode({
-      "username": user.text,
-      "pass": password.text,
-      "serviceType": services.toString(),
-      "userType": userType,
-      "loggedIn": null,
-      "servicesSet": services.length > 3 ? "[${services[0]}, ${services[1]}, ${services[2]}]" : services.toString()
-    });
-
-    final result = await http.post(uri, body: body);
-    print("result: ${result.body}");
-
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("User Added")));
-    setState(() {});
+      final result = await http.post(uri, body: body);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("User Added")));
+      setState(() {});
+    } catch(e) {
+      print(e);
+    }
   }
 
   deleteUser(int i) async {
     final uri = Uri.parse('http://$site/queueing_api/api_user.php');
     final body = jsonEncode({'id': '$i'});
-
     final result = await http.delete(uri, body: body);
-
-    print("result: ${result.body}");
 
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("User Deleted")));
@@ -1035,6 +1056,20 @@ class _AdminScreenState extends State<AdminScreen> {
                               itemBuilder: (context, i) {
                                 final station =
                                     Station.fromJson(snapshot.data![i]);
+
+                                print(station.sessionPing!);
+
+                                if (station.sessionPing! != "") {
+                                  print(DateTime.parse(station.sessionPing!.toString()).difference(DateTime.now()).inSeconds);
+
+                                  if (DateTime.parse(station.sessionPing!.toString()).difference(DateTime.now()).inSeconds < -5) {
+                                    station.update({
+                                      "sessionPing": "",
+                                      "userInSession": "",
+                                      "inSession": 0
+                                    });
+                                  }
+                                }
 
                                 return ListTile(
                                   title: Text(
@@ -1083,22 +1118,13 @@ class _AdminScreenState extends State<AdminScreen> {
   getStationSQL() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
-
       final result = await http.get(uri);
-
       final response = jsonDecode(result.body);
-
-      print("response1: $response");
-
       response.sort((a, b) => int.parse(a['id'].toString())
           .compareTo(int.parse(b['id'].toString())));
-
-      print("response2: $response");
-
       return response;
     } catch (e) {
       print(e);
-
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
       print(e);
@@ -1284,21 +1310,13 @@ class _AdminScreenState extends State<AdminScreen> {
   deleteGroup(int id, String name) async {
     final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
     final body = jsonEncode({'id': '$id'});
-
     final result = await http.delete(uri, body: body);
-
-    print("result: ${result.body}");
-
     final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
-
     final List<dynamic> services = getServiceSQL();
-
     final sorted = services.where((e) => e['assignedGroup'].toString() == name.toString()).toList();
-
     for (int i = 0; i < sorted.length; i++) {
       final service = Service.fromJson(sorted[i]);
       final body = jsonEncode({'id': service.id!});
-
       final result = await http.delete(uriService, body: body);
     }
 
@@ -1344,9 +1362,6 @@ class _AdminScreenState extends State<AdminScreen> {
       final resultService = await http.get(uriService);
       List<dynamic> responseService = jsonDecode(resultService.body);
 
-      print(responseService);
-      print(responseGroup);
-
       List<dynamic> resultsToReturn = [];
 
       for (int i = 0; i < responseGroup.length; i++) {
@@ -1360,7 +1375,6 @@ class _AdminScreenState extends State<AdminScreen> {
           resultsToReturn.add(responseService[i]);
         }
       }
-      print('return: $resultsToReturn');
 
       return resultsToReturn;
 

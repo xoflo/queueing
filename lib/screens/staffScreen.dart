@@ -91,10 +91,16 @@ class _StaffScreenState extends State<StaffScreen> {
                                   fontSize: 30, fontWeight: FontWeight.w700)),
                           Spacer(),
                           IconButton(onPressed: () {
-                            final firstThree = [widget.user.serviceType![0].toString(), widget.user.serviceType![1].toString(), widget.user.serviceType![2].toString()];
-                            final serviceSetNull = widget.user.serviceType!.length > 3 ? firstThree : stringToList(widget.user.serviceType!.toString());
+                            List<String> serviceSetToNull = [];
 
-                            List<String> servicesSet =  widget.user.servicesSet != null ? widget.user.servicesSet : serviceSetNull;
+                            if (widget.user.serviceType!.length > 3) {
+                              serviceSetToNull = [widget.user.serviceType![0].toString(), widget.user.serviceType![1].toString(), widget.user.serviceType![2].toString()];
+                            } else {
+                             serviceSetToNull = stringToList(widget.user.serviceType!.toString());
+                            }
+
+                            List<String> servicesSet = widget.user.servicesSet != null ? stringToList(widget.user.servicesSet.toString()) : serviceSetToNull;
+
                             showDialog(context: context, builder: (_) => AlertDialog(
                               title: Text("Services to Accommodate (3 Max)"),
                               content: Container(
@@ -465,7 +471,7 @@ class _StaffSessionState extends State<StaffSession> {
                                     "timeTaken": timestamp
                                   });
 
-                                  setState(() {});
+                                  callByUI.value = 0;
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                 }
@@ -499,11 +505,13 @@ class _StaffSessionState extends State<StaffSession> {
                                                       'status': "Pending",
                                                       'userAssigned': "",
                                                       'stationName': "",
-                                                      'stationNumber': ""
+                                                      'stationNumber': "",
+                                                      'serviceType': "${service.serviceType}"
                                                     });
 
                                                     Navigator.pop(context);
                                                     setState(() {});
+                                                    callByUI.value = 0;
                                                   },
                                                 );
                                               }) : Center(
@@ -554,7 +562,7 @@ class _StaffSessionState extends State<StaffSession> {
                                     Text("Upcoming Tickets: ", style: TextStyle(fontWeight: FontWeight.w700)),
                                     Container(
                                       height: 40,
-                                      width: tickets.length * 60,
+                                      width: tickets.length * 70,
                                       child: ListView.builder(
                                           scrollDirection: Axis.horizontal,
                                           itemCount: tickets.length,

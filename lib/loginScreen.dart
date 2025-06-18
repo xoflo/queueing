@@ -106,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await http.get(uri);
       final users = jsonDecode(result.body);
       final sorted = users.where((e) => e['username'] == username.text.trim() && e['pass'] == pass.text.trim()).toList();
-      print(sorted);
       if (sorted.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
       } else {
