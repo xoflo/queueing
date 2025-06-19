@@ -25,11 +25,6 @@ class Ticket {
 
   String? codeAndNumber;
 
-  Ticket() {
-
-  }
-
-
   Ticket.fromJson(dynamic data) {
     this.id = int.parse(data['id']);
     this.timeCreated = data['timeCreated'];
@@ -81,13 +76,4 @@ class Ticket {
     }
   }
 
-  printTicket(BuildContext context) async {
-    try {
-
-
-    } catch(e) {
-      print(e);
-    }
-
-  }
 }

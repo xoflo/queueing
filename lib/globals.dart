@@ -20,18 +20,20 @@ stringToList(String text) {
   }
 }
 
-logoBackground(BuildContext context, [int? width]) {
+logoBackground(BuildContext context, [int? width, int? height]) {
   return Stack(
     children: [MediaQuery.of(context).size.width > (width != null ? width : 1500)
         ? Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Container(
+          child: SizedBox(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('images/logo.png'),
+              height != null ? Container(
+                  height: height.toDouble(),
+                  child: Image.asset('images/logo.png')) : Image.asset('images/logo.png'),
               SizedBox(height: 20),
               Text("Office of the Ombudsman", style: TextStyle(fontSize: 30), textAlign: TextAlign.center)
             ],
