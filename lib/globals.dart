@@ -71,13 +71,13 @@ getSettings(BuildContext context, [String? controlName]) async {
   }
 }
 
-getMedia(BuildContext context, String name) async {
+getMedia(BuildContext context) async {
   try {
     final uri = Uri.parse('http://$site/queueing_api/api_media.php');
     final result = await http.get(uri);
     List<dynamic> response = jsonDecode(result.body);
-    final media = Media.fromJson(response.where((e) => e['name'] == name).toList()[0]);
-    return media;
+
+    return response;
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Cannot connect to the server. Please try again.")));

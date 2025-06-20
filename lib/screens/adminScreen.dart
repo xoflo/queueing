@@ -260,29 +260,86 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                   return ListTile(
                                     title: Text(control.controlName!),
-                                    subtitle: control.controlName! == "Video in Queue Display" ? TextButton(child: Text("Change Video File"), onPressed: () async {
-
-                                      final Media media = await getMedia(context, "Queue Display Video");
-                                      final videoController = VideoPlayerController.networkUrl(Uri.parse(media.link!));
-
+                                    subtitle: control.controlName! == "Video in Queue Display" ? TextButton(child: Text("Change Video Files"), onPressed: () async {
                                       showDialog(context: context, builder: (_) => AlertDialog(
-                                        content: StatefulBuilder(
-                                          builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
-                                            return Container(
+                                        content: FutureBuilder(
+                                          future: getMedia(context),
+                                          builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                            return snapshot.connectionState == ConnectionState.done ?
+                                            Container(
                                               height: 400,
                                               width: 400,
-                                              child: Column(
-                                                children: [
-                                                  FlickVideoPlayer(flickManager: FlickManager(
-                                                      autoPlay: false,
-                                                      videoPlayerController: videoController)),
-                                                ],
-                                              ),
+                                              child: ListView.builder(
+                                                  itemCount: snapshot.data!.length,
+                                                  itemBuilder: (context, i) {
+                                                    final media = Media.fromJson(snapshot.data![i]);
+                                                return ListTile(
+                                                  title: Text(media.name!),
+                                                  onTap: () async {
+                                                    // https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4
+
+                                                    final link = Uri.parse("https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4",);
+                                                    final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
+                                                      setStateSetting(() {}); // refresh UI when video is ready
+                                                    });
+
+                                                    videoController.setLooping(true);
+                                                    int player = 0;
+
+                                                    showDialog(context: context, builder: (_) => AlertDialog(
+                                                      content: StatefulBuilder(
+                                                        builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                                          return Container(
+                                                            height: 400,
+                                                            width: 400,
+                                                            child: Column(
+                                                              children: [
+                                                                Container(
+                                                                    height: 350,
+                                                                    width: 350,
+                                                                    child: VideoPlayer(videoController)
+                                                                ),
+                                                                TextButton(onPressed: () {
+                                                                  if (player == 0) {
+                                                                    player = 1;
+                                                                    videoController.play();
+                                                                    setStateSetting((){});
+                                                                  } else {
+                                                                    player = 0;
+                                                                    videoController.pause();
+                                                                    setStateSetting((){});
+                                                                  }
+
+                                                                  print(player);
+                                                                }, child: Text("Play/Pause"))
+                                                              ],
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ));
+                                                  },
+                                                );
+                                              }),
+                                            ) : Container(
+                                              height: 50,
+                                              width: 50,
+                                              child: CircularProgressIndicator(),
                                             );
                                           },
                                         ),
-                                      ));
+                                        actions: [
+                                          TextButton(onPressed: () {
+                                            FilePickerResult? result = await FilePicker.platform.pickFiles();
 
+                                            if (result != null) {
+                                              File file = File(result.files.single.path!);
+                                            } else {
+                                              // User canceled the picker
+                                            }
+                                          }, child: Text("Add Media"))
+                                        ],
+                                      ));
                                     }) : null,
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
                                       control.update({
