@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
@@ -329,7 +331,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                           },
                                         ),
                                         actions: [
-                                          TextButton(onPressed: () {
+                                          TextButton(onPressed: () async {
                                             FilePickerResult? result = await FilePicker.platform.pickFiles();
 
                                             if (result != null) {
