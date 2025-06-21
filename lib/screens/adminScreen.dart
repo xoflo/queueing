@@ -332,10 +332,27 @@ class _AdminScreenState extends State<AdminScreen> {
                                         ),
                                         actions: [
                                           TextButton(onPressed: () async {
-                                            FilePickerResult? result = await FilePicker.platform.pickFiles();
+                                            FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
 
                                             if (result != null) {
-                                              File file = File(result.files.single.path!);
+                                              String fileName = result.files.first.name;
+                                              final file = File(result.files.single.path!);
+                                              showDialog(context: context, builder: (_) => AlertDialog(
+                                                content: Builder(
+                                                  builder: (context) {
+                                                    final controller = VideoPlayerController.file(file);
+                                                    return Container(
+                                                      height: 400,
+                                                      width: 400,
+                                                      child: Container(
+                                                        height: 300,
+                                                        width: 300,
+                                                        child: VideoPlayer(controller),
+                                                      ),
+                                                    );
+                                                  }
+                                                ),
+                                              ));
                                             } else {
                                               // User canceled the picker
                                             }
