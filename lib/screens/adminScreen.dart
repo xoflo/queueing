@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
-import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/services/service.dart';
@@ -331,7 +329,40 @@ class _AdminScreenState extends State<AdminScreen> {
                                           },
                                         ),
                                         actions: [
+                                          TextButton(onPressed: () async {
 
+                                            try {
+                                              FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+                                              if (result != null) {
+
+                                                final File file = File(result.files.single.path!);
+                                                final name = result.files.single.name;
+                                                print(name);
+                                                print(file.path);
+
+                                                /*
+
+                                                final request = http.MultipartRequest(
+                                                  'POST',
+                                                  Uri.parse('http://$site/queueing_api/api_video.php'),
+                                                );
+
+                                                request.files.add(http.MultipartFile.fromBytes(
+                                                  'file',
+                                                  await file.readAsBytes(),
+                                                  filename: '$name.mp4',
+                                                ));
+
+                                                var response = await request.send();
+                                                print(await response.stream.bytesToString());
+                                                 */
+                                              }
+                                            } catch(e) {
+                                              print(e);
+                                            }
+
+                                          }, child: Text("Add Video"))
                                         ],
                                       ));
                                     }) : null,
