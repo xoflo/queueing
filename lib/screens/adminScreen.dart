@@ -280,7 +280,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                   onTap: () async {
                                                     // https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4
 
-                                                    final link = Uri.parse("https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4",);
+                                                    final link = Uri.parse("http://192.168.1.38:8080/videos/sample.mp4",);
                                                     final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
                                                       setStateSetting(() {}); // refresh UI when video is ready
                                                     });
@@ -331,32 +331,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                           },
                                         ),
                                         actions: [
-                                          TextButton(onPressed: () async {
-                                            FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
 
-                                            if (result != null) {
-                                              String fileName = result.files.first.name;
-                                              final file = File(result.files.single.path!);
-                                              showDialog(context: context, builder: (_) => AlertDialog(
-                                                content: Builder(
-                                                  builder: (context) {
-                                                    final controller = VideoPlayerController.file(file);
-                                                    return Container(
-                                                      height: 400,
-                                                      width: 400,
-                                                      child: Container(
-                                                        height: 300,
-                                                        width: 300,
-                                                        child: VideoPlayer(controller),
-                                                      ),
-                                                    );
-                                                  }
-                                                ),
-                                              ));
-                                            } else {
-                                              // User canceled the picker
-                                            }
-                                          }, child: Text("Add Media"))
                                         ],
                                       ));
                                     }) : null,
@@ -1462,6 +1437,14 @@ class _AdminScreenState extends State<AdminScreen> {
       return [];
     }
 
+  }
+
+  addMedia(File file) async {
+    final uri = Uri.parse('http://$site/queueing_api/api_media.php');
+    final body = jsonEncode({
+      'name': "",
+      'link': await file.readAsBytes()
+    });
   }
 
 }
