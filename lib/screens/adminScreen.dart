@@ -278,7 +278,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                   onTap: () async {
                                                     // https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4
 
-                                                    final link = Uri.parse("http://192.168.1.38:8080/videos/sample.mp4",);
+                                                    final link = Uri.parse("http://192.168.1.38:8080/queueing_api/videos/sample.mp4",);
                                                     final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
                                                       setStateSetting(() {}); // refresh UI when video is ready
                                                     });
@@ -330,33 +330,32 @@ class _AdminScreenState extends State<AdminScreen> {
                                         ),
                                         actions: [
                                           TextButton(onPressed: () async {
-
                                             try {
-                                              FilePickerResult? result = await FilePicker.platform.pickFiles();
+                                              final result = await FilePicker.platform.pickFiles(
+                                                type: FileType.video,
+                                                allowMultiple: false,
+                                                withData: true,
+                                              );
 
-                                              if (result != null) {
-
-                                                final File file = File(result.files.single.path!);
-                                                final name = result.files.single.name;
-                                                print(name);
-                                                print(file.path);
-
-                                                /*
+                                              if (result != null && result.files.isNotEmpty) {
+                                                final file = result.files.first;
+                                                final uri = Uri.parse(
+                                                    "http://$site/queueing_api/api_video.php");
 
                                                 final request = http.MultipartRequest(
-                                                  'POST',
-                                                  Uri.parse('http://$site/queueing_api/api_video.php'),
-                                                );
+                                                    "POST", uri);
+                                                request.files.add(
+                                                    http.MultipartFile.fromBytes(
+                                                      'file',
+                                                      file.bytes!,
+                                                      filename: file.name,
+                                                    ));
 
-                                                request.files.add(http.MultipartFile.fromBytes(
-                                                  'file',
-                                                  await file.readAsBytes(),
-                                                  filename: '$name.mp4',
-                                                ));
+                                                final response = await request.send();
 
-                                                var response = await request.send();
                                                 print(await response.stream.bytesToString());
-                                                 */
+                                                print(file.name);
+
                                               }
                                             } catch(e) {
                                               print(e);
