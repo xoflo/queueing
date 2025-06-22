@@ -276,9 +276,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 return ListTile(
                                                   title: Text(media.name!),
                                                   onTap: () async {
-                                                    // https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4
 
-                                                    final link = Uri.parse("http://192.168.1.38:8080/queueing_api/videos/sample.mp4",);
+                                                    final link = Uri.parse("http://$site/queueing_api/videos/${media.link}",);
                                                     final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
                                                       setStateSetting(() {}); // refresh UI when video is ready
                                                     });
@@ -319,6 +318,27 @@ class _AdminScreenState extends State<AdminScreen> {
                                                       ),
                                                     ));
                                                   },
+                                                  trailing: IconButton(onPressed: () async {
+                                                    final uri = Uri.parse(
+                                                        "http://$site/queueing_api/api_videoDelete.php");
+
+                                                    final response = await http.post(uri, body: {
+                                                      'filename': media.link,
+                                                    });
+
+                                                    if (response.statusCode == 200) {
+                                                      print("Response: ${response.body}");
+
+                                                      final uri = Uri.parse('http://$site/queueing_api/api_media.php');
+                                                      final body = jsonEncode({'id': media.id});
+                                                      final result = await http.delete(uri, body: body);
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
+
+                                                    } else {
+                                                      print("Error: ${response.statusCode}");
+                                                    }
+
+                                                    }, icon: Icon(Icons.delete)),
                                                 );
                                               }),
                                             ) : Container(
@@ -352,6 +372,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                                     ));
 
                                                 final response = await request.send();
+
+                                                addMedia(file.name, file.name);
 
                                                 print(await response.stream.bytesToString());
                                                 print(file.name);
@@ -1469,11 +1491,11 @@ class _AdminScreenState extends State<AdminScreen> {
 
   }
 
-  addMedia(File file) async {
+  addMedia(String name, String link) async {
     final uri = Uri.parse('http://$site/queueing_api/api_media.php');
     final body = jsonEncode({
-      'name': "",
-      'link': await file.readAsBytes()
+      'name': name,
+      'link': link
     });
   }
 

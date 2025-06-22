@@ -93,11 +93,52 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 padding: const EdgeInsets.all(15.0),
                                 child: Row(
                                   children: [
-                                    Container(
-                                        color: Colors.red,
-                                        width: MediaQuery.of(context).size.width - 600,
-                                        height: MediaQuery.of(context).size.height - 300
+                                    FutureBuilder(
+                                      future: getMedia(context),
+                                      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                        return snapshot.connectionState == ConnectionState.done ?  Builder(
+                                          builder: (context) {
 
+                                            List<String> links = stringToList(snapshot.data.toString());
+                                            int videoCounter = 0;
+
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+
+                                                VideoPlayerController controller = VideoPlayerController.networkUrl(Uri.parse('http://$site/videos/${links[videoCounter]}'))..initialize().then((value) {
+                                                  setStatePlayer((){});
+                                                });
+
+                                                controller.play();
+                                                controller.addListener(() {
+                                                  if (controller.value.position >= controller.value.duration &&
+                                                      !controller.value.isPlaying) {
+                                                    if (videoCounter == links.length) {
+                                                      videoCounter = 0;
+                                                      setStatePlayer((){});
+                                                    } else {
+                                                      videoCounter++;
+                                                      setStatePlayer((){});
+                                                    }
+                                                  }
+                                                });
+
+                                                return Container(
+                                                    child: VideoPlayer(controller),
+                                                    width: MediaQuery.of(context).size.width - 600,
+                                                    height: MediaQuery.of(context).size.height - 300
+                                                );
+                                              },
+                                            );
+                                          }
+                                        ) : Center(
+                                          child: Container(
+                                            height: 50,
+                                            width: 50,
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+                                      },
                                     ),
                                     SizedBox(width: 30),
                                     Column(
@@ -204,8 +245,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 );
                                               },
                                             )
-
-
                                         ),
                                       );
                                     },
