@@ -1,13 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'models/media.dart';
 
-final site = "192.168.1.38:8080";
+final site = "192.168.1.154:8080";
 
-// "localhost:8080"
-// "192.168.1.154:8080"
 stringToList(String text) {
   if (text != "") {
     String trimmed = text.substring(1, text.length - 1);

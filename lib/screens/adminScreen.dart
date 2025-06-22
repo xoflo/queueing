@@ -46,6 +46,12 @@ class _AdminScreenState extends State<AdminScreen> {
   TextEditingController stationName = TextEditingController();
 
   @override
+  void dispose() {
+    dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: MediaQuery.of(context).size.width < 500 || MediaQuery.of(context).size.height < 500 ? Container(
@@ -277,13 +283,17 @@ class _AdminScreenState extends State<AdminScreen> {
                                                   title: Text(media.name!),
                                                   onTap: () async {
 
-                                                    final link = Uri.parse("http://$site/queueing_api/videos/${media.link}",);
+                                                    final link = Uri.parse("http://$site/queueing_api/videos/${media.link}");
                                                     final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
                                                       setStateSetting(() {}); // refresh UI when video is ready
                                                     });
 
                                                     videoController.setLooping(true);
                                                     int player = 0;
+
+                                                    dispose(){
+                                                      videoController.dispose();
+                                                    }
 
                                                     showDialog(context: context, builder: (_) => AlertDialog(
                                                       content: StatefulBuilder(
@@ -1497,6 +1507,9 @@ class _AdminScreenState extends State<AdminScreen> {
       'name': name,
       'link': link
     });
+
+    final response = await http.post(uri, body: body);
+
   }
 
 }

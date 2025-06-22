@@ -83,6 +83,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 setStateHere((){});
                               }
                             }
+
+
+
                           });
 
                           return FutureBuilder(
@@ -95,47 +98,80 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                   children: [
                                     FutureBuilder(
                                       future: getMedia(context),
-                                      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                        return snapshot.connectionState == ConnectionState.done ?  Builder(
+                                      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshotMedia) {
+                                        return snapshotMedia.connectionState == ConnectionState.done ? snapshotMedia.data!.length != 0 ? Builder(
                                           builder: (context) {
 
-                                            List<String> links = stringToList(snapshot.data.toString());
+                                            List<String> links = [];
+
+                                            for (int i = 0; i < snapshotMedia.data!.length; i++) {
+                                              links.add(snapshotMedia.data![i]['link']);
+                                            }
+
                                             int videoCounter = 0;
+                                            int update = 0;
+                                            VideoPlayerController? controller;
 
                                             return StatefulBuilder(
-                                              builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
-
-                                                VideoPlayerController controller = VideoPlayerController.networkUrl(Uri.parse('http://$site/videos/${links[videoCounter]}'))..initialize().then((value) {
-                                                  setStatePlayer((){});
-                                                });
-
-                                                controller.play();
-                                                controller.addListener(() {
-                                                  if (controller.value.position >= controller.value.duration &&
-                                                      !controller.value.isPlaying) {
-                                                    if (videoCounter == links.length) {
-                                                      videoCounter = 0;
+                                              builder: (context, setStatePlayer) {
+                                                final newTimer = Timer.periodic(Duration(seconds: 2), (_) async {
+                                                  if (update == 0) {
+                                                    final vid = Uri.parse('http://$site/queueing_api/videos/${links[videoCounter]}');
+                                                    controller = await VideoPlayerController.networkUrl(
+                                                        vid)..initialize().then((_) {
                                                       setStatePlayer((){});
-                                                    } else {
-                                                      videoCounter++;
-                                                      setStatePlayer((){});
+                                                      update = 1;
+                                                    });
+
+                                                    if (controller != null) {
+                                                      controller!.play();
+                                                    }
+                                                  }
+
+                                                  if (controller != null) {
+                                                    if (controller!.value.position >= controller!.value.duration &&
+                                                        !controller!.value.isPlaying) {
+                                                      if (videoCounter+1 == links.length) {
+                                                        videoCounter = 0;
+                                                        update = 0;
+                                                      } else {
+                                                        videoCounter++;
+                                                        update = 0;
+                                                      }
                                                     }
                                                   }
                                                 });
 
+
                                                 return Container(
-                                                    child: VideoPlayer(controller),
                                                     width: MediaQuery.of(context).size.width - 600,
-                                                    height: MediaQuery.of(context).size.height - 300
+                                                    height: MediaQuery.of(context).size.height - 300,
+                                                    child: controller == null ? Center(
+                                                      child: Container(
+                                                          height: 50,
+                                                          width: 50,
+                                                          child: CircularProgressIndicator()),
+                                                    ) : VideoPlayer(controller!)
                                                 );
                                               },
                                             );
                                           }
-                                        ) : Center(
-                                          child: Container(
-                                            height: 50,
-                                            width: 50,
-                                            child: CircularProgressIndicator(),
+                                        ) : Container(
+                                          color: Colors.black87,
+                                            width: MediaQuery.of(context).size.width - 600,
+                                            height: MediaQuery.of(context).size.height - 300,
+                                          child: Center(
+                                            child: Text("No videos uploaded", style: TextStyle(color: Colors.white)),
+                                          ),
+                                        ) : Container(
+                                          width: MediaQuery.of(context).size.width - 600,
+                                          height: MediaQuery.of(context).size.height - 300,
+                                          child: Center(
+                                            child: Container(
+                                              height: 50,
+                                              width: 50,
+                                              child: CircularProgressIndicator(),
+                                            ),
                                           ),
                                         );
                                       },
