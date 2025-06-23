@@ -406,10 +406,12 @@ class _StaffSessionState extends State<StaffSession> {
                               ),
                             ) : Container(
                               height: 300,
-                              child: Container(
-                                height: 50,
-                                width: 50,
-                                child: CircularProgressIndicator(),
+                              child: Center(
+                                child: Container(
+                                  height: 50,
+                                  width: 50,
+                                  child: CircularProgressIndicator(),
+                                ),
                               ),
                             );
                           },
