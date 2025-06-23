@@ -20,6 +20,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
   late Timer timer;
   int ticketsLength = 0;
   Color? containerColor;
+  int updateSecond = 1;
+  int updateFirst = 1;
 
   @override
   void dispose() {
@@ -47,8 +49,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           child: Text("Now Serving", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700))) : Container(
                         height: 30
                       ),
-                      StatefulBuilder(
-                        builder: (BuildContext context, void Function(void Function()) setStateHere) {
+                      Builder(
+                        builder: (BuildContext context) {
+
                           timer = Timer.periodic(Duration(seconds: 3, milliseconds: 0), (value) async {
                             final List<Ticket> retrieved = await getTicketSQL();
                             if (retrieved.length != ticketsLength) {
@@ -63,11 +66,19 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 ticketsLength = retrieved.length;
                                 AudioPlayer player = AudioPlayer();
                                 player.play(AssetSource('sound.mp3'));
-                                setStateHere((){});
+                                if (vqd.data == 1) {
+                                  updateSecond = 0;
+                                } else {
+                                  updateFirst = 0;
+                                }
                               }
 
                               ticketsLength = retrieved.length;
-                              setStateHere((){});
+                              if (vqd.data == 1) {
+                                updateSecond = 0;
+                              } else {
+                                updateFirst = 0;
+                              }
                             } else {
                               final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
                               if (toUpdate.isNotEmpty) {
@@ -80,223 +91,274 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 ticketsLength = retrieved.length;
                                 AudioPlayer player = AudioPlayer();
                                 player.play(AssetSource('sound.mp3'));
-                                setStateHere((){});
+                                if (vqd.data == 1) {
+                                  updateSecond = 0;
+                                } else {
+                                  updateFirst = 0;
+                                }
                               }
                             }
 
-
-
                           });
 
-                          return FutureBuilder(
-                            future: getTicketSQL(),
-                            builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
-                              return snapshot.connectionState == ConnectionState.done ? vqd.data == 1 ?
-                              Padding(
-                                padding: const EdgeInsets.all(15.0),
-                                child: Row(
-                                  children: [
-                                    FutureBuilder(
-                                      future: getMedia(context),
-                                      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshotMedia) {
-                                        return snapshotMedia.connectionState == ConnectionState.done ? snapshotMedia.data!.length != 0 ? Builder(
-                                          builder: (context) {
+                          return vqd.data == 1 ?
+                          Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Row(
+                              children: [
+                                FutureBuilder(
+                                  future: getMedia(context),
+                                  builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshotMedia) {
+                                    return snapshotMedia.connectionState == ConnectionState.done ? snapshotMedia.data!.length != 0 ? Builder(
+                                        builder: (context) {
 
-                                            List<String> links = [];
+                                          List<String> links = [];
 
-                                            for (int i = 0; i < snapshotMedia.data!.length; i++) {
-                                              links.add(snapshotMedia.data![i]['link']);
-                                            }
+                                          for (int i = 0; i < snapshotMedia.data!.length; i++) {
+                                            links.add(snapshotMedia.data![i]['link']);
+                                          }
 
-                                            Timer? newTimer;
-                                            int videoCounter = 0;
-                                            VideoPlayerController? controller;
-                                            int update = 0;
+                                          Timer? newTimer;
+                                          int videoCounter = 0;
+                                          VideoPlayerController? controller;
+                                          int update = 0;
 
 
-                                            return StatefulBuilder(
-                                              builder: (context, setStatePlayer) {
-                                                newTimer = Timer.periodic(Duration(seconds: 2), (_) async {
-                                                  if (update == 0) {
-                                                    final vid = Uri.parse('http://$site/queueing_api/videos/${links[videoCounter]}');
-                                                    controller = await VideoPlayerController.networkUrl(
-                                                        vid)..initialize().then((_) {
-                                                      controller!.setVolume(0);
-                                                      controller!.play();
-                                                    });
-                                                    newTimer!.cancel();
-                                                    update = 1;
-                                                    setStatePlayer((){});
-                                                  } else {
-                                                    final position = controller!.value.position;
-                                                    final duration = controller!.value.duration;
-                                                    if (position.toString() == duration.toString() && position.toString() != "0:00:00.000000") {
-                                                      print('complete');
-                                                      if (videoCounter < links.length - 1) {
-                                                        print('completeAdd: $videoCounter == ${links.length}');
-                                                        videoCounter = videoCounter + 1;
-                                                        update = 0;
-                                                      } else {
-                                                        print('completeAgain $videoCounter == ${links.length}');
-                                                        videoCounter = 0;
-                                                        update = 0;
-                                                      }
+                                          return StatefulBuilder(
+                                            builder: (context, setStatePlayer) {
+                                              newTimer = Timer.periodic(Duration(seconds: 2), (_) async {
+                                                if (update == 0) {
+                                                  final vid = Uri.parse('http://$site/queueing_api/videos/${links[videoCounter]}');
+                                                  controller = await VideoPlayerController.networkUrl(
+                                                      vid)..initialize().then((_) {
+                                                    controller!.setVolume(0);
+                                                    controller!.play();
+                                                  });
+                                                  newTimer!.cancel();
+                                                  update = 1;
+                                                  setStatePlayer((){});
+                                                } else {
+                                                  final position = controller!.value.position;
+                                                  final duration = controller!.value.duration;
+                                                  if (position.toString() == duration.toString() && position.toString() != "0:00:00.000000") {
+                                                    print('complete');
+                                                    if (videoCounter < links.length - 1) {
+                                                      print('completeAdd: $videoCounter == ${links.length}');
+                                                      videoCounter = videoCounter + 1;
+                                                      update = 0;
+                                                    } else {
+                                                      print('completeAgain $videoCounter == ${links.length}');
+                                                      videoCounter = 0;
+                                                      update = 0;
                                                     }
                                                   }
-                                                });
+                                                }
+                                              });
 
-                                                return Container(
-                                                    width: MediaQuery.of(context).size.width - 600,
-                                                    height: MediaQuery.of(context).size.height - 300,
-                                                    child: controller == null ? Center(
-                                                      child: Container(
-                                                          height: 50,
-                                                          width: 50,
-                                                          child: CircularProgressIndicator()),
-                                                    ) : VideoPlayer(controller!)
-                                                );
-                                              },
-                                            );
-                                          }
-                                        ) : Container(
-                                          color: Colors.black87,
-                                            width: MediaQuery.of(context).size.width - 600,
-                                            height: MediaQuery.of(context).size.height - 300,
-                                          child: Center(
-                                            child: Text("No videos uploaded", style: TextStyle(color: Colors.white)),
-                                          ),
-                                        ) : Container(
-                                          width: MediaQuery.of(context).size.width - 600,
-                                          height: MediaQuery.of(context).size.height - 300,
-                                          child: Center(
-                                            child: Container(
-                                              height: 50,
-                                              width: 50,
-                                              child: CircularProgressIndicator(),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    SizedBox(width: 30),
-                                    Column(
-                                      children: [
-                                        Container(
-                                            height: 40,
-                                            child: Text("Now Serving", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700))),
-                                        SizedBox(height: 10),
-                                        Container(
-                                          width: 500,
-                                          height: 600,
-                                          padding: EdgeInsets.all(10),
-                                          child: Stack(
-                                            children: [
-                                              logoBackground(context, 250, 300),
-                                              snapshot.data!.length != 0 ? ListView.builder(
-                                                  itemCount: snapshot.data!.length,
-                                                  itemBuilder: (context, i) {
-                                                    final ticket = snapshot.data![i];
-                                                    return Container(
-                                                      height: 80,
-                                                      child: Padding(
-                                                        padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                            Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
-                                                            Spacer(),
-                                                            Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }) : Center(
-                                                child: Text("No Tickets Pending", style: TextStyle(color: Colors.grey)),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ) : snapshot.data!.length != 0 ?
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(20),
-                                    height: MediaQuery.of(context).size.height - 340,
-                                    width: MediaQuery.of(context).size.width * 3/4,
-                                    child: GridView.builder(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
-                                        itemCount: snapshot.data!.length,
-                                        itemBuilder: (context, i) {
-                                        final ticket = snapshot.data![i];
-
-                                          return Padding(
-                                            padding: const EdgeInsets.all(5),
-                                            child: Card(
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(30.0),
-                                                child: Column(
-                                                  children: [
-                                                    Text(ticket.serviceType!, style: TextStyle(fontSize: 30)),
-                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 30)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        }),
-                                  ),
-                                  StatefulBuilder(
-                                    builder: (BuildContext context, void Function(void Function()) setStateCard) {
-                                      return Container(
-                                        height: 400,
-                                        width: MediaQuery.of(context).size.width * 1/4 - 100,
-                                        child: Padding(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child:
-                                            TweenAnimationBuilder<Color?>(
-                                              tween: ColorTween(
-                                                begin: Colors.red,
-                                                end: Colors.white70,
-                                              ),
-                                              duration: Duration(seconds: 10),
-                                              builder: (context, color, child) {
-                                                return Card(
-                                                  color: color,
-                                                  clipBehavior: Clip.antiAlias,
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(30.0),
+                                              return Container(
+                                                  width: MediaQuery.of(context).size.width - 600,
+                                                  height: MediaQuery.of(context).size.height - 300,
+                                                  child: controller == null ? Center(
                                                     child: Container(
-                                                      height: 350,
-                                                      width: 250,
-                                                      child: Column(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        children: [
-                                                          Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-                                                          Text("${snapshot.data!.last.serviceCode}${snapshot.data!.last.number}", style: TextStyle(fontSize: 30)),
-                                                        ],
-                                                      ),
-                                                    ),
+                                                        height: 50,
+                                                        width: 50,
+                                                        child: CircularProgressIndicator()),
+                                                  ) : VideoPlayer(controller!)
+                                              );
+                                            },
+                                          );
+                                        }
+                                    ) : Container(
+                                      color: Colors.black87,
+                                      width: MediaQuery.of(context).size.width - 600,
+                                      height: MediaQuery.of(context).size.height - 300,
+                                      child: Center(
+                                        child: Text("No videos uploaded", style: TextStyle(color: Colors.white)),
+                                      ),
+                                    ) : Container(
+                                      width: MediaQuery.of(context).size.width - 600,
+                                      height: MediaQuery.of(context).size.height - 300,
+                                      child: Center(
+                                        child: Container(
+                                          height: 50,
+                                          width: 50,
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                SizedBox(width: 30),
+                                Column(
+                                  children: [
+                                    Container(
+                                        height: 40,
+                                        child: Text("Now Serving", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700))),
+                                    SizedBox(height: 10),
+                                    Builder(
+                                      builder: (context) {
+                                        Timer? secondTimer;
+                                        return StatefulBuilder(
+                                          builder: (context, setStateSecond) {
+                                            Future<List<Ticket>> tickets = getTicketSQL();
+                                           secondTimer = Timer.periodic(Duration(seconds: 1), (value) async {
+                                              if (updateSecond == 0) {
+                                                secondTimer!.cancel();
+                                                setStateSecond((){});
+                                                updateSecond = 1;
+                                              }
+                                            });
+
+                                            return FutureBuilder(
+                                              future: tickets,
+                                              builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
+                                                return snapshot.connectionState == ConnectionState.done ? Container(
+                                                  width: 500,
+                                                  height: 600,
+                                                  padding: EdgeInsets.all(10),
+                                                  child: Stack(
+                                                    children: [
+                                                      logoBackground(context, 250, 300),
+                                                      snapshot.data!.length != 0 ? ListView.builder(
+                                                          itemCount: snapshot.data!.length,
+                                                          itemBuilder: (context, i) {
+                                                            final ticket = snapshot.data![i];
+                                                            return Container(
+                                                              height: 80,
+                                                              child: Padding(
+                                                                padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                                                                child: Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                  children: [
+                                                                    Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
+                                                                    Spacer(),
+                                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            );
+                                                          }) : Center(
+                                                        child: Text("No Tickets Pending", style: TextStyle(color: Colors.grey)),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ) : Center(
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    child: CircularProgressIndicator(),
                                                   ),
                                                 );
                                               },
-                                            )
-                                        ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ) :
+                          Builder(
+                            builder: (context) {
+                              Timer? firstTimer;
+                              return StatefulBuilder(
+                                builder: (BuildContext context, void Function(void Function()) setStateFirst) {
+                                  Future<List<Ticket>> tickets = getTicketSQL();
+                                  Timer.periodic(Duration(seconds: 1), (value) async {
+                                    if (updateFirst == 0) {
+                                      firstTimer!.cancel();
+                                      setStateFirst((){});
+                                      updateFirst = 1;
+                                    }
+                                  });
+
+                                  return FutureBuilder(
+                                    future: tickets,
+                                    builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
+                                      return Row(
+                                        children: [
+                                          snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ?
+                                          Container(
+                                            padding: EdgeInsets.all(20),
+                                            height: MediaQuery.of(context).size.height - 340,
+                                            width: MediaQuery.of(context).size.width * 3/4,
+                                            child: GridView.builder(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
+                                                itemCount: snapshot.data!.length,
+                                                itemBuilder: (context, i) {
+                                                  final ticket = snapshot.data![i];
+
+                                                  return Padding(
+                                                    padding: const EdgeInsets.all(5),
+                                                    child: Card(
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(30.0),
+                                                        child: Column(
+                                                          children: [
+                                                            Text(ticket.serviceType!, style: TextStyle(fontSize: 30)),
+                                                            Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 30)),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                          ) :
+                                          Container(
+                                              height: 650,
+                                              child: Center(child: Text("No Tickets Serving", style: TextStyle(color: Colors.grey)))) :
+                                          Container(
+                                            height: 100,
+                                            width: 100,
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                          StatefulBuilder(
+                                            builder: (BuildContext context, void Function(void Function()) setStateCard) {
+                                              return Container(
+                                                height: 400,
+                                                width: MediaQuery.of(context).size.width * 1/4 - 100,
+                                                child: Padding(
+                                                    padding: const EdgeInsets.all(10.0),
+                                                    child:
+                                                    TweenAnimationBuilder<Color?>(
+                                                      tween: ColorTween(
+                                                        begin: Colors.red,
+                                                        end: Colors.white70,
+                                                      ),
+                                                      duration: Duration(seconds: 10),
+                                                      builder: (context, color, child) {
+                                                        return Card(
+                                                          color: color,
+                                                          clipBehavior: Clip.antiAlias,
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(30.0),
+                                                            child: Container(
+                                                              height: 350,
+                                                              width: 250,
+                                                              child: Column(
+                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                children: [
+                                                                  Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
+                                                                  Text("${snapshot.data!.last.serviceCode}${snapshot.data!.last.number}", style: TextStyle(fontSize: 30)),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    )
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        ],
                                       );
                                     },
-                                  )
-                                ],
-                              )
-                                  : Container(
-                                  height: 650,
-                                  child: Center(child: Text("No Tickets Serving", style: TextStyle(color: Colors.grey)))) : Container(
-                                height: 100,
-                                width: 100,
-                                child: CircularProgressIndicator(),
+                                  );
+                                },
                               );
-                            },
+                            }
                           );
                         },
                       ),

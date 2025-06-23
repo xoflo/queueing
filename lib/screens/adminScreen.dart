@@ -311,19 +311,15 @@ class _AdminScreenState extends State<AdminScreen> {
                                                                             width: 350,
                                                                             child: VideoPlayer(videoController)
                                                                         ),
-                                                                        TextButton(onPressed: () {
-                                                                          if (player == 0) {
-                                                                            player = 1;
-                                                                            videoController.play();
-                                                                            setStateSetting((){});
-                                                                          } else {
-                                                                            player = 0;
-                                                                            videoController.pause();
-                                                                            setStateSetting((){});
-                                                                          }
-
-                                                                          print(player);
-                                                                        }, child: Text("Play/Pause"))
+                                                                        IconButton(onPressed: () {if (player == 0) {
+                                                                          player = 1;
+                                                                          videoController.play();
+                                                                          setStateSetting((){});
+                                                                        } else {
+                                                                          player = 0;
+                                                                          videoController.pause();
+                                                                          setStateSetting((){});
+                                                                        }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
                                                                       ],
                                                                     ),
                                                                   );

@@ -350,9 +350,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       final List<dynamic> response = jsonDecode(result.body);
       final sorted = response
-          .where((e) =>
-              e['status'] == "Pending" &&
-              toDateTime(DateTime.parse(e['timeCreated'])) ==
+          .where((e) => toDateTime(DateTime.parse(e['timeCreated'])) ==
                   toDateTime(DateTime.now()) &&
               e['serviceType'] == serviceType)
           .toList();
@@ -378,7 +376,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
     final String timestamp = DateTime.now().toString();
 
     final List<Ticket> tickets = await getTicketSQL(serviceType);
-    final thisDay = tickets.where((e) => DateTime.parse(e.timeCreated!).day == DateTime.now().day && DateTime.parse(e.timeCreated!).month == DateTime.now().month && DateTime.parse(e.timeCreated!).day == DateTime.now().day).toList();
+    final thisDay = tickets.where((e) {
+      final eDate = "${DateTime.parse(e.timeCreated!).day} ${DateTime.parse(e.timeCreated!).month} ${DateTime.parse(e.timeCreated!).year}";
+      final today =  "${DateTime.now().day} ${DateTime.now().month} ${DateTime.now().year}";
+      return eDate == today;
+    }).toList();
+
     final number = thisDay.length + 1;
     final numberParsed = number.toString().padLeft(3, '0');
 
