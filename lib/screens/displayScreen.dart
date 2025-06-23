@@ -108,40 +108,42 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                               links.add(snapshotMedia.data![i]['link']);
                                             }
 
+                                            Timer? newTimer;
                                             int videoCounter = 0;
-                                            int update = 0;
                                             VideoPlayerController? controller;
+                                            int update = 0;
+
 
                                             return StatefulBuilder(
                                               builder: (context, setStatePlayer) {
-                                                final newTimer = Timer.periodic(Duration(seconds: 2), (_) async {
+                                                newTimer = Timer.periodic(Duration(seconds: 2), (_) async {
                                                   if (update == 0) {
                                                     final vid = Uri.parse('http://$site/queueing_api/videos/${links[videoCounter]}');
                                                     controller = await VideoPlayerController.networkUrl(
                                                         vid)..initialize().then((_) {
-                                                      setStatePlayer((){});
-                                                      update = 1;
-                                                    });
-
-                                                    if (controller != null) {
+                                                      controller!.setVolume(0);
                                                       controller!.play();
-                                                    }
-                                                  }
-
-                                                  if (controller != null) {
-                                                    if (controller!.value.position >= controller!.value.duration &&
-                                                        !controller!.value.isPlaying) {
-                                                      if (videoCounter+1 == links.length) {
-                                                        videoCounter = 0;
+                                                    });
+                                                    newTimer!.cancel();
+                                                    update = 1;
+                                                    setStatePlayer((){});
+                                                  } else {
+                                                    final position = controller!.value.position;
+                                                    final duration = controller!.value.duration;
+                                                    if (position.toString() == duration.toString() && position.toString() != "0:00:00.000000") {
+                                                      print('complete');
+                                                      if (videoCounter < links.length - 1) {
+                                                        print('completeAdd: $videoCounter == ${links.length}');
+                                                        videoCounter = videoCounter + 1;
                                                         update = 0;
                                                       } else {
-                                                        videoCounter++;
+                                                        print('completeAgain $videoCounter == ${links.length}');
+                                                        videoCounter = 0;
                                                         update = 0;
                                                       }
                                                     }
                                                   }
                                                 });
-
 
                                                 return Container(
                                                     width: MediaQuery.of(context).size.width - 600,
