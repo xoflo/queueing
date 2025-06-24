@@ -406,7 +406,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "ticketName": ticketName ?? ""
       };
 
-      // testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
+      testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
       // final result = await http.post(uri, body: jsonEncode(body));
       // print(result.body);
 
