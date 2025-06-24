@@ -506,7 +506,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                       'userAssigned': "",
                                                       'stationName': "",
                                                       'stationNumber': "",
-                                                      'serviceType': "${service.serviceType}"
+                                                      'serviceType': "${service.serviceType}",
+                                                      'callCheck': 0
                                                     });
 
                                                     Navigator.pop(context);

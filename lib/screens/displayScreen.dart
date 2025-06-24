@@ -264,26 +264,21 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             builder: (context) {
                               Timer? firstTimer;
                               return StatefulBuilder(
-                                builder: (BuildContext context, void Function(void Function()) setStateFirst) {
+                                builder: (context, setStateFirst) {
                                   Future<List<Ticket>> tickets = getTicketSQL();
-                                  Timer.periodic(Duration(seconds: 2), (value) async {
-                                    try {
-                                      if (updateFirst == 0) {
-                                        firstTimer!.cancel();
-                                        setStateFirst((){});
-                                        updateFirst = 1;
-                                      }
-                                    } catch(e) {
-                                      print(e);
+                                  firstTimer = Timer.periodic(Duration(seconds: 2), (value) async {
+                                    if (updateFirst == 0) {
+                                      firstTimer!.cancel();
+                                      updateFirst = 1;
+                                      setStateFirst((){});
                                     }
                                   });
 
                                   return FutureBuilder(
                                     future: tickets,
                                     builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
-                                      return Row(
+                                      return snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ? Row(
                                         children: [
-                                          snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ?
                                           Container(
                                             padding: EdgeInsets.all(20),
                                             height: MediaQuery.of(context).size.height - 340,
@@ -292,7 +287,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 itemCount: snapshot.data!.length,
                                                 itemBuilder: (context, i) {
                                                   final ticket = snapshot.data![i];
-
                                                   return Padding(
                                                     padding: const EdgeInsets.all(5),
                                                     child: Card(
@@ -308,14 +302,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                     ),
                                                   );
                                                 }),
-                                          ) :
-                                          Container(
-                                              height: 650,
-                                              child: Center(child: Text("No Tickets Serving", style: TextStyle(color: Colors.grey)))) :
-                                          Container(
-                                            height: 100,
-                                            width: 100,
-                                            child: CircularProgressIndicator(),
                                           ),
                                           StatefulBuilder(
                                             builder: (BuildContext context, void Function(void Function()) setStateCard) {
@@ -357,6 +343,17 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             },
                                           )
                                         ],
+                                      ) : Container(
+                                          height: MediaQuery.of(context).size.height - 340,
+                                          width: MediaQuery.of(context).size.width * 3/4,
+                                          child: Center(child: Text("No Tickets Serving", style: TextStyle(color: Colors.grey)))) :
+                                      Container(
+                                        height: MediaQuery.of(context).size.height - 340,
+                                        width: MediaQuery.of(context).size.width * 3/4,
+                                        child: Center(child: Container(
+                                            height: 50,
+                                            width: 50,
+                                            child: CircularProgressIndicator())),
                                       );
                                     },
                                   );
