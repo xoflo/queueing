@@ -23,12 +23,20 @@ class _DisplayScreenState extends State<DisplayScreen> {
   int updateSecond = 1;
   int updateFirst = 1;
 
+  double opacity = 0.0;
+  Color color = Colors.white;
+  int hue = 0;
+  late Timer colorTimer;
+
   @override
   void dispose() {
     timer.cancel();
+    colorTimer.cancel();
     super.dispose();
   }
-  
+
+
+
   @override
   Widget build(BuildContext context) {
     containerColor = Theme.of(context).cardTheme.color;
@@ -293,9 +301,11 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                       child: Padding(
                                                         padding: const EdgeInsets.all(30.0),
                                                         child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
                                                           children: [
+                                                            Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
+                                                            Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
                                                             Text(ticket.serviceType!, style: TextStyle(fontSize: 30)),
-                                                            Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 30)),
                                                           ],
                                                         ),
                                                       ),
@@ -329,8 +339,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                               child: Column(
                                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                                 children: [
-                                                                  Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-                                                                  Text("${snapshot.data!.last.serviceCode}${snapshot.data!.last.number}", style: TextStyle(fontSize: 30)),
+                                                                  Text("${snapshot.data!.last.stationName} ${snapshot.data!.last.stationNumber}", style: TextStyle(fontSize: 30)),
+                                                                  Text("${snapshot.data!.last.codeAndNumber}", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
+                                                                  Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30)),
                                                                 ],
                                                               ),
                                                             ),
@@ -393,6 +404,28 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     ),
                   ) : Container()
                 ],
+              ),
+              StatefulBuilder(
+                builder: (context, setStateFade) {
+
+                  colorTimer = Timer.periodic(Duration(seconds: 10), (_) {
+                    setStateFade(() {
+                      hue = (hue + 30) % 360;
+                      color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.2, 1.0).toColor();
+                      opacity = opacity == 0.0 ? 0.5 : 0.0;
+                    });
+                    colorTimer.cancel();
+                  });
+
+                  return AnimatedOpacity(
+                    opacity: opacity,
+                    duration: Duration(seconds: 2),
+                    child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        color: color),
+                  );
+                },
               ),
             ],
           ) : Container(

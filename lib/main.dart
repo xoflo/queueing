@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       title: 'Ombudsman Queueing App',
       theme: ThemeData(
         fontFamily: 'Inter',
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
       ),
       home: LoginScreen(),
       //

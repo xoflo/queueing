@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/foundation.dart';
@@ -33,221 +34,247 @@ class _ServicesScreenState extends State<ServicesScreen> {
   bool _connected = false;
   TestPrint testPrint = TestPrint();
 
+  Timer? timer;
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    _resetTimer();
+    super.initState();
+  }
+
+
+  _resetTimer() {
+    timer?.cancel();
+    timer = Timer(const Duration(seconds: 5), () {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreenSaver()));
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-          children: [
-            logoBackground(context),
-            Column(
-              children: [
-
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: EdgeInsets.all(5),
-                    child: IconButton(onPressed: () {
-                      showDialog(context: context, builder: (_) => StatefulBuilder(
-                        builder: (BuildContext context, void Function(void Function()) setStateDialog) {
-                          return FutureBuilder(
-                            future: initPlatformState(),
-                            builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                              return AlertDialog(
-                                  content: Container(
-                                    height: 250,
-                                    width: 300,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ListView(
-                                        children: <Widget>[
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            children: <Widget>[
-                                              const SizedBox(width: 10),
-                                              const Text(
-                                                'Device:',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
+        body: Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => _resetTimer(),
+          child: Stack(
+            children: [
+              logoBackground(context),
+              Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: IconButton(onPressed: () {
+                        showDialog(context: context, builder: (_) => StatefulBuilder(
+                          builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+                            return FutureBuilder(
+                              future: initPlatformState(),
+                              builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+                                return AlertDialog(
+                                    content: Container(
+                                      height: 250,
+                                      width: 300,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ListView(
+                                          children: <Widget>[
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: <Widget>[
+                                                const SizedBox(width: 10),
+                                                const Text(
+                                                  'Device:',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(width: 30),
-                                              Expanded(
-                                                child: DropdownButton(
-                                                  items: _getDeviceItems(),
-                                                  onChanged: (BluetoothDevice? value) =>
-                                                      setStateDialog(() => _device = value),
-                                                  value: _device,
+                                                const SizedBox(width: 30),
+                                                Expanded(
+                                                  child: DropdownButton(
+                                                    items: _getDeviceItems(),
+                                                    onChanged: (BluetoothDevice? value) =>
+                                                        setStateDialog(() => _device = value),
+                                                    value: _device,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            children: <Widget>[
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-                                                onPressed: () async {
-                                                  await initPlatformState();
-                                                },
-                                                child: const Text(
-                                                  'Refresh',
-                                                  style: TextStyle(color: Colors.white),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 20),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor: _connected ? Colors.red : Colors.green),
-                                                onPressed: _connected ? _disconnect : _connect,
-                                                child: Text(
-                                                  _connected ? 'Disconnect' : 'Connect',
-                                                  style: TextStyle(color: Colors.white),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Padding(
-                                            padding:
-                                            const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-                                              onPressed: () {
-                                                testPrint.sample();
-                                              },
-                                              child: const Text('PRINT TEST',
-                                                  style: TextStyle(color: Colors.white)),
+                                              ],
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              children: <Widget>[
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                                                  onPressed: () async {
+                                                    await initPlatformState();
+                                                  },
+                                                  child: const Text(
+                                                    'Refresh',
+                                                    style: TextStyle(color: Colors.white),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 20),
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                      backgroundColor: _connected ? Colors.red : Colors.green),
+                                                  onPressed: _connected ? _disconnect : _connect,
+                                                  child: Text(
+                                                    _connected ? 'Disconnect' : 'Connect',
+                                                    style: TextStyle(color: Colors.white),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                                                onPressed: () {
+                                                  testPrint.sample();
+                                                },
+                                                child: const Text('PRINT TEST',
+                                                    style: TextStyle(color: Colors.white)),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ));
+                              },
+                            );
+                          },
+                        ));
+                      }, icon: Icon(Icons.settings)),
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Select Service to Queue", style: TextStyle(fontSize: 30)),
+                      StatefulBuilder(
+                        builder: (BuildContext context,
+                            void Function(void Function()) setStateList) {
+                          return FutureBuilder(
+                            future: getServiceGroups(assignedGroup),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                              return Column(
+                                children: [
+                                  lastAssigned.isNotEmpty
+                                      ? IconButton(
+                                      onPressed: () {
+                                        assignedGroup = lastAssigned.last;
+                                        lastAssigned.removeLast();
+                                        setStateList((){});
+                                      },
+                                      icon: Icon(Icons.chevron_left))
+                                      : Container(),
+                                  snapshot.connectionState == ConnectionState.done
+                                      ? Container(
+                                    height: MediaQuery.of(context).size.height - 100,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(15.0),
+                                      child: GridView.builder(
+                                          gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                              childAspectRatio: 3 / 1.2,
+                                              crossAxisCount: MediaQuery.of(context).size.width > 700 ? MediaQuery.of(context).size.width > 500 ? 3 : 5 : 1),
+                                          itemCount: snapshot.data!.length,
+                                          itemBuilder: (context, i) {
+                                            return snapshot.data![i]['serviceType'] !=
+                                                null
+                                                ? Builder(builder: (context) {
+                                              final service = Service.fromJson(
+                                                  snapshot.data![i]);
+                                              return Padding(
+                                                padding: EdgeInsets.all(3),
+                                                child: GestureDetector(
+                                                  onTap: () async {
+                                                    final List<dynamic> result = await getSettings(context);
+                                                    int priority = int.parse(result.where((e) => e['controlName'] == 'Priority Option').toList()[0]['value']);
+                                                    int ticketname = int.parse(result.where((e) => e['controlName'] == 'Ticket Name Option').toList()[0]['value']);
+          
+                                                    if (priority == 1) {
+                                                      priorityDialog(service, ticketname);
+                                                    } else {
+                                                      if (ticketname == 1) {
+                                                        nameDialog(service, "None");
+                                                      } else {
+                                                        addTicketSQL(service.serviceType!, service.serviceCode!, "None");
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
+          
+                                                      }
+                                                    }
+                                                  },
+                                                  child: Card(
+                                                    child:
+                                                    Column(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Text(service.serviceType!, style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            })
+                                                : Builder(builder: (context) {
+                                              final group = ServiceGroup.fromJson(
+                                                  snapshot.data![i]);
+                                              return Padding(
+                                                padding: EdgeInsets.all(10),
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    lastAssigned.add(assignedGroup);
+                                                    assignedGroup = group.name!;
+                                                    setStateList((){});
+                                                  },
+                                                  child: Card(
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Text(group.name!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            });
+                                          }),
+                                    ),
+                                  )
+                                      : Center(
+                                    child: Container(
+                                      height: 100,
+                                      width: 100,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.blue,
                                       ),
                                     ),
-                                  ));
+                                  )
+                                ],
+                              );
                             },
                           );
                         },
-                      ));
-                    }, icon: Icon(Icons.settings)),
+                      ),
+                    ],
                   ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Select Service to Queue", style: TextStyle(fontSize: 30)),
-                    StatefulBuilder(
-                      builder: (BuildContext context,
-                          void Function(void Function()) setStateList) {
-                        return FutureBuilder(
-                          future: getServiceGroups(assignedGroup),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                            return Column(
-                              children: [
-                                lastAssigned.isNotEmpty
-                                    ? IconButton(
-                                    onPressed: () {
-                                      assignedGroup = lastAssigned.last;
-                                      lastAssigned.removeLast();
-                                      setStateList((){});
-                                    },
-                                    icon: Icon(Icons.chevron_left))
-                                    : Container(),
-                                snapshot.connectionState == ConnectionState.done
-                                    ? Container(
-                                  height: MediaQuery.of(context).size.height - 100,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: GridView.builder(
-                                        gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: MediaQuery.of(context).size.width > 700 ? MediaQuery.of(context).size.width > 500 ? 3 : 5 : 1),
-                                        itemCount: snapshot.data!.length,
-                                        itemBuilder: (context, i) {
-                                          return snapshot.data![i]['serviceType'] !=
-                                              null
-                                              ? Builder(builder: (context) {
-                                            final service = Service.fromJson(
-                                                snapshot.data![i]);
-                                            return Padding(
-                                              padding: EdgeInsets.all(3),
-                                              child: GestureDetector(
-                                                onTap: () async {
-                                                  final List<dynamic> result = await getSettings(context);
-                                                  int priority = int.parse(result.where((e) => e['controlName'] == 'Priority Option').toList()[0]['value']);
-                                                  int ticketname = int.parse(result.where((e) => e['controlName'] == 'Ticket Name Option').toList()[0]['value']);
-
-                                                  if (priority == 1) {
-                                                    priorityDialog(service, ticketname);
-                                                  } else {
-                                                    if (ticketname == 1) {
-                                                      nameDialog(service, "None");
-                                                    } else {
-                                                      addTicketSQL(service.serviceType!, service.serviceCode!, "None");
-                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
-
-                                                    }
-                                                  }
-                                                },
-                                                child: Card(
-                                                  child:
-                                                  Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(service.serviceType!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          })
-                                              : Builder(builder: (context) {
-                                            final group = ServiceGroup.fromJson(
-                                                snapshot.data![i]);
-                                            return Padding(
-                                              padding: EdgeInsets.all(10),
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  lastAssigned.add(assignedGroup);
-                                                  assignedGroup = group.name!;
-                                                  setStateList((){});
-                                                },
-                                                child: Card(
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(group.name!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          });
-                                        }),
-                                  ),
-                                )
-                                    : Center(
-                                  child: Container(
-                                    height: 100,
-                                    width: 100,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ));
   }
 
@@ -258,7 +285,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       title: Text("Name (Optional)"),
       content: Container(
         height: 60,
-        width: 100,
+        width: 200,
         child: TextField(
           controller: name,
           decoration: InputDecoration(
@@ -281,7 +308,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   priorityDialog(Service service, [int? ticketname]) {
     showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text("Select priorities (if applicable)"),
+      title: Text("Select Priorities (If Applicable)"),
       content: FutureBuilder(
         future: getPriority(),
         builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
@@ -289,7 +316,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
             height: 400,
             width: 400,
             child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2),
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, i) {
                   final priority = Priority.fromJson(snapshot.data![i]);
@@ -311,7 +339,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(priority.priorityName!, style: TextStyle(fontSize: 15))
+                            Text(priority.priorityName!, style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700))
                           ],
                         ),
                       ),
@@ -463,8 +491,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
     return response;
   }
 
-// print
-
   Future<void> initPlatformState() async {
 
      var statusLocation = Permission.location;
@@ -546,7 +572,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-
   List<DropdownMenuItem<BluetoothDevice>> _getDeviceItems() {
     List<DropdownMenuItem<BluetoothDevice>> items = [];
     if (_devices.isEmpty) {
@@ -584,10 +609,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     setState(() => _connected = false);
   }
 
-  Future show(
-      String message, {
-        Duration duration = const Duration(seconds: 3),
-      }) async {
+  Future show(String message, {Duration duration = const Duration(seconds: 3),}) async {
     await new Future.delayed(new Duration(milliseconds: 100));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -601,3 +623,71 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
 }
+
+class ServicesScreenSaver extends StatefulWidget {
+  const ServicesScreenSaver({super.key});
+
+  @override
+  State<ServicesScreenSaver> createState() => _ServicesScreenSaverState();
+}
+
+class _ServicesScreenSaverState extends State<ServicesScreenSaver> {
+
+  double opacity = 0.0;
+  Color color = Colors.white;
+  int hue = 0;
+  late Timer colorTimer;
+
+  @override
+  void dispose() {
+    colorTimer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          Navigator.pop(context);
+        },
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Stack(
+            children: [
+              logoBackground(context, null, null, 1),
+              Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                      padding: EdgeInsets.fromLTRB(0, 0, 0, 50),
+                      child: Text("Tap to Start", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),))),
+              StatefulBuilder(
+                builder: (context, setStateFade) {
+                  colorTimer = Timer.periodic(Duration(seconds: 8), (_) {
+                    setStateFade(() {
+                      hue = (hue + 30) % 360;
+                      color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.2, 1.0).toColor();
+                      opacity = opacity == 0.0 ? 0.6 : 0.0;
+                    });
+                    colorTimer.cancel();
+                  });
+
+                  return AnimatedOpacity(
+                    opacity: opacity,
+                    duration: Duration(seconds: 2),
+                    child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        color: color),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

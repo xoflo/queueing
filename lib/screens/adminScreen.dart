@@ -1188,7 +1188,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                 return ListTile(
                                   title: Text(
-                                      "${station.stationName} #${station.stationNumber}"),
+                                      "${station.stationName} ${station.stationNumber == 0 ? "" : station.stationNumber}"),
                                   subtitle: Row(
                                     children: [
                                       station.inSession == 1
@@ -1258,7 +1258,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 builder: (BuildContext context,
                     void Function(void Function()) setStateDialog) {
                   return Container(
-                    height: 180,
+                    height: 150,
                     width: 250,
                     child: Column(
                       children: [
@@ -1275,80 +1275,6 @@ class _AdminScreenState extends State<AdminScreen> {
                           decoration:
                               InputDecoration(labelText: 'Station Number'),
                         )),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: ListTile(
-                              title: Text("Service Type: $display"),
-                              onTap: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                          content: Container(
-                                            height: 300,
-                                            width: 200,
-                                            child: FutureBuilder(
-                                              future: getServiceSQL(),
-                                              builder: (BuildContext context,
-                                                  AsyncSnapshot<
-                                                          List<
-                                                              Map<String,
-                                                                  dynamic>>>
-                                                      snapshot) {
-                                                return snapshot
-                                                            .connectionState ==
-                                                        ConnectionState.done
-                                                    ? snapshot.data!.isNotEmpty
-                                                        ? Container(
-                                                            height: 300,
-                                                            width: 200,
-                                                            child: ListView
-                                                                .builder(
-                                                                    itemCount:
-                                                                        snapshot
-                                                                            .data!
-                                                                            .length,
-                                                                    itemBuilder:
-                                                                        (context,
-                                                                            i) {
-                                                                      final name =
-                                                                          snapshot.data![i]
-                                                                              [
-                                                                              'serviceType'];
-
-                                                                      return ListTile(
-                                                                        title: Text(
-                                                                            name),
-                                                                        onTap:
-                                                                            () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                          display =
-                                                                              name;
-                                                                          setStateDialog(
-                                                                              () {});
-                                                                        },
-                                                                      );
-                                                                    }),
-                                                          )
-                                                        : Text(
-                                                            "No Services Found",
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .grey))
-                                                    : Container(
-                                                        height: 100,
-                                                        width: 100,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                          color: Colors.blue,
-                                                        ),
-                                                      );
-                                              },
-                                            ),
-                                          ),
-                                        ));
-                              }),
-                        ),
                       ],
                     ),
                   );
@@ -1358,11 +1284,15 @@ class _AdminScreenState extends State<AdminScreen> {
                 TextButton(
                     onPressed: () {
                       try {
-                        addStationSQL(display);
+                        if (stationName.text.trim() == "") {
+                          addStationSQL(display);
+                          clearUserFields();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station name cannot be empty.")));
+                        }
                       } catch (e) {
                         print(e);
                       }
-                      clearUserFields();
                     },
                     child: Text("Add Station"))
               ],
@@ -1372,7 +1302,7 @@ class _AdminScreenState extends State<AdminScreen> {
   addStationSQL(String serviceType) async {
     final uri = Uri.parse('http://$site/queueing_api/api_station.php');
     final body = jsonEncode({
-      "stationNumber": "${stationNumber.text}",
+      "stationNumber": stationNumber.text,
       "stationName":
           "${stationName.text[0].toUpperCase() + stationName.text.substring(1).toLowerCase()}",
       "serviceType": serviceType,

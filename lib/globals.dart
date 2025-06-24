@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'models/media.dart';
 
-final site = "192.168.1.154:8080";
+final site = "127.0.0.1:8080";
 
 stringToList(String text) {
   if (text != "") {
@@ -17,7 +17,7 @@ stringToList(String text) {
   }
 }
 
-logoBackground(BuildContext context, [int? width, int? height]) {
+logoBackground(BuildContext context, [int? width, int? height, int? showColor]) {
   return Stack(
     children: [MediaQuery.of(context).size.width > (width != null ? width : 1500)
         ? Padding(
@@ -40,7 +40,7 @@ logoBackground(BuildContext context, [int? width, int? height]) {
       Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        color: Colors.white70,
+        color: showColor == null ? Colors.white70 : null,
       ),
     ],
   );
