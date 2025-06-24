@@ -46,7 +46,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       vqd.data == 0 ? Container(
                           padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                           height: 70,
-                          child: Text("Now Serving", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700))) : Container(
+                          child: Text("Now Serving", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700))) : Container(
                         height: 30
                       ),
                       Builder(
@@ -266,11 +266,15 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               return StatefulBuilder(
                                 builder: (BuildContext context, void Function(void Function()) setStateFirst) {
                                   Future<List<Ticket>> tickets = getTicketSQL();
-                                  Timer.periodic(Duration(seconds: 1), (value) async {
-                                    if (updateFirst == 0) {
-                                      firstTimer!.cancel();
-                                      setStateFirst((){});
-                                      updateFirst = 1;
+                                  Timer.periodic(Duration(seconds: 2), (value) async {
+                                    try {
+                                      if (updateFirst == 0) {
+                                        firstTimer!.cancel();
+                                        setStateFirst((){});
+                                        updateFirst = 1;
+                                      }
+                                    } catch(e) {
+                                      print(e);
                                     }
                                   });
 
@@ -279,7 +283,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                     builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
                                       return Row(
                                         children: [
-                                          snapshot.connectionState == ConnectionState.done ? snapshot.data!.length != 0 ?
+                                          snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ?
                                           Container(
                                             padding: EdgeInsets.all(20),
                                             height: MediaQuery.of(context).size.height - 340,

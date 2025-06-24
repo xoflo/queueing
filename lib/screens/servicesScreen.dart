@@ -163,7 +163,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                     child: GridView.builder(
                                         gridDelegate:
                                         SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: MediaQuery.of(context).size.width > 700 ? 5 : 3),
+                                            crossAxisCount: MediaQuery.of(context).size.width > 700 ? MediaQuery.of(context).size.width > 500 ? 3 : 5 : 1),
                                         itemCount: snapshot.data!.length,
                                         itemBuilder: (context, i) {
                                           return snapshot.data![i]['serviceType'] !=
@@ -196,7 +196,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                   Column(
                                                     mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
-                                                      Text(service.serviceType!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                      Text(service.serviceType!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
                                                     ],
                                                   ),
                                                 ),

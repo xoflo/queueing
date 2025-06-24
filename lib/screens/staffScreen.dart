@@ -88,7 +88,7 @@ class _StaffScreenState extends State<StaffScreen> {
                           }, icon: Icon(Icons.chevron_left)),
                           Text("Welcome, ${widget.user.username}",
                               style: TextStyle(
-                                  fontSize: 30, fontWeight: FontWeight.w700)),
+                                  fontSize: 20, fontWeight: FontWeight.w700)),
                           Spacer(),
                           IconButton(onPressed: () {
                             List<String> serviceSetToNull = [];
@@ -400,7 +400,8 @@ class _StaffSessionState extends State<StaffSession> {
                               child: Container(
                                 height: 300,
                                 width: 200,
-                                child: Center(
+                                child: Align(
+                                  alignment: Alignment.center,
                                   child: Text("No ticket to serve at the moment.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
                                 ),
                               ),
