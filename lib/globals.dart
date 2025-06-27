@@ -83,3 +83,31 @@ getMedia(BuildContext context) async {
   }
 }
 
+getServiceSQL() async {
+  try {
+    final uri = Uri.parse('http://$site/queueing_api/api_service.php');
+    final result = await http.get(uri);
+    final response = jsonDecode(result.body);
+    response.sort((a, b) => int.parse(a['id'].toString()).compareTo(int.parse(b['id'].toString())));
+
+    return response;
+  } catch(e){
+    print(e);
+    return [];
+  }
+}
+
+getServiceGroupSQL() async {
+  try {
+    final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
+    final result = await http.get(uri);
+    final response = jsonDecode(result.body);
+    response.sort((a, b) => int.parse(a['id'].toString())
+        .compareTo(int.parse(b['id'].toString())));
+    return response;
+  } catch (e) {
+    print(e);
+    return [];
+  }
+}
+

@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:queueing/models/services/service.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
 
@@ -21,6 +21,9 @@ class User {
     this.username = data['username'];
     this.loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
     this.servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet'].toString()) : null;
+
+    updateAssignedServices();
+    getUserUpdate();
   }
 
   update(dynamic data) async {
@@ -60,5 +63,39 @@ class User {
     } catch(e) {
       print(e);
     }
+  }
+
+  updateAssignedServices() async {
+
+    List<String> existingServices = [];
+    List<String> toKeep = [];
+    String? serviceSetHere;
+
+    if (serviceType != null) {
+      final List<dynamic> services = await getServiceSQL();
+
+      services.forEach((e) {
+        existingServices.add(e['serviceType']!);
+      });
+
+      for (int i = 0; i < serviceType!.length; i++) {
+        if (existingServices.contains(serviceType![i])) {
+          toKeep.add(serviceType![i]);
+        }
+      }
+
+      if (toKeep.length > 3) {
+        serviceSetHere = toKeep.sublist(0, 3).toString();
+      } else {
+        serviceSetHere = toKeep.isNotEmpty ? toKeep.toString() : "";
+      }
+
+      update({
+        'serviceType': toKeep.isNotEmpty ? toKeep.toString() : "",
+        'servicesSet' : serviceSetHere
+      });
+
+    }
+
   }
 }

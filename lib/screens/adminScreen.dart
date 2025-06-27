@@ -522,7 +522,7 @@ class _AdminScreenState extends State<AdminScreen> {
                       )
                           : Container(
                         padding: EdgeInsets.all(20),
-                            height: MediaQuery.of(context).size.height - 150,
+                            height: MediaQuery.of(context).size.height - 180,
                             child: Center(
                               child: Container(
                                 height: 50,
@@ -582,6 +582,8 @@ class _AdminScreenState extends State<AdminScreen> {
 
     if (serviceCodeMatch + serviceTypeMatch == 0) {
       return 1;
+    } else {
+      return 0;
     }
 
   }
@@ -620,8 +622,8 @@ class _AdminScreenState extends State<AdminScreen> {
                 actions: [
                   TextButton(onPressed: clearServiceFields, child: Text("Clear")),
                   TextButton(
-                      onPressed: () {
-                        final checkResult = serviceExistChecker(serviceType.text, serviceCode.text);
+                      onPressed: () async {
+                        int checkResult = await serviceExistChecker(serviceType.text, serviceCode.text);
 
                         if (checkResult == 1) {
                           if (i == 0) {
@@ -669,10 +671,22 @@ class _AdminScreenState extends State<AdminScreen> {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_service.php');
       final result = await http.get(uri);
-      final response = jsonDecode(result.body);
+      final List<dynamic> response = jsonDecode(result.body);
       response.sort((a, b) => int.parse(a['id'].toString())
           .compareTo(int.parse(b['id'].toString())));
-      return response;
+
+      List<Service> services = [];
+
+      for (int i = 0; i < response.length; i++) {
+        final service = Service.fromJson(response[i]);
+        final result = service.selfDeleteWithoutGroup();
+        if (result == 1) {
+          services.add(service);
+        }
+      }
+
+      return services;
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
@@ -740,13 +754,14 @@ class _AdminScreenState extends State<AdminScreen> {
                               if (widget.user.username == user.username) {
                                 bool obscure = true;
                                 final userController = TextEditingController();
+                                final oldPassController = TextEditingController();
                                 final passController = TextEditingController();
 
                                 showDialog(context: context, builder: (_) => StatefulBuilder(builder: (BuildContext context, void Function(void Function()) setState) {
                                   return AlertDialog(
                                     title: Text("Set Admin Password"),
                                     content: Container(
-                                      height: 90,
+                                      height: 140,
                                       width: 200,
                                       child: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
@@ -754,8 +769,14 @@ class _AdminScreenState extends State<AdminScreen> {
                                           TextField(
                                             obscureText: obscure,
                                             decoration: InputDecoration(
-
-                                                labelText: "Password"
+                                                labelText: "Old Password"
+                                            ),
+                                            controller: oldPassController,
+                                          ),
+                                          TextField(
+                                            obscureText: obscure,
+                                            decoration: InputDecoration(
+                                                labelText: "New Password"
                                             ),
                                             controller: passController,
                                           ),
@@ -770,13 +791,17 @@ class _AdminScreenState extends State<AdminScreen> {
                                     ),
                                     actions: [
                                       TextButton(onPressed: () {
-                                        user.update({
-                                          'pass': userController.text
-                                        });
+                                        if (oldPassController.text != user.pass) {
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Current Password does not match.")));
+                                        } else {
+                                          user.update({
+                                            'pass': userController.text
+                                          });
 
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
-                                        setStateView((){});
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                          setStateView((){});
+                                        }
                                       }, child: Text("Update"))
                                     ],
                                   );
@@ -860,13 +885,13 @@ class _AdminScreenState extends State<AdminScreen> {
                                                       width: 400,
                                                       child: FutureBuilder(
                                                           future: getServiceSQL(),
-                                                          builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                          builder: (context, AsyncSnapshot<List<Service>> snapshot) {
                                                             return StatefulBuilder(
                                                               builder: (BuildContext context, void Function(void Function()) setStateList) {
                                                                 return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
                                                                     itemCount: snapshot.data!.length,
                                                                     itemBuilder: (context, i) {
-                                                                      final service = Service.fromJson(snapshot.data![i]);
+                                                                      final service = snapshot.data![i];
 
                                                                       return CheckboxListTile(
                                                                         title: Text(service.serviceType!),
@@ -925,15 +950,18 @@ class _AdminScreenState extends State<AdminScreen> {
                     child: Text("No users found",
                         style: TextStyle(color: Colors.grey)),
                   )
-                      : Center(
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      child: CircularProgressIndicator(
-                        color: Colors.blue,
-                      ),
-                    ),
-                  );
+                      : Container(
+                    height: MediaQuery.of(context).size.height - 200,
+                        child: Center(
+                                            child: Container(
+                        height: 50,
+                        width: 50,
+                        child: CircularProgressIndicator(
+
+                        ),
+                                            ),
+                                          ),
+                      );
                 },
               );
             },
@@ -1031,8 +1059,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                             context,
                                                         AsyncSnapshot<
                                                                 List<
-                                                                    Map<String,
-                                                                        dynamic>>>
+                                                                    Service>>
                                                             snapshot) {
                                                       return snapshot
                                                                   .connectionState ==
@@ -1053,8 +1080,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                                         itemBuilder:
                                                                             (context,
                                                                                 i) {
-                                                                          final user =
-                                                                              Service.fromJson(snapshot.data![i]);
+                                                                          final user = snapshot.data![i];
                                                                           return CheckboxListTile(
                                                                               title: Text(user.serviceType!),
                                                                               value: services.contains(user.serviceType!),
@@ -1262,15 +1288,18 @@ class _AdminScreenState extends State<AdminScreen> {
                           child: Text("No stations found",
                               style: TextStyle(color: Colors.grey)),
                         )
-                  : Center(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        child: CircularProgressIndicator(
-                          color: Colors.blue,
-                        ),
-                      ),
-                    );
+                  : Container(
+                height: MediaQuery.of(context).size.height - 200,
+                child: Center(
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    child: CircularProgressIndicator(
+
+                    ),
+                  ),
+                ),
+              );
             },
           )
         ],
@@ -1405,8 +1434,8 @@ class _AdminScreenState extends State<AdminScreen> {
     final body = jsonEncode({'id': '$id'});
     final result = await http.delete(uri, body: body);
     final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
-    final List<dynamic> services = getServiceSQL();
-    final sorted = services.where((e) => e['assignedGroup'].toString() == name.toString()).toList();
+    final List<Service> services = await getServiceSQL();
+    final sorted = services.where((e) => e.assignedGroup.toString() == name.toString()).toList();
     for (int i = 0; i < sorted.length; i++) {
       final service = Service.fromJson(sorted[i]);
       final body = jsonEncode({'id': service.id!});
