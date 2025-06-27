@@ -444,7 +444,7 @@ class _AdminScreenState extends State<AdminScreen> {
                           ? snapshot.data!.isNotEmpty
                           ? Container(
                         padding: EdgeInsets.all(10),
-                        height: 400,
+                        height: MediaQuery.of(context).size.height - 200,
                         child: ListView.builder(
                             itemCount: snapshot.data!.length,
                             itemBuilder: (context, i) {
@@ -456,7 +456,9 @@ class _AdminScreenState extends State<AdminScreen> {
                                       title: Text("${service.serviceType} (${service.serviceCode})"),
                                       subtitle: Text("Service"),
                                       onTap: () {
-                                        addService(1, service.id);
+                                        addService(1, service);
+                                        serviceType.text =  service.serviceType!;
+                                        serviceCode.text =  service.serviceCode!;
                                       },
                                       trailing: IconButton(
                                           onPressed: () {
@@ -518,15 +520,17 @@ class _AdminScreenState extends State<AdminScreen> {
                               style: TextStyle(color: Colors.grey)),
                         ),
                       )
-                          : Center(
-                        child: Container(
-                          height: 100,
-                          width: 100,
-                          child: CircularProgressIndicator(
-                            color: Colors.blue,
-                          ),
-                        ),
-                      )
+                          : Container(
+                        padding: EdgeInsets.all(20),
+                            height: MediaQuery.of(context).size.height - 150,
+                            child: Center(
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                          )
                     ],
                   );
                 },
@@ -571,43 +575,80 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() {});
   }
 
-  addService(int i, [int? id]) {
-    showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              title: Text('${i == 0 ? 'Add' : 'Edit'} Service'),
-              content: Container(
-                height: 120,
-                width: 250,
-                child: Column(
-                  children: [
-                    Container(
-                        child: TextField(
-                      controller: serviceType,
-                      decoration: InputDecoration(
-                        labelText: 'Service Type',
-                      ),
-                    )),
-                    Container(
-                        child: TextField(
-                      controller: serviceCode,
-                      decoration: InputDecoration(labelText: 'Service Code'),
-                    )),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      addServiceSQL(i, id);
-                      clearServiceFields();
-                    },
-                    child: Text("${i == 0 ? 'Add' : 'Update'} Service"))
-              ],
-            ));
+  serviceExistChecker(String serviceType, String serviceCode) async {
+    final List<Service> services = await getServiceSQL();
+    final serviceCodeMatch = services.where((e) => e.serviceCode == serviceCode).toList().length;
+    final serviceTypeMatch = services.where((e) => e.serviceType == serviceType).toList().length;
+
+    if (serviceCodeMatch + serviceTypeMatch == 0) {
+      return 1;
+    }
+
   }
 
-  addServiceSQL(int i, [int? id]) async {
+  addService(int i, [Service? service]) {
+    showDialog(
+        context: context,
+        builder: (_) => PopScope(
+          canPop: true,
+          onPopInvokedWithResult: (bool, value) {
+            serviceType.clear();
+            serviceCode.clear();
+          },
+          child: AlertDialog(
+                title: Text('${i == 0 ? 'Add' : 'Edit'} Service'),
+                content: Container(
+                  height: 120,
+                  width: 250,
+                  child: Column(
+                    children: [
+                      Container(
+                          child: TextField(
+                        controller: serviceType,
+                        decoration: InputDecoration(
+                          labelText: 'Service Type',
+                        ),
+                      )),
+                      Container(
+                          child: TextField(
+                        controller: serviceCode,
+                        decoration: InputDecoration(labelText: 'Service Code'),
+                      )),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(onPressed: clearServiceFields, child: Text("Clear")),
+                  TextButton(
+                      onPressed: () {
+                        final checkResult = serviceExistChecker(serviceType.text, serviceCode.text);
+
+                        if (checkResult == 1) {
+                          if (i == 0) {
+                            addServiceSQL();
+                          } else {
+                            service!.update({
+                              'serviceType': serviceType.text,
+                              'serviceCode': serviceCode.text,
+                            });
+
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(SnackBar(content: Text("Service Updated")));
+                            setState(() {});
+                          }
+                          clearServiceFields();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Service Name & Code are Unique")));
+                        }
+                      },
+                      child: Text("${i == 0 ? 'Add' : 'Update'} Service"))
+                ],
+              ),
+        ));
+  }
+
+  addServiceSQL() async {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
     final body = jsonEncode({
       'serviceType': serviceType.text,
@@ -615,17 +656,12 @@ class _AdminScreenState extends State<AdminScreen> {
       'assignedGroup' : assignedGroups,
     });
 
-    http.Response? result;
 
-    if (i == 0) {
-      result = await http.post(uri, body: body);
-    } else {
-      result = await http.put(uri, body: body);
-    }
+    final result = await http.post(uri, body: body);
 
     Navigator.pop(context);
     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Service ${i == 0 ? 'Added' : 'Updated'}")));
+        .showSnackBar(SnackBar(content: Text("Service Added")));
     setState(() {});
   }
 

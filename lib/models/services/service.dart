@@ -15,18 +15,17 @@ class Service {
     this.id = int.parse(data['id']);
     this.serviceType = data['serviceType'];
     this.serviceCode = data['serviceCode'];
-    this.assignedGroup = data['groupAssigned'];
+    this.assignedGroup = data['assignedGroup'];
   }
 
   update(dynamic data) async {
 
     try {
-
       final body = {
         'id': data['id'] ?? this.id,
         'serviceType' : data['serviceType'] ?? this.serviceType,
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
-        'groupAssigned': data['serviceCode'] ?? this.assignedGroup,
+        'assignedGroup': data['assignedGroup'] ?? this.assignedGroup,
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_service.php');
