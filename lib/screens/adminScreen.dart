@@ -158,15 +158,15 @@ class _AdminScreenState extends State<AdminScreen> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-                        addService();
+                        addService(0);
                       },
-                      child: Text("+ Add Service")),
+                      child: Text("+ Service")),
 
                   ElevatedButton(
                       onPressed: () {
                         addGroupDialog();
                       },
-                      child: Text("+ Add Group")),
+                      child: Text("+ Group")),
                   ElevatedButton(
                       onPressed: () {
                         TextEditingController name = TextEditingController();
@@ -246,7 +246,7 @@ class _AdminScreenState extends State<AdminScreen> {
                               ),
                             )));
                       },
-                      child: Text("+ Add Priority Type")),
+                      child: Text("+ Priority Type")),
                   Spacer(),
                   IconButton(onPressed: () {
                     showDialog(context: context, builder: (_) => AlertDialog(
@@ -455,13 +455,16 @@ class _AdminScreenState extends State<AdminScreen> {
                                     return ListTile(
                                       title: Text("${service.serviceType} (${service.serviceCode})"),
                                       subtitle: Text("Service"),
+                                      onTap: () {
+                                        addService(1, service.id);
+                                      },
                                       trailing: IconButton(
                                           onPressed: () {
                                             showDialog(context: context, builder: (_) => AlertDialog(
                                               title: Text("Confirm Delete?"),
                                               content: Container(
                                                 width: 100,
-                                                height: 60,
+                                                height: 40,
                                                 child: Text("This service will be gone forever."),
                                               ),
                                               actions: [
@@ -510,7 +513,8 @@ class _AdminScreenState extends State<AdminScreen> {
                           : Container(
                         height: 400,
                         child: Center(
-                          child: Text("No contents found",
+                          child:
+                          Text("Add Groups or Services",
                               style: TextStyle(color: Colors.grey)),
                         ),
                       )
@@ -563,14 +567,15 @@ class _AdminScreenState extends State<AdminScreen> {
     final result = await http.delete(uri, body: body);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Service Deleted")));
+    Navigator.pop(context);
     setState(() {});
   }
 
-  addService() {
+  addService(int i, [int? id]) {
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
-              title: Text('Add Service'),
+              title: Text('${i == 0 ? 'Add' : 'Edit'} Service'),
               content: Container(
                 height: 120,
                 width: 250,
@@ -594,26 +599,33 @@ class _AdminScreenState extends State<AdminScreen> {
               actions: [
                 TextButton(
                     onPressed: () {
-                      addServiceSQL();
+                      addServiceSQL(i, id);
                       clearServiceFields();
                     },
-                    child: Text("Add Service"))
+                    child: Text("${i == 0 ? 'Add' : 'Update'} Service"))
               ],
             ));
   }
 
-  addServiceSQL() async {
+  addServiceSQL(int i, [int? id]) async {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
     final body = jsonEncode({
-      'serviceType':
-          "${serviceType.text[0].toUpperCase() + serviceType.text.substring(1).toLowerCase()}",
-      'serviceCode': "${serviceCode.text}",
-      'assignedGroup' : "$assignedGroups",
+      'serviceType': serviceType.text,
+      'serviceCode': serviceCode.text,
+      'assignedGroup' : assignedGroups,
     });
-    final result = await http.post(uri, body: body);
+
+    http.Response? result;
+
+    if (i == 0) {
+      result = await http.post(uri, body: body);
+    } else {
+      result = await http.put(uri, body: body);
+    }
+
     Navigator.pop(context);
     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Service Added")));
+        .showSnackBar(SnackBar(content: Text("Service ${i == 0 ? 'Added' : 'Updated'}")));
     setState(() {});
   }
 

@@ -408,7 +408,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
               StatefulBuilder(
                 builder: (context, setStateFade) {
 
-                  colorTimer = Timer.periodic(Duration(seconds: 10), (_) {
+                  colorTimer = Timer.periodic(Duration(seconds: 20), (_) {
                     setStateFade(() {
                       hue = (hue + 30) % 360;
                       color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.2, 1.0).toColor();

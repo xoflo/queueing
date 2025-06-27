@@ -46,18 +46,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
                 SizedBox(height: 20),
                 Container(
-                    width: 250,
+                    width: 300,
                     child: TextField(
                       onSubmitted: (value) {
                         submit();
                       },
                       controller: username,
                       decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)
+                        ),
                         hintText: 'User'
                       ),
                     )),
+                SizedBox(height: 10),
                 Container(
-                    width: 250,
+                    width: 300,
                     child: TextField(
                       obscureText: obscure,
                       controller: pass,
@@ -65,7 +69,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         submit();
                       },
                       decoration: InputDecoration(
-                          hintText: 'Password'
+                          hintText: 'Password',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)
+                        ),
                       ),
                     )),
                 IconButton(onPressed: () {
@@ -74,10 +81,14 @@ class _LoginScreenState extends State<LoginScreen> {
           
                   });
                 }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
-                SizedBox(height: 20),
-                ElevatedButton(onPressed: () {
-                  submit();
-                }, child: Text("Log-in")),
+                SizedBox(height: 10),
+                Container(
+                  width: 300,
+                  padding: EdgeInsets.all(5),
+                  child: ElevatedButton(onPressed: () {
+                    submit();
+                  }, child: Text("Log-in")),
+                ),
           
                 SizedBox(height: 10),
                 Row(

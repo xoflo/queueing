@@ -8,11 +8,13 @@ class Control {
   int? id;
   String? controlName;
   int? value;
+  String? other;
 
   Control.fromJson(dynamic data) {
     this.id = int.parse(data['id']);
     this.controlName = data['controlName'];
     this.value = int.parse(data['value']);
+    this.other = data['other'];
 
   }
 
@@ -22,6 +24,7 @@ class Control {
         'id': data['id'] ?? this.id,
         'controlName' : data['controlName'] ?? this.controlName,
         'value': data['value'] ?? this.value,
+        'other' : data['other'] ?? this.other,
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
