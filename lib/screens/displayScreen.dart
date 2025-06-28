@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
+import 'package:queueing/models/controls.dart';
 import 'package:video_player/video_player.dart';
 import '../models/ticket.dart';
 
@@ -570,30 +571,42 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                         textAlign: TextAlign.center),
                                   ],
                                 )),
-                        SizedBox(height: 100),
+                        MediaQuery.of(context).size.width > 1500 ? vqd.data == 0 ? SizedBox(height: 160) : SizedBox(height: 120) : SizedBox(),
                         MediaQuery.of(context).size.width > 1500
-                            ? Container(
-                                height: 50,
-                                child: Marquee(
-                                  text:
-                                      '    Office of the Ombudsman, Davao City    ',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                      fontSize: 40),
-                                  scrollAxis: Axis.horizontal,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  blankSpace: 20.0,
-                                  velocity: 100.0,
-                                  pauseAfterRound: Duration(seconds: 1),
-                                  startPadding: 10.0,
-                                  accelerationDuration: Duration(seconds: 1),
-                                  accelerationCurve: Curves.linear,
-                                  decelerationDuration:
-                                      Duration(milliseconds: 500),
-                                  decelerationCurve: Curves.easeOut,
-                                ),
-                              )
+                            ? FutureBuilder(
+                              future: getSettings(context, 'Sliding Text', 1),
+                              builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> slidingText) {
+                                print("Sliding: ${slidingText.data}");
+
+                                return slidingText.connectionState == ConnectionState.done
+                                    ? int.parse(slidingText.data!['value']) == 1 ? Container(
+                                      height: 100,
+                                      child: Marquee(
+                                    text:
+                                    slidingText.data!['other'].toString(),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                        fontSize: 60),
+                                    scrollAxis: Axis.horizontal,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    blankSpace: 100.0,
+                                    velocity: 100.0,
+                                    pauseAfterRound: Duration(seconds: 1),
+                                    startPadding: 10.0,
+                                    accelerationDuration: Duration(seconds: 1),
+                                    accelerationCurve: Curves.linear,
+                                    decelerationDuration:
+                                    Duration(milliseconds: 500),
+                                    decelerationCurve: Curves.easeOut,
+                                                                      ),
+                                                                    )
+                                    : SizedBox(height: 50) : Padding(
+                                      padding: const EdgeInsets.all(15.0),
+                                      child: LinearProgressIndicator(),
+                                    );
+                              },
+                            )
                             : Container()
                       ],
                     ),

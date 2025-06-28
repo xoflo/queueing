@@ -406,7 +406,13 @@ class _AdminScreenState extends State<AdminScreen> {
                                         control.controlName! == "Sliding Text" ? TextButton(onPressed: () {
                                           TextEditingController sliding = TextEditingController();
 
-                                          sliding.text = control.other!;
+
+                                          final space = "                    ";
+
+                                          String string = control.other!;
+                                          string.trimLeft();
+                                          string = string.split(space).join('\n');
+                                          sliding.text = string;
 
                                           showDialog(context: context, builder: (_) => AlertDialog(
                                             title: Text("Set Text"),
@@ -433,8 +439,13 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ),
                                             actions: [
                                               TextButton(onPressed: () {
+
+                                                List<String> lines = sliding.text.split(RegExp(r'\r?\n'));
+                                                lines = lines.where((line) => line.trim().isNotEmpty).toList();
+                                                String finalString = space + lines.join(space);
+
                                                 control.update({
-                                                  'other' : sliding.text
+                                                  'other' : finalString
                                                 });
                                                 Navigator.pop(context);
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
