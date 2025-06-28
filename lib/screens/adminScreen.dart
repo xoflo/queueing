@@ -265,179 +265,186 @@ class _AdminScreenState extends State<AdminScreen> {
                                   final control = Control.fromJson(snapshot.data![i]);
 
                                   return ListTile(
-                                    title: Text(control.controlName!),
-                                    subtitle: control.controlName! == "Video in Queue Display" ?
-                                    TextButton(child: Text("Change Video Files"), onPressed: () async {
-                                      showDialog(context: context, builder: (_) => StatefulBuilder(
-                                        builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                          return AlertDialog(
-                                            title: Text("Video List"),
-                                            content: FutureBuilder(
-                                              future: getMedia(context),
-                                              builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                                return snapshot.connectionState == ConnectionState.done ?
-                                                Container(
-                                                  height: 400,
-                                                  width: 400,
-                                                  child: snapshot.data!.length == 0 ? Center(child: Text("No Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
-                                                      itemCount: snapshot.data!.length,
-                                                      itemBuilder: (context, i) {
-                                                        final media = Media.fromJson(snapshot.data![i]);
-                                                        return ListTile(
-                                                          title: Text(media.name!),
-                                                          onTap: () async {
+                                    title: Row(
+                                      spacing: 5,
+                                      children: [
+                                        Text(control.controlName!),
+                                        Spacer(),
+                                        control.controlName! == "Video in Queue Display" ? TextButton(onPressed: () async {
+                                          showDialog(context: context, builder: (_) => StatefulBuilder(
+                                            builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                              return AlertDialog(
+                                                title: Text("Video List"),
+                                                content: FutureBuilder(
+                                                  future: getMedia(context),
+                                                  builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                    return snapshot.connectionState == ConnectionState.done ?
+                                                    Container(
+                                                      height: 400,
+                                                      width: 400,
+                                                      child: snapshot.data!.length == 0 ? Center(child: Text("No Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
+                                                          itemCount: snapshot.data!.length,
+                                                          itemBuilder: (context, i) {
+                                                            final media = Media.fromJson(snapshot.data![i]);
+                                                            return ListTile(
+                                                              title: Text(media.name!),
+                                                              onTap: () async {
 
-                                                            final link = Uri.parse("http://$site/queueing_api/videos/${media.link}");
-                                                            final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
-                                                              setStateSetting(() {}); // refresh UI when video is ready
-                                                            });
+                                                                final link = Uri.parse("http://$site/queueing_api/videos/${media.link}");
+                                                                final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
+                                                                  setStateSetting(() {}); // refresh UI when video is ready
+                                                                });
 
-                                                            videoController.setLooping(true);
-                                                            int player = 0;
+                                                                videoController.setLooping(true);
+                                                                int player = 0;
 
-                                                            dispose(){
-                                                              videoController.dispose();
-                                                            }
+                                                                dispose(){
+                                                                  videoController.dispose();
+                                                                }
 
-                                                            showDialog(context: context, builder: (_) => AlertDialog(
-                                                              content: StatefulBuilder(
-                                                                builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
-                                                                  return Container(
-                                                                    height: 400,
-                                                                    width: 400,
-                                                                    child: Column(
-                                                                      children: [
-                                                                        Container(
-                                                                            height: 350,
-                                                                            width: 350,
-                                                                            child: VideoPlayer(videoController)
+                                                                showDialog(context: context, builder: (_) => AlertDialog(
+                                                                  content: StatefulBuilder(
+                                                                    builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                                                      return Container(
+                                                                        height: 400,
+                                                                        width: 400,
+                                                                        child: Column(
+                                                                          children: [
+                                                                            Container(
+                                                                                height: 350,
+                                                                                width: 350,
+                                                                                child: VideoPlayer(videoController)
+                                                                            ),
+                                                                            IconButton(onPressed: () {if (player == 0) {
+                                                                              player = 1;
+                                                                              videoController.play();
+                                                                              setStateSetting((){});
+                                                                            } else {
+                                                                              player = 0;
+                                                                              videoController.pause();
+                                                                              setStateSetting((){});
+                                                                            }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
+                                                                          ],
                                                                         ),
-                                                                        IconButton(onPressed: () {if (player == 0) {
-                                                                          player = 1;
-                                                                          videoController.play();
-                                                                          setStateSetting((){});
-                                                                        } else {
-                                                                          player = 0;
-                                                                          videoController.pause();
-                                                                          setStateSetting((){});
-                                                                        }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
-                                                                      ],
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ));
+                                                              },
+                                                              trailing: IconButton(onPressed: () async {
+                                                                final uri = Uri.parse(
+                                                                    "http://$site/queueing_api/api_videoDelete.php");
+
+                                                                final response = await http.post(uri, body: {
+                                                                  'filename': media.link,
+                                                                });
+
+                                                                if (response.statusCode == 200) {
+                                                                  print("Response: ${response.body}");
+
+                                                                  final uri = Uri.parse('http://$site/queueing_api/api_media.php');
+                                                                  final body = jsonEncode({'id': media.id});
+                                                                  final result = await http.delete(uri, body: body);
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
+                                                                  setStateList((){});
+
+
+                                                                } else {
+                                                                  print("Error: ${response.statusCode}");
+                                                                }
+
+                                                              }, icon: Icon(Icons.delete)),
+                                                            );
+                                                          }),
+                                                    ) : Container(
+                                                      height: 50,
+                                                      width: 50,
+                                                      child: CircularProgressIndicator(),
+                                                    );
+                                                  },
+                                                ),
+                                                actions: [
+                                                  TextButton(onPressed: () async {
+                                                    try {
+                                                      final result = await FilePicker.platform.pickFiles(
+                                                        type: FileType.video,
+                                                        allowMultiple: false,
+                                                        withData: true,
+                                                      );
+
+                                                      if (result != null && result.files.isNotEmpty) {
+                                                        final file = result.files.first;
+                                                        final uri = Uri.parse(
+                                                            "http://$site/queueing_api/api_video.php");
+
+                                                        final request = http.MultipartRequest(
+                                                            "POST", uri);
+                                                        request.files.add(
+                                                            http.MultipartFile.fromBytes(
+                                                              'file',
+                                                              file.bytes!,
+                                                              filename: file.name,
                                                             ));
-                                                          },
-                                                          trailing: IconButton(onPressed: () async {
-                                                            final uri = Uri.parse(
-                                                                "http://$site/queueing_api/api_videoDelete.php");
 
-                                                            final response = await http.post(uri, body: {
-                                                              'filename': media.link,
-                                                            });
-
-                                                            if (response.statusCode == 200) {
-                                                              print("Response: ${response.body}");
-
-                                                              final uri = Uri.parse('http://$site/queueing_api/api_media.php');
-                                                              final body = jsonEncode({'id': media.id});
-                                                              final result = await http.delete(uri, body: body);
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
-                                                              setStateList((){});
+                                                        final response = await request.send();
+                                                        addMedia(file.name, file.name);
+                                                        setStateList((){});
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
 
 
-                                                            } else {
-                                                              print("Error: ${response.statusCode}");
-                                                            }
+                                                      }
+                                                    } catch(e) {
+                                                      print(e);
+                                                    }
 
-                                                          }, icon: Icon(Icons.delete)),
-                                                        );
-                                                      }),
-                                                ) : Container(
-                                                  height: 50,
-                                                  width: 50,
-                                                  child: CircularProgressIndicator(),
-                                                );
-                                              },
+                                                  }, child: Text("Add Video"))
+                                                ],
+                                              );
+                                            },
+                                          ));
+                                        }, child: Text("Set Videos")) : SizedBox(),
+                                        control.controlName! == "Sliding Text" ? TextButton(onPressed: () {
+                                          TextEditingController sliding = TextEditingController();
+
+                                          sliding.text = control.other!;
+
+                                          showDialog(context: context, builder: (_) => AlertDialog(
+                                            title: Text("Set Text"),
+                                            content: Container(
+                                              height: 300,
+                                              width: 350,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Column(
+                                                  children: [
+                                                    TextField(
+                                                      controller: sliding,
+                                                      decoration: InputDecoration(
+                                                        border: OutlineInputBorder(
+                                                            borderRadius: BorderRadius.circular(15)
+                                                        ),
+                                                        hintText: 'Input Sliding Text Content Here',
+                                                      ),
+                                                      maxLines: 10,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
                                             actions: [
-                                              TextButton(onPressed: () async {
-                                                try {
-                                                  final result = await FilePicker.platform.pickFiles(
-                                                    type: FileType.video,
-                                                    allowMultiple: false,
-                                                    withData: true,
-                                                  );
-
-                                                  if (result != null && result.files.isNotEmpty) {
-                                                    final file = result.files.first;
-                                                    final uri = Uri.parse(
-                                                        "http://$site/queueing_api/api_video.php");
-
-                                                    final request = http.MultipartRequest(
-                                                        "POST", uri);
-                                                    request.files.add(
-                                                        http.MultipartFile.fromBytes(
-                                                          'file',
-                                                          file.bytes!,
-                                                          filename: file.name,
-                                                        ));
-
-                                                    final response = await request.send();
-                                                    addMedia(file.name, file.name);
-                                                    setStateList((){});
-                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
-
-
-                                                  }
-                                                } catch(e) {
-                                                  print(e);
-                                                }
-
-                                              }, child: Text("Add Video"))
+                                              TextButton(onPressed: () {
+                                                control.update({
+                                                  'other' : sliding.text
+                                                });
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
+                                              }, child: Text("Update"))
                                             ],
-                                          );
-                                        },
-                                      ));
-                                    }) :
-                                    control.controlName! == "Sliding Text" ? TextButton(onPressed: () {
-                                      TextEditingController sliding = TextEditingController();
+                                          ));
+                                        }, child: Text("Set Text")) : SizedBox(),
 
-                                      sliding.text = control.other!;
-
-                                      showDialog(context: context, builder: (_) => AlertDialog(
-                                        title: Text("Set Text"),
-                                        content: Container(
-                                          height: 300,
-                                          width: 350,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              children: [
-                                                TextField(
-                                                  decoration: InputDecoration(
-                                                    border: OutlineInputBorder(
-                                                      borderRadius: BorderRadius.circular(15)
-                                                    ),
-                                                    hintText: 'Input Sliding Text Content Here',
-                                                  ),
-                                                  maxLines: 10,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        actions: [
-                                          TextButton(onPressed: () {
-                                            control.update({
-                                              'other' : sliding.text
-                                            });
-                                            Navigator.pop(context);
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
-                                          }, child: Text("Update"))
-                                        ],
-                                      ));
-                                    }, child: Text("Set Text")) : null,
+                                      ],
+                                    ),
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
                                       control.update({
                                         'id': control.id!,
