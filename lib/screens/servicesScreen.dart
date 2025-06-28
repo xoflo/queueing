@@ -50,8 +50,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
 
   _resetTimer() {
+    print('reset');
     timer?.cancel();
-    timer = Timer(const Duration(seconds: 5), () {
+    timer = Timer(const Duration(seconds: 60), () {
       Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreenSaver()));
     });
   }
@@ -222,7 +223,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                     Column(
                                                       mainAxisAlignment: MainAxisAlignment.center,
                                                       children: [
-                                                        Text(service.serviceType!, style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: Text(service.serviceType!, style: TextStyle(fontSize: service.serviceType!.length > 20 ? 30 : 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                                                        ),
                                                       ],
                                                     ),
                                                   ),
@@ -339,7 +343,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(priority.priorityName!, style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700))
+                            Text(priority.priorityName!, style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700), textAlign: TextAlign.center)
                           ],
                         ),
                       ),

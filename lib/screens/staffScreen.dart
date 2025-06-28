@@ -74,6 +74,7 @@ class _StaffScreenState extends State<StaffScreen> {
           child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30), textAlign: TextAlign.center,)),
         ) : Stack(
           children: [
+            imageBackground(context),
             logoBackground(context, 350),
             Container(
               padding: EdgeInsets.all(20),
@@ -102,7 +103,7 @@ class _StaffScreenState extends State<StaffScreen> {
                             List<String> servicesSet = widget.user.servicesSet != null ? stringToList(widget.user.servicesSet.toString()) : serviceSetToNull;
 
                             showDialog(context: context, builder: (_) => AlertDialog(
-                              title: Text("Services to Accommodate (3 Max)"),
+                              title: Text("Select Services (3 Max)"),
                               content: Container(
                                 height: 400,
                                 width: 400,
@@ -136,7 +137,7 @@ class _StaffScreenState extends State<StaffScreen> {
                                   });
                                   await widget.user.getUserUpdate();
                                   Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You will now accomodate the set services.")));
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("The selected services will queue to your selected station.")));
                                 }, child: Text("Confirm"))
                               ],
                             ));
@@ -150,80 +151,72 @@ class _StaffScreenState extends State<StaffScreen> {
                     builder: (BuildContext context,
                         AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
                       return snapshot.connectionState == ConnectionState.done
-                          ? Builder(
-                            builder: (context) {
-                              List<String> sorted = [];
+                          ? Container(
+                        height: MediaQuery.of(context).size.height - 110,
+                        child: GridView.builder(
+                            gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                              childAspectRatio: 3 / 1.2,
+                                crossAxisCount: MediaQuery.of(context).size.width < 800 ? MediaQuery.of(context).size.width < 700 ? 2 : 3 : 5),
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, i) {
+                              final station =
+                              Station.fromJson(snapshot.data![i]);
+                              return InkWell(
+                                child: Card(
+                                    child: Container(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text("${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                          station.inSession == 0
+                                              ? Text("Available",
+                                              style:
+                                              TextStyle(color: Colors.green))
+                                              : Text("${station.userInSession}",
+                                              style: TextStyle(
+                                                  color: Colors.redAccent))
+                                        ],
+                                      ),
+                                    )),
+                                onTap: () async {
+                                  final timestamp = DateTime.now().toString();
 
-                              for (int i = 0; i < snapshot.data!.length; i++) {
-                                sorted.add(snapshot.data![i]['serviceType']);
-                              }
+                                  if (station.inSession == 1) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                "Station is currently in session.")));
+                                  } else {
+                                    station.update({
+                                      "inSession": 1,
+                                      "userInSession": widget.user.username,
+                                      "sessionPing": timestamp
+                                    });
 
-                              sorted = sorted.toSet().toList();
-
-                              return Container(
-                                  height: MediaQuery.of(context).size.height - 110,
-                                  child: GridView.builder(
-                                      gridDelegate:
-                                          SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: MediaQuery.of(context).size.width < 700 ? 3 : 5),
-                                      itemCount: snapshot.data!.length,
-                                      itemBuilder: (context, i) {
-                                        final station =
-                                            Station.fromJson(snapshot.data![i]);
-                                        return InkWell(
-                                          child: Card(
-                                              child: Container(
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Text("${station.stationName} ${station.stationNumber}"),
-                                                station.inSession == 0
-                                                    ? Text("Available",
-                                                        style:
-                                                            TextStyle(color: Colors.green))
-                                                    : Text("${station.userInSession}",
-                                                        style: TextStyle(
-                                                            color: Colors.redAccent))
-                                                                                  ],
-                                                                                ),
-                                              )),
-                                          onTap: () async {
-                                            final timestamp = DateTime.now().toString();
-
-                                            if (station.inSession == 1) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                      content: Text(
-                                                          "Station is currently in session.")));
-                                            } else {
-                                              station.update({
-                                                "inSession": 1,
-                                                "userInSession": widget.user.username,
-                                                "sessionPing": timestamp
-                                              });
-
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (_) => StaffSession(
-                                                          user: widget.user,
-                                                          station: station)));
-                                            }
-                                          },
-                                        );
-                                      }),
-                                );
-                            }
-                          )
-                          : Center(
-                              child: Container(
-                                height: 50,
-                                width: 50,
-                                child: CircularProgressIndicator(
-                                  color: Colors.redAccent,
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) => StaffSession(
+                                                user: widget.user,
+                                                station: station)));
+                                  }
+                                },
+                              );
+                            }),
+                      )
+                          : Container(
+                        height: MediaQuery.of(context).size.height - 200,
+                            child: Center(
+                                child: Container(
+                                  height: 50,
+                                  width: 50,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.redAccent,
+                                  ),
                                 ),
                               ),
-                            );
+                          );
                     },
                   ),
                 ],
@@ -351,7 +344,7 @@ class _StaffSessionState extends State<StaffSession> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text("Station: ", style: TextStyle(fontSize: 20)),
-                        Text("${widget.station.stationName} ${widget.station.stationNumber}", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20))
+                        Text("${widget.station.stationName}${widget.station.stationNumber == 0 ? "" : " ${widget.station.stationNumber}"}", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20))
                       ],
                     ),
                     SizedBox(height: 30),

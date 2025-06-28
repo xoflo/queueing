@@ -40,10 +40,21 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
       Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        color: showColor == null ? Colors.white70 : null,
+        color: showColor == null ? Colors.white60 : null,
       ),
     ],
   );
+}
+
+imageBackground(BuildContext context) {
+  return Container(
+      height: MediaQuery.of(context).size.height,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+            fit: BoxFit.fill,
+            image:
+            Image.asset('images/background.jpg').image),
+      ));
 }
 
 getSettings(BuildContext context, [String? controlName]) async {

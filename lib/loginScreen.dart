@@ -27,14 +27,17 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MediaQuery.of(context).size.width < 350 || MediaQuery.of(context).size.height < 550 ? Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
-      ) : Center(
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                fit: BoxFit.fill,
+                image: Image.asset('images/background.jpg').image),
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 25),
                 Container(
@@ -53,10 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       controller: username,
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)
-                        ),
-                        hintText: 'User'
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          hintText: 'User'
                       ),
                     )),
                 SizedBox(height: 10),
@@ -69,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         submit();
                       },
                       decoration: InputDecoration(
-                          hintText: 'Password',
+                        hintText: 'Password',
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10)
                         ),
@@ -78,29 +81,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 IconButton(onPressed: () {
                   obscure = !obscure;
                   setState(() {
-          
+
                   });
                 }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
                 SizedBox(height: 10),
                 Container(
                   width: 300,
                   padding: EdgeInsets.all(5),
-                  child: ElevatedButton(onPressed: () {
+                  child: ElevatedButton(
+                      onPressed: () {
                     submit();
                   }, child: Text("Log-in")),
                 ),
-          
+
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
-                    }, child: Text("Queue Display")),
+                    }, child: Text("Queue Screen")),
                     SizedBox(width: 10),
                     ElevatedButton(onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
-                    }, child: Text("Queue Services")),
+                    }, child: Text("Services Kiosk")),
                   ],
                 ),
 
@@ -111,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  submit() async{
+  submit() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final result = await http.get(uri);
@@ -120,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (sorted.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
       } else {
+        print(sorted[0]);
         final user = User.fromJson(sorted[0]);
 
 

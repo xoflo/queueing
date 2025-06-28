@@ -15,7 +15,7 @@ class Service {
     this.id = int.parse(data['id']);
     this.serviceType = data['serviceType'];
     this.serviceCode = data['serviceCode'];
-    this.assignedGroup = data['assignedGroup'];
+    this.assignedGroup = data['assignedGroup'] == null || data['assignedGroup'] == "" ? null : data['assignedGroup'];
 
   }
 
@@ -26,7 +26,7 @@ class Service {
         'id': data['id'] ?? this.id,
         'serviceType' : data['serviceType'] ?? this.serviceType,
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
-        'assignedGroup': data['assignedGroup'] ?? this.assignedGroup,
+        'assignedGroup': data['assignedGroup'] == null || data['assignedGroup'] == "" ? null : data['assignedGroup'],
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_service.php');
@@ -67,6 +67,8 @@ class Service {
       } else {
         return 1;
       }
+    } else {
+      return 1;
     }
 
   }

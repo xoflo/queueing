@@ -14,28 +14,39 @@ class User {
 
 
   User.fromJson(dynamic data) {
-    this.id = int.parse(data['id']);
-    this.pass = data['pass'];
-    this.userType = data['userType'];
-    this.serviceType = stringToList(data['serviceType']);
-    this.username = data['username'];
-    this.loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
-    this.servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet'].toString()) : null;
+    print("1");
+    id = int.parse(data['id']);
+    print("11");
+    pass = data['pass'];
+    print("2");
+    userType = data['userType'];
+    print("6");
+    serviceType = data['serviceType'] != null || data['serviceType'] != "" ? stringToList(data['serviceType'].toString()) : null;
+    print("5");
+    username = data['username'];
+    print("1");
+    loggedIn = data['loggedIn'] == null ? null : DateTime.parse(data['loggedIn']);
+    print("3");
+    servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : null;
 
-    updateAssignedServices();
     getUserUpdate();
+
+    if (userType == "Staff") {
+      print("staff");
+      updateAssignedServices();
+    }
   }
 
   update(dynamic data) async {
     try {
       final body = {
-        'id': data['id'] ?? this.id,
-        'pass' : data['pass'] ?? this.pass,
-        'userType': data['userType'] ?? this.userType,
-        'serviceType': data['serviceType'] ?? this.serviceType.toString(),
-        'username': data['username'] ?? this.username,
-        'loggedIn': data['loggedIn'] ?? this.loggedIn.toString(),
-        'servicesSet': data['servicesSet'] ?? this.servicesSet.toString(),
+        'id': data['id'] ?? id,
+        'pass' : data['pass'] ?? pass,
+        'userType': data['userType'] ?? userType,
+        'serviceType': data['serviceType'] ?? serviceType.toString(),
+        'username': data['username'] ?? username,
+        'loggedIn': data['loggedIn'] ?? loggedIn.toString(),
+        'servicesSet': data['servicesSet'] ?? servicesSet.toString(),
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
@@ -55,10 +66,10 @@ class User {
       id = int.parse(data['id']);
       pass = data['pass'];
       userType = data['userType'];
-      serviceType = stringToList(data['serviceType']);
+      serviceType = data['serviceType'] != null || data['serviceType'] != "" ? stringToList(data['serviceType'].toString()) : "";
       username = data['username'];
       loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
-      servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet'].toString()) : null;
+      servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : "";
 
     } catch(e) {
       print(e);
@@ -92,7 +103,7 @@ class User {
 
       update({
         'serviceType': toKeep.isNotEmpty ? toKeep.toString() : "",
-        'servicesSet' : serviceSetHere
+        'servicesSet' : serviceSetHere,
       });
 
     }

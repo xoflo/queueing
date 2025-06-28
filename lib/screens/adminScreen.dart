@@ -266,7 +266,8 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                   return ListTile(
                                     title: Text(control.controlName!),
-                                    subtitle: control.controlName! == "Video in Queue Display" ? TextButton(child: Text("Change Video Files"), onPressed: () async {
+                                    subtitle: control.controlName! == "Video in Queue Display" ?
+                                    TextButton(child: Text("Change Video Files"), onPressed: () async {
                                       showDialog(context: context, builder: (_) => StatefulBuilder(
                                         builder: (BuildContext context, void Function(void Function()) setStateList) {
                                           return AlertDialog(
@@ -398,15 +399,51 @@ class _AdminScreenState extends State<AdminScreen> {
                                           );
                                         },
                                       ));
-                                    }) : null,
+                                    }) :
+                                    control.controlName! == "Sliding Text" ? TextButton(onPressed: () {
+                                      TextEditingController sliding = TextEditingController();
+
+                                      sliding.text = control.other!;
+
+                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                        title: Text("Set Text"),
+                                        content: Container(
+                                          height: 300,
+                                          width: 350,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              children: [
+                                                TextField(
+                                                  decoration: InputDecoration(
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15)
+                                                    ),
+                                                    hintText: 'Input Sliding Text Content Here',
+                                                  ),
+                                                  maxLines: 10,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(onPressed: () {
+                                            control.update({
+                                              'other' : sliding.text
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
+                                          }, child: Text("Update"))
+                                        ],
+                                      ));
+                                    }, child: Text("Set Text")) : null,
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
                                       control.update({
                                         'id': control.id!,
                                         'value': control.value! == 1 ? 0 : 1
                                       });
-                                      setStateSetting((){
-
-                                      });
+                                      setStateSetting((){});
                                     }),
                                   );
                                 }) : Container(
@@ -679,7 +716,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
       for (int i = 0; i < response.length; i++) {
         final service = Service.fromJson(response[i]);
-        final result = service.selfDeleteWithoutGroup();
+        final result = await service.selfDeleteWithoutGroup();
         if (result == 1) {
           services.add(service);
         }
@@ -887,7 +924,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                           future: getServiceSQL(),
                                                           builder: (context, AsyncSnapshot<List<Service>> snapshot) {
                                                             return StatefulBuilder(
-                                                              builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                              builder: (context, setStateList) {
                                                                 return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
                                                                     itemCount: snapshot.data!.length,
                                                                     itemBuilder: (context, i) {
@@ -908,8 +945,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                                                       );
                                                                     }) : Center(
                                                                   child: Container(
-                                                                    height: 100,
-                                                                    width: 100,
+                                                                    height: 50,
+                                                                    width: 50,
                                                                     child: CircularProgressIndicator(),
                                                                   ),
                                                                 );
@@ -919,14 +956,13 @@ class _AdminScreenState extends State<AdminScreen> {
                                                     ),
                                                     actions: [
                                                       TextButton(onPressed: () async {
-                                                        final servicesSetToAdd = services.length > 3 ? '[${services[0]}, ${services[1]}, ${services[2]}]' : services.toString();
+                                                        final servicesSetToAdd = services.length > 3 ? services.sublist(0, 3).toString() : services.toString();
                                                         await user.update({
                                                           'id': user.id!,
                                                           'serviceType': services.toString(),
                                                           'servicesSet': servicesSetToAdd
                                                         });
                                                         setStateView(() {});
-                                                        widget.user.getUserUpdate();
                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
                                                         Navigator.pop(context);
                                                       }, child: Text("Update"))
@@ -1050,6 +1086,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                       showDialog(
                                           context: context,
                                           builder: (_) => AlertDialog(
+                                            title: Text("Assign Services"),
                                                 content: Container(
                                                   height: 400,
                                                   width: 300,
@@ -1097,13 +1134,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                                             )
                                                           : Center(
                                                               child: Container(
-                                                                height: 100,
-                                                                width: 100,
+                                                                height: 50,
+                                                                width: 50,
                                                                 child:
-                                                                    CircularProgressIndicator(
-                                                                  color: Colors
-                                                                      .blue,
-                                                                ),
+                                                                    CircularProgressIndicator(),
                                                               ),
                                                             );
                                                     },
