@@ -649,16 +649,6 @@ class ServicesScreenSaver extends StatefulWidget {
 
 class _ServicesScreenSaverState extends State<ServicesScreenSaver> {
 
-  double opacity = 0.0;
-  Color color = Colors.white;
-  int hue = 0;
-  late Timer colorTimer;
-
-  @override
-  void dispose() {
-    colorTimer.cancel();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -678,27 +668,7 @@ class _ServicesScreenSaverState extends State<ServicesScreenSaver> {
                   child: Padding(
                       padding: EdgeInsets.fromLTRB(0, 0, 0, 50),
                       child: Text("Tap to Start", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),))),
-              StatefulBuilder(
-                builder: (context, setStateFade) {
-                  colorTimer = Timer.periodic(Duration(seconds: 8), (_) {
-                    setStateFade(() {
-                      hue = (hue + 30) % 360;
-                      color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.2, 1.0).toColor();
-                      opacity = opacity == 0.0 ? 0.6 : 0.0;
-                    });
-                    colorTimer.cancel();
-                  });
-
-                  return AnimatedOpacity(
-                    opacity: opacity,
-                    duration: Duration(seconds: 2),
-                    child: Container(
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
-                        color: color),
-                  );
-                },
-              ),
+              RainbowOverlay()
             ],
           ),
         ),

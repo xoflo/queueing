@@ -23,18 +23,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
   int updateSecond = 1;
   int updateFirst = 1;
 
-  double opacity = 0.0;
-  Color color = Colors.white;
-  int hue = 0;
-  late Timer colorTimer;
-
-  @override
-  void dispose() {
-    timer.cancel();
-    colorTimer.cancel();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     containerColor = Theme.of(context).cardTheme.color;
@@ -210,14 +198,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                               .duration;
                                                                           if (position.toString() == duration.toString() &&
                                                                               position.toString() != "0:00:00.000000") {
-                                                                            print('complete');
+
                                                                             if (videoCounter <
                                                                                 links.length - 1) {
-                                                                              print('completeAdd: $videoCounter == ${links.length}');
+
                                                                               videoCounter = videoCounter + 1;
                                                                               update = 0;
                                                                             } else {
-                                                                              print('completeAgain $videoCounter == ${links.length}');
+
                                                                               videoCounter = 0;
                                                                               update = 0;
                                                                             }
@@ -576,7 +564,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             ? FutureBuilder(
                               future: getSettings(context, 'Sliding Text', 1),
                               builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> slidingText) {
-                                print("Sliding: ${slidingText.data}");
 
                                 return slidingText.connectionState == ConnectionState.done
                                     ? int.parse(slidingText.data!['value']) == 1 ? Container(
@@ -610,29 +597,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             : Container()
                       ],
                     ),
-                    StatefulBuilder(
-                      builder: (context, setStateFade) {
-                        colorTimer = Timer.periodic(Duration(seconds: 20), (_) {
-                          setStateFade(() {
-                            hue = (hue + 30) % 360;
-                            color =
-                                HSVColor.fromAHSV(1.0, hue.toDouble(), 0.2, 1.0)
-                                    .toColor();
-                            opacity = opacity == 0.0 ? 0.5 : 0.0;
-                          });
-                          colorTimer.cancel();
-                        });
-
-                        return AnimatedOpacity(
-                          opacity: opacity,
-                          duration: Duration(seconds: 2),
-                          child: Container(
-                              height: MediaQuery.of(context).size.height,
-                              width: MediaQuery.of(context).size.width,
-                              color: color),
-                        );
-                      },
-                    ),
+                    RainbowOverlay()
                   ],
                 )
               : Container(

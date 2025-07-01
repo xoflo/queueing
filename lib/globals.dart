@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'models/media.dart';
+import 'dart:math' as math;
 
 final site = "127.0.0.1:8080";
 
@@ -126,3 +128,114 @@ getServiceGroupSQL() async {
   }
 }
 
+class RainbowOverlay extends StatefulWidget {
+  const RainbowOverlay({super.key});
+
+  @override
+  State<RainbowOverlay> createState() => _RainbowOverlayState();
+}
+
+class _RainbowOverlayState extends State<RainbowOverlay>
+    with SingleTickerProviderStateMixin {
+  // 🎛 Adjustable
+  final int visibleSeconds = 5;
+  final int invisibleSeconds = 25;
+  final double fadeSeconds = 1.0; // how long fade in/out takes
+
+  late final AnimationController _controller;
+  late final int totalCycleSeconds;
+
+  @override
+  void initState() {
+    super.initState();
+    totalCycleSeconds = visibleSeconds + invisibleSeconds;
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: totalCycleSeconds),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            final value = _controller.value;
+            final cyclePos = value * totalCycleSeconds;
+
+            double opacity = 0;
+            if (cyclePos < fadeSeconds) {
+              // fade in
+              opacity = cyclePos / fadeSeconds;
+            } else if (cyclePos < visibleSeconds - fadeSeconds) {
+              // fully visible
+              opacity = 0.8;
+            } else if (cyclePos < visibleSeconds) {
+              // fade out
+              opacity = (visibleSeconds - cyclePos) / fadeSeconds;
+            } else {
+              // invisible part
+              opacity = 0;
+            }
+
+            // scroll value loops within visibleSeconds
+            final scrollValue = (cyclePos / visibleSeconds) % 1;
+            final dx = -screenWidth * scrollValue;
+
+            return AnimatedOpacity(
+              opacity: opacity,
+              duration: const Duration(milliseconds: 200), // short duration for smooth update
+              child: ClipRect(
+                child: Transform.translate(
+                  offset: Offset(dx, 0),
+                  child: OverflowBox(
+                    maxWidth: double.infinity,
+                    child: Row(
+                      children: [
+                        _rainbowStrip(screenWidth),
+                        _rainbowStrip(screenWidth),
+                        _rainbowStrip(screenWidth),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _rainbowStrip(double width) {
+    return Container(
+      width: width,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Colors.red,
+            Colors.orange,
+            Colors.yellow,
+            Colors.green,
+            Colors.blue,
+            Colors.indigo,
+            Colors.purple,
+            Colors.red,
+          ],
+        ),
+      ),
+    );
+  }
+}
