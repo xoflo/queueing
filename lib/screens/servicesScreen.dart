@@ -66,7 +66,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           onPointerDown: (_) => _resetTimer(),
           child: Stack(
             children: [
-              logoBackground(context),
+              logoBackground(context, 300),
               Column(
                 children: [
                   Align(
@@ -162,7 +162,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Select Service to Queue", style: TextStyle(fontSize: 30)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        spacing: 10,
+                        children: [
+                          Text("Select Service to Queue", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
+                          Icon(Icons.receipt_long)
+                        ],
+                      ),
                       StatefulBuilder(
                         builder: (BuildContext context,
                             void Function(void Function()) setStateList) {
@@ -190,7 +197,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                           gridDelegate:
                                           SliverGridDelegateWithFixedCrossAxisCount(
                                               childAspectRatio: 3 / 1.2,
-                                              crossAxisCount: MediaQuery.of(context).size.width > 700 ? MediaQuery.of(context).size.width > 500 ? 3 : 5 : 1),
+                                              crossAxisCount: MediaQuery.of(context).size.width > 1200 ? 3 : MediaQuery.of(context).size.width > 800 ? 2 : 1),
                                           itemCount: snapshot.data!.length,
                                           itemBuilder: (context, i) {
                                             return snapshot.data![i]['serviceType'] !=
@@ -213,8 +220,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                         nameDialog(service, "None");
                                                       } else {
                                                         addTicketSQL(service.serviceType!, service.serviceCode!, "None");
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
-          
+                                                        Navigator.pop(context);
                                                       }
                                                     }
                                                   },
@@ -225,7 +231,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                       children: [
                                                         Padding(
                                                           padding: const EdgeInsets.all(8.0),
-                                                          child: Text(service.serviceType!, style: TextStyle(fontSize: service.serviceType!.length > 20 ? 30 : 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                                                          child: Text(
+                                                              service.serviceType!, style: TextStyle(fontSize: service.serviceType!.length > 20 ? 30 : 40, fontWeight: FontWeight.w700),
+
+                                                            textAlign: TextAlign.center,
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
@@ -299,8 +311,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
       actions: [
         TextButton(onPressed: () {
           addTicketSQL(service.serviceType!, service.serviceCode!, priorityType, name.text);
-
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
           Navigator.pop(context);
         }, child: Text(""
             "Submit"))
@@ -334,8 +344,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
                           nameDialog(service, priority.priorityName!);
                         } else {
                           addTicketSQL(service.serviceType!,service.serviceCode!, priority.priorityName!);
-                    
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
                           Navigator.pop(context);
                         }
                       },
@@ -438,12 +446,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "ticketName": ticketName ?? ""
       };
 
-      testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
-      // final result = await http.post(uri, body: jsonEncode(body));
-      // print(result.body);
 
-      final result = await http.post(uri, body: jsonEncode(body));
-      print(result.body);
+      final value = testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
+
+      if (value == 1) {
+        final result = await http.post(uri, body: jsonEncode(body));
+        print(result.body);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Bluetooth Printer Connected.")));
+      }
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -660,7 +672,7 @@ class _ServicesScreenSaverState extends State<ServicesScreenSaver> {
           width: MediaQuery.of(context).size.width,
           child: Stack(
             children: [
-              logoBackground(context, null, null, 1),
+              logoBackground(context, 500, null, 1),
               Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
