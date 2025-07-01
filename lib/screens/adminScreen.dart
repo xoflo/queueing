@@ -412,12 +412,13 @@ class _AdminScreenState extends State<AdminScreen> {
                                           String string = control.other!;
                                           string.trimLeft();
                                           string = string.split(space).join('\n');
+                                          string = string.replaceFirst(RegExp(r'[\n\r]+'), '');
                                           sliding.text = string;
 
                                           showDialog(context: context, builder: (_) => AlertDialog(
                                             title: Text("Set Text"),
                                             content: Container(
-                                              height: 300,
+                                              height: 310,
                                               width: 350,
                                               child: Padding(
                                                 padding: const EdgeInsets.all(8.0),
@@ -433,6 +434,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                                       ),
                                                       maxLines: 10,
                                                     ),
+                                                    SizedBox(height: 5),
+                                                    Text("'Enter' will separate messages.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center)
                                                   ],
                                                 ),
                                               ),

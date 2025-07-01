@@ -32,7 +32,7 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
                   height: height.toDouble(),
                   child: Image.asset('images/logo.png')) : Image.asset('images/logo.png'),
               SizedBox(height: 20),
-              Text("Office of the Ombudsman", style: TextStyle(fontSize: 30), textAlign: TextAlign.center)
+              Text("Office of the Ombudsman", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700), textAlign: TextAlign.center)
             ],
           )),
         )
