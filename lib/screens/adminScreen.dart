@@ -1337,7 +1337,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                   ),
                                   trailing: IconButton(
                                       onPressed: () {
-                                        deleteStation(station.id!);
+                                        if (station.inSession != 1) {
+                                          deleteStation(station.id!);
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station must be inactive to delete.")));
+                                        }
                                       },
                                       icon: Icon(Icons.delete)),
                                 );
