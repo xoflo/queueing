@@ -320,6 +320,7 @@ class _StaffSessionState extends State<StaffSession> {
         ) : SingleChildScrollView(
           child: Stack(
             children: [
+              imageBackground(context),
             logoBackground(context, 350),
               Container(
                 padding: EdgeInsets.all(20),

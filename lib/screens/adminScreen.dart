@@ -56,59 +56,64 @@ class _AdminScreenState extends State<AdminScreen> {
     return Scaffold(
       body: MediaQuery.of(context).size.width < 500 || MediaQuery.of(context).size.height < 500 ? Container(
         child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30))),
-      ) : Align(
-        alignment: Alignment.topLeft,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              Row(
-                spacing: 10,
-                children: [
-                  Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(titleHandler(),
-                          style: TextStyle(
-                              fontSize: 30, fontWeight: FontWeight.w700))),
-                  Spacer(),
-                  IconButton(
-                      color: colorHandler(screenIndex, 0),
-                      tooltip: 'Services',
-                      onPressed: () {
-                        screenIndex = 0;
-                        setState(() {});
-                      },
-                      icon: Icon(Icons.sticky_note_2)),
-                  IconButton(
-                      color: colorHandler(screenIndex, 1),
-                      tooltip: 'Users',
-                      onPressed: () {
-                        screenIndex = 1;
-                        setState(() {});
-                      },
-                      icon: Icon(Icons.supervised_user_circle_rounded)),
-                  IconButton(
-                      color: colorHandler(screenIndex, 2),
-                      tooltip: 'Stations',
-                      onPressed: () {
-                        screenIndex = 2;
-                        setState(() {});
-                      },
-                      icon: Icon(Icons.desktop_windows_rounded)),
-                  IconButton(
-                      tooltip: "Logout",
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(Icons.logout))
-                ],
-              ),
-              Divider(),
-              SizedBox(height: 10),
-              screenHandler(screenIndex)
-            ],
+      ) : Stack(
+        children: [
+          imageBackground(context),
+          logoBackground(context, 350),
+          Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                Row(
+                  spacing: 10,
+                  children: [
+                    Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(titleHandler(),
+                            style: TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.w700))),
+                    Spacer(),
+                    IconButton(
+                        color: colorHandler(screenIndex, 0),
+                        tooltip: 'Services',
+                        onPressed: () {
+                          screenIndex = 0;
+                          setState(() {});
+                        },
+                        icon: Icon(Icons.sticky_note_2)),
+                    IconButton(
+                        color: colorHandler(screenIndex, 1),
+                        tooltip: 'Users',
+                        onPressed: () {
+                          screenIndex = 1;
+                          setState(() {});
+                        },
+                        icon: Icon(Icons.supervised_user_circle_rounded)),
+                    IconButton(
+                        color: colorHandler(screenIndex, 2),
+                        tooltip: 'Stations',
+                        onPressed: () {
+                          screenIndex = 2;
+                          setState(() {});
+                        },
+                        icon: Icon(Icons.desktop_windows_rounded)),
+                    IconButton(
+                        tooltip: "Logout",
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.logout))
+                  ],
+                ),
+                Divider(),
+                SizedBox(height: 10),
+                screenHandler(screenIndex)
+              ],
+            ),
           ),
-        ),
+        )],
       ),
     );
   }
