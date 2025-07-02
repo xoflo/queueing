@@ -86,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
                 SizedBox(height: 10),
                 Container(
+                  height: 50,
                   width: 300,
                   padding: EdgeInsets.all(5),
                   child: ElevatedButton(
@@ -98,13 +99,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
-                    }, child: Text("Queue Screen")),
+                    Container(
+                      height: 40,
+                      child: ElevatedButton(onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
+                      }, child: Text("Queue Screen")),
+                    ),
                     SizedBox(width: 10),
-                    ElevatedButton(onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
-                    }, child: Text("Services Kiosk")),
+                    Container(
+                      height: 40,
+                      child: ElevatedButton(onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                      }, child: Text("Services Kiosk")),
+                    ),
                   ],
                 ),
 

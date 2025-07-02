@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
@@ -11,6 +12,7 @@ import '../models/controls.dart';
 import '../models/media.dart';
 import '../models/priority.dart';
 import '../models/station.dart';
+import '../models/ticket.dart';
 import '../models/user.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -100,9 +102,27 @@ class _AdminScreenState extends State<AdminScreen> {
                         },
                         icon: Icon(Icons.desktop_windows_rounded)),
                     IconButton(
-                        tooltip: "Logout",
+                        color: colorHandler(screenIndex, 3),
+                        tooltip: 'Archive',
                         onPressed: () {
-                          Navigator.pop(context);
+                          screenIndex = 3;
+                          setState(() {});
+                        },
+                        icon: Icon(Icons.history_edu)),
+                    IconButton(
+                        tooltip: "Log-out",
+                        onPressed: () {
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            title: Text("Log-out"),
+                            actions: [TextButton(onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.pop(context);
+                            }, child: Text("Log-out", style: TextStyle(color: Colors.red)))],
+                            content: Container(
+                              height: 30,
+                              child: Text("You will log-out as Administrator."),
+                            )
+                          ));
                         },
                         icon: Icon(Icons.logout))
                   ],
@@ -128,6 +148,10 @@ class _AdminScreenState extends State<AdminScreen> {
     if (screenIndex == 2) {
       return "Stations";
     }
+
+    if (screenIndex == 3) {
+      return "Archive";
+    }
   }
 
   colorHandler(int i, int type) {
@@ -149,6 +173,10 @@ class _AdminScreenState extends State<AdminScreen> {
 
     if (i == 2) {
       return stationsView();
+    }
+
+    if (i == 3) {
+      return archiveView();
     }
   }
 
@@ -1583,6 +1611,116 @@ class _AdminScreenState extends State<AdminScreen> {
 
     final response = await http.post(uri, body: body);
 
+  }
+
+  Future<List<Ticket>> getTicketSQL([int? day, int? month, int? year]) async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
+
+      final result = await http.get(uri);
+
+      final List<dynamic> response = jsonDecode(result.body);
+
+      List<Ticket> newTickets = [];
+
+      for (int i = 0; i < response.length; i++) {
+        newTickets.add(Ticket.fromJson(response[i]));
+      }
+
+      newTickets.sort((a, b) =>
+          DateTime.parse(a.timeCreated!).compareTo(DateTime.parse(b.timeCreated!)));
+
+      List<DateTime> dates = [];
+
+      newTickets.map((e) => dates.add(DateTime.parse(e.timeCreated!)));
+
+      return newTickets;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+  }
+
+  archiveView() {
+    final dateNow = DateTime.now();
+
+    List<DateTime> dates = [];
+
+    String? displayDate;
+
+    return Column(
+      children: [
+
+        StatefulBuilder(
+          builder: (context, setStateArchive) {
+            return Column(
+              children: [
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: ElevatedButton(
+                        child: Text(displayDate ?? "Filter Tickets"),
+                        onPressed: () {
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            content: Container(
+                              height: 400,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 350,
+                                    width: 350,
+                                    child: CalendarDatePicker2(
+                                        onValueChanged: (values) {
+                                          dates = values;
+                                          displayDate = ""
+                                        },
+                                        value: [DateTime.now()],
+                                        config: CalendarDatePicker2Config(
+                                          firstDate: DateTime(2000, 1, 1),
+                                          lastDate: DateTime(3000, 1, 1),
+                                          currentDate: dateNow,
+                                          allowSameValueSelection: true,
+                                        )),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ));
+                        })
+                ),
+                FutureBuilder(
+                  future: getTicketSQL(),
+                  builder: (context, snapshot) {
+                    return Container(
+                      height: MediaQuery.of(context).size.height - 200,
+                      width: MediaQuery.of(context).size.width,
+                      child: snapshot.connectionState != ConnectionState.done ? Center(
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          child: CircularProgressIndicator(),
+                        ),
+                      ) : snapshot.data!.length != 0 ? Center(
+                        child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
+                      ): ListView.builder(
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, i) {
+                            final ticket = Ticket.fromJson(snapshot.data![i]);
+
+                            return ListTile(
+                              title: Text(ticket.codeAndNumber!),
+                            );
+                          }),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        )
+      ],
+    );
   }
 
 }
