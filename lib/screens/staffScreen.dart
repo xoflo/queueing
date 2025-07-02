@@ -367,7 +367,7 @@ class _StaffSessionState extends State<StaffSession> {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Text("${serving!.serviceType}",
-                                                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
+                                                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
                                             Text(
                                                 serving!.codeAndNumber!,
                                                 style: TextStyle(fontSize: 30)),
@@ -682,6 +682,8 @@ class _StaffSessionState extends State<StaffSession> {
       final List<dynamic> response = jsonDecode(result.body);
       List<dynamic> sorted = [];
 
+      final dateNow = DateTime.now();
+
       for (int i = 0; i < widget.user.serviceType!.length; i++) {
         sorted.addAll(response
             .where((e) =>
@@ -697,7 +699,10 @@ class _StaffSessionState extends State<StaffSession> {
       }
       newTickets.sort((a, b) => DateTime.parse(a.timeTaken!)
           .compareTo(DateTime.parse(b.timeTaken!)));
-      return newTickets;
+
+      final realTickets = newTickets.where((e) => DateTime.parse(e.timeCreated!).day == dateNow.day && DateTime.parse(e.timeCreated!).month == dateNow.month && DateTime.parse(e.timeCreated!).year == dateNow.year).toList();
+
+      return realTickets;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
