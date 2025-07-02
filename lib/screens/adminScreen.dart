@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -1613,7 +1613,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   }
 
-  Future<List<Ticket>> getTicketSQL([int? day, int? month, int? year]) async {
+  Future<List<Ticket>> getTicketSQL([List<DateTime>? dates]) async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
@@ -1673,7 +1673,9 @@ class _AdminScreenState extends State<AdminScreen> {
                                     child: CalendarDatePicker2(
                                         onValueChanged: (values) {
                                           dates = values;
-                                          displayDate = ""
+                                          final date1 = DateFormat.yMMMMd().format(values[0]);
+                                          final date2 = DateFormat.yMMMMd().format(values[1]);
+                                          displayDate = "$date1 - $date2";
                                         },
                                         value: [DateTime.now()],
                                         config: CalendarDatePicker2Config(
