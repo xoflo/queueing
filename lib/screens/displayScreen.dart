@@ -274,15 +274,15 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                   Column(
                                                     children: [
                                                       Container(
-                                                          height: 40,
+                                                          height: 50,
                                                           child: Text(
                                                               "Now Serving",
                                                               style: TextStyle(
-                                                                  fontSize: 30,
+                                                                  fontSize: 40,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w700))),
-                                                      SizedBox(height: 10),
+                                                      SizedBox(height: 5),
                                                       Builder(
                                                           builder: (context) {
                                                         Timer? secondTimer;
