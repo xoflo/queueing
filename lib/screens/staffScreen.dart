@@ -424,6 +424,7 @@ class _StaffSessionState extends State<StaffSession> {
                                 showDialog(context: context, builder: (_) => AlertDialog(
                                   title: Text("Confirm Done?"),
                                   content: Container(
+                                    child: Text("Next Ticket will be called."),
                                       height: 40),
                                   actions: [
                                     TextButton(onPressed: () {
@@ -435,16 +436,21 @@ class _StaffSessionState extends State<StaffSession> {
                                         "log": "${serving!.log}, $timestamp: ticket session finished"
                                       });
 
+
                                       if (tickets.isNotEmpty) {
-                                        tickets[0].update({
-                                          "userAssigned": widget.user.username,
-                                          "status": "Serving",
-                                          "stationName": widget.station.stationName,
-                                          "stationNumber": widget.station.stationNumber,
-                                          "log":
-                                          "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                          "timeTaken": timestamp
-                                        });
+                                        if (tickets[0].serviceType! == callBy || callBy == 'Time Order') {
+                                          tickets[0].update({
+                                            "userAssigned": widget.user.username,
+                                            "status": "Serving",
+                                            "stationName": widget.station.stationName,
+                                            "stationNumber": widget.station.stationNumber,
+                                            "log":
+                                            "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                            "timeTaken": timestamp
+                                          });
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
+                                        }
                                       }
 
                                       setState(() {});
@@ -454,18 +460,23 @@ class _StaffSessionState extends State<StaffSession> {
                                 ));
                               } else {
                                 if (tickets.isNotEmpty) {
-                                  final timestamp = DateTime.now().toString();
-                                  tickets[0].update({
-                                    "userAssigned": widget.user.username,
-                                    "status": "Serving",
-                                    "stationName": widget.station.stationName,
-                                    "stationNumber": widget.station.stationNumber,
-                                    "log":
-                                    "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                    "timeTaken": timestamp
-                                  });
+                                  if (tickets[0].serviceType! == callBy || callBy == 'Time Order') {
+                                    final timestamp = DateTime.now().toString();
+                                    tickets[0].update({
+                                      "userAssigned": widget.user.username,
+                                      "status": "Serving",
+                                      "stationName": widget.station.stationName,
+                                      "stationNumber": widget.station.stationNumber,
+                                      "log":
+                                      "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                      "timeTaken": timestamp
+                                    });
 
-                                  callByUI.value = 0;
+                                    callByUI.value = 0;
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
+                                  }
+
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                 }
@@ -580,7 +591,7 @@ class _StaffSessionState extends State<StaffSession> {
                                         height: 40,
                                         width: 300,
                                         child: ElevatedButton(
-                                            child: Text("Call By: $callBy"),
+                                            child: Text("Call By: $callBy", textAlign: TextAlign.center),
                                             onPressed: () {
                                               showDialog(context: context, builder: (_) => AlertDialog(
                                                 content: Container(

@@ -5,9 +5,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
-import 'package:queueing/models/controls.dart';
 import 'package:video_player/video_player.dart';
 import '../models/ticket.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class DisplayScreen extends StatefulWidget {
   const DisplayScreen({super.key});
@@ -22,6 +22,13 @@ class _DisplayScreenState extends State<DisplayScreen> {
   Color? containerColor;
   int updateSecond = 1;
   int updateFirst = 1;
+
+
+  final FlutterTts flutterTts = FlutterTts();
+
+  Future<void> _speak(String code, String teller) async {
+    await flutterTts.speak("$code to $teller");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +71,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                       (e) => e.callCheck == 0)
                                                   .toList();
                                           if (toUpdate.isNotEmpty) {
+
+                                            Ticket? ticket;
+
                                             for (int i = 0;
                                                 i < toUpdate.length;
                                                 i++) {
@@ -71,11 +81,17 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 "id": toUpdate[i].id,
                                                 "callCheck": 1
                                               });
+
+                                              ticket = toUpdate[i];
                                             }
                                             ticketsLength = retrieved.length;
                                             AudioPlayer player = AudioPlayer();
                                             player
                                                 .play(AssetSource('sound.mp3'));
+                                            final result = await Duration(seconds: 3);
+                                            if (ticket != null) {
+                                              _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
+                                            }
                                             if (vqd.data == 1) {
                                               updateSecond = 0;
                                             } else {
@@ -90,6 +106,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             updateFirst = 0;
                                           }
                                         } else {
+
+                                          Ticket? ticket;
+
                                           final List<Ticket> toUpdate =
                                               retrieved
                                                   .where(
@@ -103,11 +122,18 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 "id": toUpdate[i].id,
                                                 "callCheck": 1
                                               });
+
+                                              ticket = toUpdate[i];
                                             }
                                             ticketsLength = retrieved.length;
                                             AudioPlayer player = AudioPlayer();
                                             player
                                                 .play(AssetSource('sound.mp3'));
+                                            final result = await Duration(seconds: 3);
+                                            if (ticket != null) {
+                                              _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
+                                            }
+
                                             if (vqd.data == 1) {
                                               updateSecond = 0;
                                             } else {
@@ -640,4 +666,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
       return [];
     }
   }
+
+
 }

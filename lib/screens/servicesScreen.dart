@@ -449,7 +449,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       final value = testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
 
-      if (value == 1) {
+      // must be 1
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
