@@ -350,7 +350,7 @@ class _StaffSessionState extends State<StaffSession> {
                     ),
                     SizedBox(height: 30),
                     StatefulBuilder(
-                      builder: (BuildContext context, void Function(void Function()) setState) {
+                      builder: (context, setState) {
                         return FutureBuilder(
                           future: getServingTicketSQL(),
                           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshotServing) {
@@ -448,13 +448,17 @@ class _StaffSessionState extends State<StaffSession> {
                                             "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                             "timeTaken": timestamp
                                           });
+
+
+                                          setState(() {});
+                                          Navigator.pop(context);
                                         } else {
                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
                                         }
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                       }
 
-                                      setState(() {});
-                                      Navigator.pop(context);
                                     }, child: Text("Confirm"))
                                   ],
                                 ));

@@ -27,7 +27,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
   final FlutterTts flutterTts = FlutterTts();
 
   Future<void> _speak(String code, String teller) async {
-    await flutterTts.speak("$code to $teller");
+    await Future.delayed(Duration(seconds: 2, milliseconds: 500));
+    await flutterTts.speak("$code, please proceed to $teller");
   }
 
   @override
@@ -88,7 +89,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             AudioPlayer player = AudioPlayer();
                                             player
                                                 .play(AssetSource('sound.mp3'));
-                                            final result = await Duration(seconds: 3);
                                             if (ticket != null) {
                                               _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
                                             }
@@ -129,7 +129,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             AudioPlayer player = AudioPlayer();
                                             player
                                                 .play(AssetSource('sound.mp3'));
-                                            final result = await Duration(seconds: 3);
                                             if (ticket != null) {
                                               _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
                                             }
