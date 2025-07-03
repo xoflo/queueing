@@ -27,7 +27,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
   final FlutterTts flutterTts = FlutterTts();
 
   Future<void> _speak(String code, String teller) async {
-    await Future.delayed(Duration(seconds: 2, milliseconds: 500));
+    await Future.delayed(Duration(seconds: 2, milliseconds: 250));
     await flutterTts.speak("$code, please proceed to $teller");
   }
 
@@ -365,7 +365,30 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                     itemCount: snapshot.data!.length,
                                                                                     itemBuilder: (context, i) {
                                                                                       final ticket = snapshot.data![i];
-                                                                                      return Container(
+                                                                                      return i == 0 ? TweenAnimationBuilder<Color?>(
+                                                                                        tween: ColorTween(
+                                                                                          begin: Colors.red,
+                                                                                          end: Colors.transparent
+                                                                                        ),
+                                                                                        duration: Duration(seconds: 5),
+                                                                                        builder: (BuildContext context, color, Widget? child) {
+                                                                                          return Container(
+                                                                                            color: color,
+                                                                                            height: 80,
+                                                                                            child: Padding(
+                                                                                              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                                                                                              child: Row(
+                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                children: [
+                                                                                                  Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
+                                                                                                  Spacer(),
+                                                                                                  Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                                                ],
+                                                                                              ),
+                                                                                            ),
+                                                                                          );
+                                                                                        },
+                                                                                      ) : Container(
                                                                                         height: 80,
                                                                                         child: Padding(
                                                                                           padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
