@@ -433,7 +433,7 @@ class _StaffSessionState extends State<StaffSession> {
                                       serving!.update({
                                         "status": "Done",
                                         "timeDone": timestamp,
-                                        "log": "${serving!.log}, $timestamp: ticket session finished"
+                                        "log": "${serving!.log}, $timestamp: Ticket Session Finished"
                                       });
 
 
@@ -516,7 +516,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                       'stationName': "",
                                                       'stationNumber': "",
                                                       'serviceType': "${service.serviceType}",
-                                                      'callCheck': 0
+                                                      'callCheck': 0,
+                                                      'blinker': 0
                                                     });
 
                                                     Navigator.pop(context);
@@ -544,16 +545,50 @@ class _StaffSessionState extends State<StaffSession> {
                               }
                             }, child: Text("Transfer")),
                         SizedBox(width: 10),
-                        ElevatedButton(
-                            onPressed: () {
-                              if (serving != null) {
-                                serving!.update({
-                                  "callCheck": 0
-                                });
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
-                              }
-                            }, child: Text("Call Again")),
+                        Builder(
+                          builder: (context) {
+                            int callAgainCounter = 0;
+
+                            return ElevatedButton(
+                                onPressed: () {
+                                  if (serving != null) {
+
+                                    if (callAgainCounter < 3) {
+                                      callAgainCounter += 1;
+                                      serving!.update({
+                                        'blinker': 0,
+                                        "callCheck": 0,
+                                        'log': "${serving!.log!}, ${DateTime.now()}: Ticket Called Again"
+                                      });
+                                    } else {
+                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                        title: Text("Dismiss Ticket?"),
+                                        content: Container(
+                                          child: Text("Ticket has been called a few times."),
+                                          height: 40,
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                              child: Text("Dismiss"),
+                                              onPressed: () {
+                                                serving!.update({
+                                                  "status": 'Dismissed',
+                                                  'log': "${serving!.log!}, ${DateTime.now()}: Ticket Dismissed"
+                                                });
+
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Dismissed")));
+                                                setState(() {});
+                                          })
+                                        ],
+                                      ));
+                                    }
+
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
+                                  }
+                                }, child: Text("Call Again"));
+                          }
+                        ),
                       ],
                     ),
                     SizedBox(height: 20),

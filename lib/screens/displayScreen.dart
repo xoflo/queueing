@@ -83,7 +83,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                   i++) {
                                                 await toUpdate[i].update({
                                                   "id": toUpdate[i].id,
-                                                  "callCheck": 1
+                                                  "callCheck": 1,
                                                 });
 
                                                 ticket = toUpdate[i];
@@ -123,7 +123,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                   i++) {
                                                 await toUpdate[i].update({
                                                   "id": toUpdate[i].id,
-                                                  "callCheck": 1
+                                                  "callCheck": 1,
                                                 });
 
                                                 ticket = toUpdate[i];
@@ -338,7 +338,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                               });
 
                                                               return FutureBuilder(
-                                                                future: tickets,
+                                                                future: getTicketSQL(),
                                                                 builder: (BuildContext
                                                                         context,
                                                                     AsyncSnapshot<
@@ -368,29 +368,37 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                       itemCount: snapshot.data!.length > 10 ? 10 : snapshot.data!.length,
                                                                                       itemBuilder: (context, i) {
                                                                                         final ticket = snapshot.data![i];
-                                                                                        return i == 0 ? TweenAnimationBuilder<Color?>(
-                                                                                          tween: ColorTween(
-                                                                                            begin: Colors.red,
-                                                                                            end: Colors.transparent
-                                                                                          ),
-                                                                                          duration: Duration(seconds: 5),
-                                                                                          builder: (BuildContext context, color, Widget? child) {
-                                                                                            return Container(
-                                                                                              color: color,
-                                                                                              height: 80,
-                                                                                              child: Padding(
-                                                                                                padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
-                                                                                                    Spacer(),
-                                                                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
-                                                                                                  ],
-                                                                                                ),
+                                                                                        return ticket.blinker == 0 ? Builder(
+                                                                                          builder: (context) {
+                                                                                            ticket.update({
+                                                                                              'blinker': 1
+                                                                                            });
+
+                                                                                            return TweenAnimationBuilder<Color?>(
+                                                                                              tween: ColorTween(
+                                                                                                begin: Colors.red,
+                                                                                                end: Colors.transparent
                                                                                               ),
+                                                                                              duration: Duration(seconds: 5),
+                                                                                              builder: (BuildContext context, color, Widget? child) {
+                                                                                                return Container(
+                                                                                                  color: color,
+                                                                                                  height: 80,
+                                                                                                  child: Padding(
+                                                                                                    padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                                                                                                    child: Row(
+                                                                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                      children: [
+                                                                                                        Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
+                                                                                                        Spacer(),
+                                                                                                        Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                                                      ],
+                                                                                                    ),
+                                                                                                  ),
+                                                                                                );
+                                                                                              },
                                                                                             );
-                                                                                          },
+                                                                                          }
                                                                                         ) : Container(
                                                                                           height: 80,
                                                                                           child: Padding(
@@ -481,23 +489,52 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                             4,
                                                                         child: GridView.builder(
                                                                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
-                                                                            itemCount: snapshot.data!.length,
+                                                                            itemCount: snapshot.data!.length > 10 ? 10 : snapshot.data!.length,
                                                                             itemBuilder: (context, i) {
                                                                               final ticket =
                                                                                   snapshot.data![i];
-                                                                              return Padding(
-                                                                                padding: const EdgeInsets.all(5),
-                                                                                child: Card(
-                                                                                  child: Padding(
-                                                                                    padding: const EdgeInsets.all(30.0),
-                                                                                    child: Column(
-                                                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                                                      children: [
-                                                                                        Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
-                                                                                        Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
-                                                                                        Text(ticket.serviceType!, style: TextStyle(fontSize: 30)),
-                                                                                      ],
+                                                                              return ticket.blinker == 0 ? Builder(
+                                                                                builder: (context) {
+                                                                                  updateBlinker(ticket);
+
+                                                                                  return Padding(
+                                                                                    padding: const EdgeInsets.all(5),
+                                                                                    child: TweenAnimationBuilder<Color?>(
+                                                                                      tween: ColorTween(
+                                                                                        begin: Colors.red,
+                                                                                        end: Theme.of(context).cardColor
+                                                                                      ),
+                                                                                      duration: Duration(seconds: 5),
+                                                                                      builder: (BuildContext context, color, Widget? child) {
+                                                                                        return Card(
+                                                                                          color: color,
+                                                                                          clipBehavior: Clip.antiAlias,
+                                                                                          child: Padding(
+                                                                                            padding: const EdgeInsets.all(30.0),
+                                                                                            child: Column(
+                                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                                              children: [
+                                                                                                Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
+                                                                                                Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
+                                                                                                Text(ticket.serviceType!, style: TextStyle(fontSize: 30), textAlign: TextAlign.center),
+                                                                                              ],
+                                                                                            ),
+                                                                                          ),
+                                                                                        );
+                                                                                      },
                                                                                     ),
+                                                                                  );
+                                                                                }
+                                                                              ) : Card(
+                                                                                child: Padding(
+                                                                                  padding: const EdgeInsets.all(30.0),
+                                                                                  child: Column(
+                                                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                                                    children: [
+                                                                                      Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
+                                                                                      Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
+                                                                                      Text(ticket.serviceType!, style: TextStyle(fontSize: 30), textAlign: TextAlign.center),
+                                                                                    ],
                                                                                   ),
                                                                                 ),
                                                                               );
@@ -517,11 +554,13 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                 padding: const EdgeInsets.all(10.0),
                                                                                 child: TweenAnimationBuilder<Color?>(
                                                                                   tween: ColorTween(
-                                                                                    begin: Colors.red,
-                                                                                    end: Colors.white70,
+                                                                                    begin: snapshot.data!.first.blinker == 0 ? Colors.red : Theme.of(context).cardColor,
+                                                                                    end: Theme.of(context).cardColor,
                                                                                   ),
-                                                                                  duration: Duration(seconds: 10),
+                                                                                  duration: Duration(seconds: 5),
                                                                                   builder: (context, color, child) {
+                                                                                    updateBlinker(snapshot.data!.first);
+
                                                                                     return Card(
                                                                                       color: color,
                                                                                       clipBehavior: Clip.antiAlias,
@@ -533,9 +572,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                           child: Column(
                                                                                             mainAxisAlignment: MainAxisAlignment.center,
                                                                                             children: [
-                                                                                              Text("${snapshot.data!.last.stationName} ${snapshot.data!.last.stationNumber}", style: TextStyle(fontSize: 30)),
-                                                                                              Text("${snapshot.data!.last.codeAndNumber}", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
-                                                                                              Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30)),
+                                                                                              Text("${snapshot.data!.first.stationName} ${snapshot.data!.first.stationNumber}", style: TextStyle(fontSize: 30)),
+                                                                                              Text("${snapshot.data!.first.codeAndNumber}", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
+                                                                                              Text("${snapshot.data!.first.serviceType}", style: TextStyle(fontSize: 30), textAlign: TextAlign.center),
                                                                                             ],
                                                                                           ),
                                                                                         ),
@@ -619,7 +658,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
                                 return slidingText.connectionState == ConnectionState.done
                                     ? int.parse(slidingText.data!['value']) == 1 ? Container(
-                                  height: 70,
+                                  height: 80,
                                   child: Marquee(
                                     text:
                                     slidingText.data!['other'].toString(),
@@ -685,7 +724,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
       }
 
       newTickets.sort((a, b) =>
-          DateTime.parse(a.timeTaken!).compareTo(DateTime.parse(b.timeTaken!)));
+          DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
       return newTickets;
     } catch (e) {
@@ -694,6 +733,13 @@ class _DisplayScreenState extends State<DisplayScreen> {
       print(e);
       return [];
     }
+  }
+
+  Future<void> updateBlinker(Ticket ticket) async {
+    ticket.update({
+      'id': ticket.id!,
+      'blinker': 1
+    });
   }
 
 

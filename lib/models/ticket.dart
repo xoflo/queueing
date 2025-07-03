@@ -24,6 +24,7 @@ class Ticket {
   String? ticketName;
 
   String? codeAndNumber;
+  int? blinker;
 
   Ticket.fromJson(dynamic data) {
     this.id = int.parse(data['id']);
@@ -44,6 +45,7 @@ class Ticket {
     this.callCheck = int.parse(data['callCheck']);
     this.ticketName = data['ticketName'];
     this.codeAndNumber = "${data['serviceCode']}${data['number']}";
+    this.blinker = int.parse(data['blinker']);
   }
 
   update(dynamic data) async {
@@ -68,6 +70,7 @@ class Ticket {
         'printStatus': data['printStatus'] ?? this.printStatus,
         'callCheck': data['callCheck'] ?? this.callCheck,
         'ticketName': data['ticketName'] ?? this.ticketName,
+        'blinker': data['blinker'] ?? this.blinker,
       };
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final response = await http.put(uri, body: jsonEncode(body));

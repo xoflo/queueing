@@ -443,7 +443,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "priorityType": "$priorityType",
         "printStatus": 1,
         "callCheck": 0,
-        "ticketName": ticketName ?? ""
+        "ticketName": ticketName ?? "",
+        "blinker": 0
       };
 
 

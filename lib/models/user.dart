@@ -14,25 +14,18 @@ class User {
 
 
   User.fromJson(dynamic data) {
-    print("1");
+
     id = int.parse(data['id']);
-    print("11");
     pass = data['pass'];
-    print("2");
     userType = data['userType'];
-    print("6");
     serviceType = data['serviceType'] != null || data['serviceType'] != "" ? stringToList(data['serviceType'].toString()) : null;
-    print("5");
     username = data['username'];
-    print("1");
     loggedIn = data['loggedIn'] == null ? null : DateTime.parse(data['loggedIn']);
-    print("3");
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : null;
 
     getUserUpdate();
 
     if (userType == "Staff") {
-      print("staff");
       updateAssignedServices();
     }
   }
@@ -45,7 +38,7 @@ class User {
         'userType': data['userType'] ?? userType,
         'serviceType': data['serviceType'] ?? serviceType.toString(),
         'username': data['username'] ?? username,
-        'loggedIn': data['loggedIn'] ?? loggedIn.toString(),
+        'loggedIn': data['loggedIn'] ?? loggedIn,
         'servicesSet': data['servicesSet'] ?? servicesSet.toString(),
       };
 
