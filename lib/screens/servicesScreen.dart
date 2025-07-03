@@ -32,7 +32,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _device;
   bool _connected = false;
-  TestPrint testPrint = TestPrint();
+  TestPrint printer = TestPrint();
 
   Timer? timer;
 
@@ -142,7 +142,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                               child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
                                                 onPressed: () {
-                                                  testPrint.sample();
+                                                  printer.sample();
                                                 },
                                                 child: const Text('PRINT TEST',
                                                     style: TextStyle(color: Colors.white)),
@@ -447,10 +447,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
       };
 
 
-      final value = testPrint.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
+      final value = printer.ticket("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
 
       // must be 1
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Created Successfully")));
