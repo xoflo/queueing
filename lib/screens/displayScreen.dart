@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
+import 'package:queueing/models/media.dart';
 import 'package:video_player/video_player.dart';
 import '../models/ticket.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -43,580 +44,583 @@ class _DisplayScreenState extends State<DisplayScreen> {
                   children: [
                     imageBackground(context),
                     vqd.data == 1 ? Container() : logoBackground(context),
-                    Column(
-                      children: [
-                        MediaQuery.of(context).size.width > 1500
-                            ? Column(
-                                children: [
-                                  vqd.data == 0
-                                      ? Container(
-                                          padding:
-                                              EdgeInsets.fromLTRB(0, 20, 0, 0),
-                                          height: 70,
-                                          child: Text("Now Serving",
-                                              style: TextStyle(
-                                                  fontSize: 40,
-                                                  fontWeight: FontWeight.w700)))
-                                      : Container(height: 30),
-                                  Builder(
-                                    builder: (BuildContext context) {
-                                      timer = Timer.periodic(
-                                          Duration(seconds: 3, milliseconds: 0),
-                                          (value) async {
-                                        final List<Ticket> retrieved =
-                                            await getTicketSQL();
-                                        if (retrieved.length != ticketsLength) {
-                                          final List<Ticket> toUpdate =
-                                              retrieved
-                                                  .where(
-                                                      (e) => e.callCheck == 0)
-                                                  .toList();
-                                          if (toUpdate.isNotEmpty) {
+                    SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        children: [
+                          MediaQuery.of(context).size.width > 1500 && MediaQuery.of(context).size.height > 800
+                              ? Column(
+                                  children: [
+                                    vqd.data == 0
+                                        ? Container(
+                                            padding:
+                                                EdgeInsets.fromLTRB(0, 20, 0, 0),
+                                            height: 70,
+                                            child: Text("Now Serving",
+                                                style: TextStyle(
+                                                    fontSize: 40,
+                                                    fontWeight: FontWeight.w700)))
+                                        : Container(height: 30),
+                                    Builder(
+                                      builder: (BuildContext context) {
+                                        timer = Timer.periodic(
+                                            Duration(seconds: 3, milliseconds: 0),
+                                            (value) async {
+                                          final List<Ticket> retrieved =
+                                              await getTicketSQL();
+                                          if (retrieved.length != ticketsLength) {
+                                            final List<Ticket> toUpdate =
+                                                retrieved
+                                                    .where(
+                                                        (e) => e.callCheck == 0)
+                                                    .toList();
+                                            if (toUpdate.isNotEmpty) {
+
+                                              Ticket? ticket;
+
+                                              for (int i = 0;
+                                                  i < toUpdate.length;
+                                                  i++) {
+                                                await toUpdate[i].update({
+                                                  "id": toUpdate[i].id,
+                                                  "callCheck": 1
+                                                });
+
+                                                ticket = toUpdate[i];
+                                              }
+                                              ticketsLength = retrieved.length;
+                                              AudioPlayer player = AudioPlayer();
+                                              player
+                                                  .play(AssetSource('sound.mp3'));
+                                              if (ticket != null) {
+                                                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
+                                              }
+                                              if (vqd.data == 1) {
+                                                updateSecond = 0;
+                                              } else {
+                                                updateFirst = 0;
+                                              }
+                                            }
+
+                                            ticketsLength = retrieved.length;
+                                            if (vqd.data == 1) {
+                                              updateSecond = 0;
+                                            } else {
+                                              updateFirst = 0;
+                                            }
+                                          } else {
 
                                             Ticket? ticket;
 
-                                            for (int i = 0;
-                                                i < toUpdate.length;
-                                                i++) {
-                                              await toUpdate[i].update({
-                                                "id": toUpdate[i].id,
-                                                "callCheck": 1
-                                              });
+                                            final List<Ticket> toUpdate =
+                                                retrieved
+                                                    .where(
+                                                        (e) => e.callCheck == 0)
+                                                    .toList();
+                                            if (toUpdate.isNotEmpty) {
+                                              for (int i = 0;
+                                                  i < toUpdate.length;
+                                                  i++) {
+                                                await toUpdate[i].update({
+                                                  "id": toUpdate[i].id,
+                                                  "callCheck": 1
+                                                });
 
-                                              ticket = toUpdate[i];
-                                            }
-                                            ticketsLength = retrieved.length;
-                                            AudioPlayer player = AudioPlayer();
-                                            player
-                                                .play(AssetSource('sound.mp3'));
-                                            if (ticket != null) {
-                                              _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
-                                            }
-                                            if (vqd.data == 1) {
-                                              updateSecond = 0;
-                                            } else {
-                                              updateFirst = 0;
-                                            }
-                                          }
+                                                ticket = toUpdate[i];
+                                              }
+                                              ticketsLength = retrieved.length;
+                                              AudioPlayer player = AudioPlayer();
+                                              player
+                                                  .play(AssetSource('sound.mp3'));
+                                              if (ticket != null) {
+                                                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
+                                              }
 
-                                          ticketsLength = retrieved.length;
-                                          if (vqd.data == 1) {
-                                            updateSecond = 0;
-                                          } else {
-                                            updateFirst = 0;
-                                          }
-                                        } else {
-
-                                          Ticket? ticket;
-
-                                          final List<Ticket> toUpdate =
-                                              retrieved
-                                                  .where(
-                                                      (e) => e.callCheck == 0)
-                                                  .toList();
-                                          if (toUpdate.isNotEmpty) {
-                                            for (int i = 0;
-                                                i < toUpdate.length;
-                                                i++) {
-                                              await toUpdate[i].update({
-                                                "id": toUpdate[i].id,
-                                                "callCheck": 1
-                                              });
-
-                                              ticket = toUpdate[i];
-                                            }
-                                            ticketsLength = retrieved.length;
-                                            AudioPlayer player = AudioPlayer();
-                                            player
-                                                .play(AssetSource('sound.mp3'));
-                                            if (ticket != null) {
-                                              _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
-                                            }
-
-                                            if (vqd.data == 1) {
-                                              updateSecond = 0;
-                                            } else {
-                                              updateFirst = 0;
+                                              if (vqd.data == 1) {
+                                                updateSecond = 0;
+                                              } else {
+                                                updateFirst = 0;
+                                              }
                                             }
                                           }
-                                        }
-                                      });
+                                        });
 
-                                      return vqd.data == 1
-                                          ? Padding(
-                                              padding:
-                                                  const EdgeInsets.all(15.0),
-                                              child: Row(
-                                                children: [
-                                                  FutureBuilder(
-                                                    future: getMedia(context),
-                                                    builder: (BuildContext
-                                                            context,
-                                                        AsyncSnapshot<
-                                                                List<dynamic>>
-                                                            snapshotMedia) {
-                                                      return snapshotMedia
-                                                                  .connectionState ==
-                                                              ConnectionState
-                                                                  .done
-                                                          ? snapshotMedia.data!
-                                                                      .length !=
-                                                                  0
-                                                              ? Builder(builder:
-                                                                  (context) {
-                                                                  List<String>
-                                                                      links =
-                                                                      [];
+                                        return vqd.data == 1
+                                            ? Padding(
+                                                padding:
+                                                    const EdgeInsets.all(15.0),
+                                                child: Row(
+                                                  children: [
+                                                    FutureBuilder(
+                                                      future: getMedia(context),
+                                                      builder: (BuildContext
+                                                              context,
+                                                          AsyncSnapshot<
+                                                                  List<dynamic>>
+                                                              snapshotMedia) {
+                                                        return snapshotMedia
+                                                                    .connectionState ==
+                                                                ConnectionState
+                                                                    .done
+                                                            ? snapshotMedia.data!
+                                                                        .length !=
+                                                                    0
+                                                                ? Builder(builder:
+                                                                    (context) {
+                                                                    List<String>
+                                                                        links =
+                                                                        [];
 
-                                                                  for (int i =
-                                                                          0;
-                                                                      i <
-                                                                          snapshotMedia
-                                                                              .data!
-                                                                              .length;
-                                                                      i++) {
-                                                                    links.add(snapshotMedia
-                                                                            .data![i]
-                                                                        [
-                                                                        'link']);
-                                                                  }
+                                                                    for (int i =
+                                                                            0;
+                                                                        i <
+                                                                            snapshotMedia
+                                                                                .data!
+                                                                                .length;
+                                                                        i++) {
+                                                                      links.add(snapshotMedia
+                                                                              .data![i]
+                                                                          [
+                                                                          'link']);
+                                                                    }
 
-                                                                  Timer?
-                                                                      newTimer;
-                                                                  int videoCounter =
-                                                                      0;
-                                                                  VideoPlayerController?
-                                                                      controller;
-                                                                  int update =
-                                                                      0;
+                                                                    Timer?
+                                                                        newTimer;
+                                                                    int videoCounter =
+                                                                        0;
+                                                                    VideoPlayerController?
+                                                                        controller;
+                                                                    int update =
+                                                                        0;
 
-                                                                  return StatefulBuilder(
-                                                                    builder:
-                                                                        (context,
-                                                                            setStatePlayer) {
-                                                                      newTimer = Timer.periodic(
-                                                                          Duration(
-                                                                              seconds: 2),
-                                                                          (_) async {
-                                                                        if (update ==
-                                                                            0) {
-                                                                          final vid =
-                                                                              Uri.parse('http://$site/queueing_api/videos/${links[videoCounter]}');
-                                                                          controller = await VideoPlayerController.networkUrl(
-                                                                              vid)
-                                                                            ..initialize().then((_) {
-                                                                              controller!.setVolume(0);
-                                                                              controller!.play();
-                                                                            });
-                                                                          newTimer!
-                                                                              .cancel();
-                                                                          update =
-                                                                              1;
-                                                                          setStatePlayer(
-                                                                              () {});
-                                                                        } else {
-                                                                          final position = controller!
-                                                                              .value
-                                                                              .position;
-                                                                          final duration = controller!
-                                                                              .value
-                                                                              .duration;
-                                                                          if (position.toString() == duration.toString() &&
-                                                                              position.toString() != "0:00:00.000000") {
+                                                                    return StatefulBuilder(
+                                                                      builder:
+                                                                          (context,
+                                                                              setStatePlayer) {
+                                                                        newTimer = Timer.periodic(
+                                                                            Duration(
+                                                                                seconds: 2),
+                                                                            (_) async {
+                                                                          if (update ==
+                                                                              0) {
+                                                                            final vid =
+                                                                                Uri.parse('http://$site/queueing_api/videos/${links[videoCounter]}');
+                                                                            controller = await VideoPlayerController.networkUrl(
+                                                                                vid)
+                                                                              ..initialize().then((_) {
+                                                                                controller!.setVolume(0);
+                                                                                controller!.play();
+                                                                              });
+                                                                            newTimer!
+                                                                                .cancel();
+                                                                            update =
+                                                                                1;
+                                                                            setStatePlayer(
+                                                                                () {});
+                                                                          } else {
+                                                                            final position = controller!
+                                                                                .value
+                                                                                .position;
+                                                                            final duration = controller!
+                                                                                .value
+                                                                                .duration;
+                                                                            if (position.toString() == duration.toString() &&
+                                                                                position.toString() != "0:00:00.000000") {
 
-                                                                            if (videoCounter <
-                                                                                links.length - 1) {
+                                                                              if (videoCounter <
+                                                                                  links.length - 1) {
 
-                                                                              videoCounter = videoCounter + 1;
-                                                                              update = 0;
-                                                                            } else {
+                                                                                videoCounter = videoCounter + 1;
+                                                                                update = 0;
+                                                                              } else {
 
-                                                                              videoCounter = 0;
-                                                                              update = 0;
+                                                                                videoCounter = 0;
+                                                                                update = 0;
+                                                                              }
                                                                             }
                                                                           }
-                                                                        }
-                                                                      });
+                                                                        });
 
-                                                                      return Container(
-                                                                          width: MediaQuery.of(context).size.width -
-                                                                              600,
-                                                                          height:
-                                                                              MediaQuery.of(context).size.height - 300,
-                                                                          child: controller == null
-                                                                              ? Center(
-                                                                                  child: Container(height: 50, width: 50, child: CircularProgressIndicator()),
-                                                                                )
-                                                                              : VideoPlayer(controller!));
-                                                                    },
-                                                                  );
-                                                                })
-                                                              : Container(
-                                                                  color: Colors
-                                                                      .black87,
-                                                                  width: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .width -
-                                                                      600,
-                                                                  height: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .height -
-                                                                      300,
-                                                                  child: Center(
-                                                                    child: Text(
-                                                                        "No videos uploaded",
-                                                                        style: TextStyle(
-                                                                            color:
-                                                                                Colors.white)),
-                                                                  ),
-                                                                )
-                                                          : Container(
-                                                              width: MediaQuery.of(
-                                                                          context)
-                                                                      .size
-                                                                      .width -
-                                                                  600,
-                                                              height: MediaQuery.of(
-                                                                          context)
-                                                                      .size
-                                                                      .height -
-                                                                  300,
-                                                              child: Center(
-                                                                child:
-                                                                    Container(
-                                                                  height: 50,
-                                                                  width: 50,
+                                                                        return Container(
+                                                                            width: MediaQuery.of(context).size.width -
+                                                                                600,
+                                                                            height:
+                                                                                MediaQuery.of(context).size.height - 300,
+                                                                            child: controller == null
+                                                                                ? Center(
+                                                                                    child: Container(height: 50, width: 50, child: CircularProgressIndicator()),
+                                                                                  )
+                                                                                : VideoPlayer(controller!));
+                                                                      },
+                                                                    );
+                                                                  })
+                                                                : Container(
+                                                                    color: Colors
+                                                                        .black87,
+                                                                    width: MediaQuery.of(
+                                                                                context)
+                                                                            .size
+                                                                            .width -
+                                                                        600,
+                                                                    height: MediaQuery.of(
+                                                                                context)
+                                                                            .size
+                                                                            .height -
+                                                                        300,
+                                                                    child: Center(
+                                                                      child: Text(
+                                                                          "No videos uploaded",
+                                                                          style: TextStyle(
+                                                                              color:
+                                                                                  Colors.white)),
+                                                                    ),
+                                                                  )
+                                                            : Container(
+                                                                width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width -
+                                                                    600,
+                                                                height: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .height -
+                                                                    300,
+                                                                child: Center(
                                                                   child:
-                                                                      CircularProgressIndicator(),
+                                                                      Container(
+                                                                    height: 50,
+                                                                    width: 50,
+                                                                    child:
+                                                                        CircularProgressIndicator(),
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            );
-                                                    },
-                                                  ),
-                                                  SizedBox(width: 30),
-                                                  Column(
-                                                    children: [
-                                                      Container(
-                                                          height: 50,
-                                                          child: Text(
-                                                              "Now Serving",
-                                                              style: TextStyle(
-                                                                  fontSize: 40,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w700))),
-                                                      SizedBox(height: 5),
-                                                      Builder(
-                                                          builder: (context) {
-                                                        Timer? secondTimer;
-                                                        return StatefulBuilder(
-                                                          builder: (context,
-                                                              setStateSecond) {
-                                                            Future<List<Ticket>>
-                                                                tickets =
-                                                                getTicketSQL();
-                                                            secondTimer =
-                                                                Timer.periodic(
-                                                                    Duration(
-                                                                        seconds:
-                                                                            1),
-                                                                    (value) async {
-                                                              if (updateSecond ==
-                                                                  0) {
-                                                                secondTimer!
-                                                                    .cancel();
-                                                                setStateSecond(
-                                                                    () {});
-                                                                updateSecond =
-                                                                    1;
-                                                              }
-                                                            });
+                                                              );
+                                                      },
+                                                    ),
+                                                    SizedBox(width: 30),
+                                                    Column(
+                                                      children: [
+                                                        Container(
+                                                            height: 50,
+                                                            child: Text(
+                                                                "Now Serving",
+                                                                style: TextStyle(
+                                                                    fontSize: 40,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w700))),
+                                                        SizedBox(height: 5),
+                                                        Builder(
+                                                            builder: (context) {
+                                                          Timer? secondTimer;
+                                                          return StatefulBuilder(
+                                                            builder: (context,
+                                                                setStateSecond) {
+                                                              Future<List<Ticket>>
+                                                                  tickets =
+                                                                  getTicketSQL();
+                                                              secondTimer =
+                                                                  Timer.periodic(
+                                                                      Duration(
+                                                                          seconds:
+                                                                              1),
+                                                                      (value) async {
+                                                                if (updateSecond ==
+                                                                    0) {
+                                                                  secondTimer!
+                                                                      .cancel();
+                                                                  setStateSecond(
+                                                                      () {});
+                                                                  updateSecond =
+                                                                      1;
+                                                                }
+                                                              });
 
-                                                            return FutureBuilder(
-                                                              future: tickets,
-                                                              builder: (BuildContext
-                                                                      context,
-                                                                  AsyncSnapshot<
-                                                                          List<
-                                                                              Ticket>>
-                                                                      snapshot) {
-                                                                return snapshot
-                                                                            .connectionState ==
-                                                                        ConnectionState
-                                                                            .done
-                                                                    ? Container(
-                                                                        width:
-                                                                            500,
-                                                                        height:
-                                                                            600,
-                                                                        padding:
-                                                                            EdgeInsets.all(10),
-                                                                        child:
-                                                                            Stack(
-                                                                          children: [
-                                                                            logoBackground(
-                                                                                context,
-                                                                                250,
-                                                                                300),
-                                                                            snapshot.data!.length != 0
-                                                                                ? ListView.builder(
-                                                                                    itemCount: snapshot.data!.length,
-                                                                                    itemBuilder: (context, i) {
-                                                                                      final ticket = snapshot.data![i];
-                                                                                      return i == 0 ? TweenAnimationBuilder<Color?>(
-                                                                                        tween: ColorTween(
-                                                                                          begin: Colors.red,
-                                                                                          end: Colors.transparent
-                                                                                        ),
-                                                                                        duration: Duration(seconds: 5),
-                                                                                        builder: (BuildContext context, color, Widget? child) {
-                                                                                          return Container(
-                                                                                            color: color,
-                                                                                            height: 80,
-                                                                                            child: Padding(
-                                                                                              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                                                              child: Row(
-                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
-                                                                                                  Spacer(),
-                                                                                                  Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
-                                                                                                ],
+                                                              return FutureBuilder(
+                                                                future: tickets,
+                                                                builder: (BuildContext
+                                                                        context,
+                                                                    AsyncSnapshot<
+                                                                            List<
+                                                                                Ticket>>
+                                                                        snapshot) {
+                                                                  return snapshot
+                                                                              .connectionState ==
+                                                                          ConnectionState
+                                                                              .done
+                                                                      ? Container(
+                                                                          width:
+                                                                              500,
+                                                                          height:
+                                                                              600,
+                                                                          padding:
+                                                                              EdgeInsets.all(10),
+                                                                          child:
+                                                                              Stack(
+                                                                            children: [
+                                                                              logoBackground(
+                                                                                  context,
+                                                                                  250,
+                                                                                  300),
+                                                                              snapshot.data!.length != 0
+                                                                                  ? ListView.builder(
+                                                                                      itemCount: snapshot.data!.length > 10 ? 10 : snapshot.data!.length,
+                                                                                      itemBuilder: (context, i) {
+                                                                                        final ticket = snapshot.data![i];
+                                                                                        return i == 0 ? TweenAnimationBuilder<Color?>(
+                                                                                          tween: ColorTween(
+                                                                                            begin: Colors.red,
+                                                                                            end: Colors.transparent
+                                                                                          ),
+                                                                                          duration: Duration(seconds: 5),
+                                                                                          builder: (BuildContext context, color, Widget? child) {
+                                                                                            return Container(
+                                                                                              color: color,
+                                                                                              height: 80,
+                                                                                              child: Padding(
+                                                                                                padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                                                                                                child: Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                  children: [
+                                                                                                    Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
+                                                                                                    Spacer(),
+                                                                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                                                  ],
+                                                                                                ),
                                                                                               ),
+                                                                                            );
+                                                                                          },
+                                                                                        ) : Container(
+                                                                                          height: 80,
+                                                                                          child: Padding(
+                                                                                            padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                                                                                            child: Row(
+                                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                                              children: [
+                                                                                                Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
+                                                                                                Spacer(),
+                                                                                                Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                                              ],
                                                                                             ),
-                                                                                          );
-                                                                                        },
-                                                                                      ) : Container(
-                                                                                        height: 80,
-                                                                                        child: Padding(
-                                                                                          padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                                                          child: Row(
+                                                                                          ),
+                                                                                        );
+                                                                                      })
+                                                                                  : Center(
+                                                                                      child: Text("No Tickets Pending", style: TextStyle(color: Colors.grey)),
+                                                                                    )
+                                                                            ],
+                                                                          ),
+                                                                        )
+                                                                      : Center(
+                                                                          child:
+                                                                              Container(
+                                                                            height:
+                                                                                50,
+                                                                            width:
+                                                                                50,
+                                                                            child:
+                                                                                CircularProgressIndicator(),
+                                                                          ),
+                                                                        );
+                                                                },
+                                                              );
+                                                            },
+                                                          );
+                                                        }),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              )
+                                            : Builder(builder: (context) {
+                                                Timer? firstTimer;
+                                                return StatefulBuilder(
+                                                  builder:
+                                                      (context, setStateFirst) {
+                                                    Future<List<Ticket>> tickets =
+                                                        getTicketSQL();
+                                                    firstTimer = Timer.periodic(
+                                                        Duration(seconds: 2),
+                                                        (value) async {
+                                                      if (updateFirst == 0) {
+                                                        firstTimer!.cancel();
+                                                        updateFirst = 1;
+                                                        setStateFirst(() {});
+                                                      }
+                                                    });
+
+                                                    return FutureBuilder(
+                                                      future: tickets,
+                                                      builder: (BuildContext
+                                                              context,
+                                                          AsyncSnapshot<
+                                                                  List<Ticket>>
+                                                              snapshot) {
+                                                        return snapshot
+                                                                    .connectionState ==
+                                                                ConnectionState
+                                                                    .done
+                                                            ? snapshot.data!
+                                                                        .length !=
+                                                                    0
+                                                                ? Row(
+                                                                    children: [
+                                                                      Container(
+                                                                        padding:
+                                                                            EdgeInsets.all(
+                                                                                20),
+                                                                        height: MediaQuery.of(context)
+                                                                                .size
+                                                                                .height -
+                                                                            340,
+                                                                        width: MediaQuery.of(context)
+                                                                                .size
+                                                                                .width *
+                                                                            3 /
+                                                                            4,
+                                                                        child: GridView.builder(
+                                                                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
+                                                                            itemCount: snapshot.data!.length,
+                                                                            itemBuilder: (context, i) {
+                                                                              final ticket =
+                                                                                  snapshot.data![i];
+                                                                              return Padding(
+                                                                                padding: const EdgeInsets.all(5),
+                                                                                child: Card(
+                                                                                  child: Padding(
+                                                                                    padding: const EdgeInsets.all(30.0),
+                                                                                    child: Column(
+                                                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                                                      children: [
+                                                                                        Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
+                                                                                        Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
+                                                                                        Text(ticket.serviceType!, style: TextStyle(fontSize: 30)),
+                                                                                      ],
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              );
+                                                                            }),
+                                                                      ),
+                                                                      StatefulBuilder(
+                                                                        builder: (BuildContext
+                                                                                context,
+                                                                            void Function(void Function())
+                                                                                setStateCard) {
+                                                                          return Container(
+                                                                            height:
+                                                                                400,
+                                                                            width:
+                                                                                MediaQuery.of(context).size.width * 1 / 4 - 100,
+                                                                            child: Padding(
+                                                                                padding: const EdgeInsets.all(10.0),
+                                                                                child: TweenAnimationBuilder<Color?>(
+                                                                                  tween: ColorTween(
+                                                                                    begin: Colors.red,
+                                                                                    end: Colors.white70,
+                                                                                  ),
+                                                                                  duration: Duration(seconds: 10),
+                                                                                  builder: (context, color, child) {
+                                                                                    return Card(
+                                                                                      color: color,
+                                                                                      clipBehavior: Clip.antiAlias,
+                                                                                      child: Padding(
+                                                                                        padding: const EdgeInsets.all(30.0),
+                                                                                        child: Container(
+                                                                                          height: 350,
+                                                                                          width: 250,
+                                                                                          child: Column(
                                                                                             mainAxisAlignment: MainAxisAlignment.center,
                                                                                             children: [
-                                                                                              Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
-                                                                                              Spacer(),
-                                                                                              Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                                              Text("${snapshot.data!.last.stationName} ${snapshot.data!.last.stationNumber}", style: TextStyle(fontSize: 30)),
+                                                                                              Text("${snapshot.data!.last.codeAndNumber}", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
+                                                                                              Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30)),
                                                                                             ],
                                                                                           ),
                                                                                         ),
-                                                                                      );
-                                                                                    })
-                                                                                : Center(
-                                                                                    child: Text("No Tickets Pending", style: TextStyle(color: Colors.grey)),
-                                                                                  )
-                                                                          ],
-                                                                        ),
-                                                                      )
-                                                                    : Center(
-                                                                        child:
-                                                                            Container(
-                                                                          height:
-                                                                              50,
-                                                                          width:
-                                                                              50,
-                                                                          child:
-                                                                              CircularProgressIndicator(),
-                                                                        ),
-                                                                      );
-                                                              },
-                                                            );
-                                                          },
-                                                        );
-                                                      }),
-                                                    ],
-                                                  )
-                                                ],
-                                              ),
-                                            )
-                                          : Builder(builder: (context) {
-                                              Timer? firstTimer;
-                                              return StatefulBuilder(
-                                                builder:
-                                                    (context, setStateFirst) {
-                                                  Future<List<Ticket>> tickets =
-                                                      getTicketSQL();
-                                                  firstTimer = Timer.periodic(
-                                                      Duration(seconds: 2),
-                                                      (value) async {
-                                                    if (updateFirst == 0) {
-                                                      firstTimer!.cancel();
-                                                      updateFirst = 1;
-                                                      setStateFirst(() {});
-                                                    }
-                                                  });
-
-                                                  return FutureBuilder(
-                                                    future: tickets,
-                                                    builder: (BuildContext
-                                                            context,
-                                                        AsyncSnapshot<
-                                                                List<Ticket>>
-                                                            snapshot) {
-                                                      return snapshot
-                                                                  .connectionState ==
-                                                              ConnectionState
-                                                                  .done
-                                                          ? snapshot.data!
-                                                                      .length !=
-                                                                  0
-                                                              ? Row(
-                                                                  children: [
-                                                                    Container(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                              20),
-                                                                      height: MediaQuery.of(context)
-                                                                              .size
-                                                                              .height -
-                                                                          340,
-                                                                      width: MediaQuery.of(context)
-                                                                              .size
-                                                                              .width *
-                                                                          3 /
-                                                                          4,
-                                                                      child: GridView.builder(
-                                                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
-                                                                          itemCount: snapshot.data!.length,
-                                                                          itemBuilder: (context, i) {
-                                                                            final ticket =
-                                                                                snapshot.data![i];
-                                                                            return Padding(
-                                                                              padding: const EdgeInsets.all(5),
-                                                                              child: Card(
-                                                                                child: Padding(
-                                                                                  padding: const EdgeInsets.all(30.0),
-                                                                                  child: Column(
-                                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                                    children: [
-                                                                                      Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
-                                                                                      Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
-                                                                                      Text(ticket.serviceType!, style: TextStyle(fontSize: 30)),
-                                                                                    ],
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            );
-                                                                          }),
-                                                                    ),
-                                                                    StatefulBuilder(
-                                                                      builder: (BuildContext
-                                                                              context,
-                                                                          void Function(void Function())
-                                                                              setStateCard) {
-                                                                        return Container(
-                                                                          height:
-                                                                              400,
-                                                                          width:
-                                                                              MediaQuery.of(context).size.width * 1 / 4 - 100,
-                                                                          child: Padding(
-                                                                              padding: const EdgeInsets.all(10.0),
-                                                                              child: TweenAnimationBuilder<Color?>(
-                                                                                tween: ColorTween(
-                                                                                  begin: Colors.red,
-                                                                                  end: Colors.white70,
-                                                                                ),
-                                                                                duration: Duration(seconds: 10),
-                                                                                builder: (context, color, child) {
-                                                                                  return Card(
-                                                                                    color: color,
-                                                                                    clipBehavior: Clip.antiAlias,
-                                                                                    child: Padding(
-                                                                                      padding: const EdgeInsets.all(30.0),
-                                                                                      child: Container(
-                                                                                        height: 350,
-                                                                                        width: 250,
-                                                                                        child: Column(
-                                                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                                                          children: [
-                                                                                            Text("${snapshot.data!.last.stationName} ${snapshot.data!.last.stationNumber}", style: TextStyle(fontSize: 30)),
-                                                                                            Text("${snapshot.data!.last.codeAndNumber}", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
-                                                                                            Text("${snapshot.data!.last.serviceType}", style: TextStyle(fontSize: 30)),
-                                                                                          ],
-                                                                                        ),
                                                                                       ),
-                                                                                    ),
-                                                                                  );
-                                                                                },
-                                                                              )),
-                                                                        );
-                                                                      },
-                                                                    )
-                                                                  ],
-                                                                )
-                                                              : Container(
-                                                                  height: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .height -
-                                                                      340,
-                                                                  width: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .width *
-                                                                      3 /
-                                                                      4,
-                                                                  child: Center(
-                                                                      child: Text(
-                                                                          "No Tickets Serving",
-                                                                          style:
-                                                                              TextStyle(color: Colors.grey))))
-                                                          : Container(
-                                                              height: MediaQuery.of(
-                                                                          context)
-                                                                      .size
-                                                                      .height -
-                                                                  340,
-                                                              width: MediaQuery.of(
-                                                                          context)
-                                                                      .size
-                                                                      .width *
-                                                                  3 /
-                                                                  4,
-                                                              child: Center(
-                                                                  child: Container(
-                                                                      height:
-                                                                          50,
-                                                                      width: 50,
-                                                                      child:
-                                                                          CircularProgressIndicator())),
-                                                            );
-                                                    },
-                                                  );
-                                                },
-                                              );
-                                            });
-                                    },
-                                  ),
-                                ],
-                              )
-                            : Container(
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text("Expand Window to Display Queue",
-                                        style: TextStyle(fontSize: 50),
-                                        textAlign: TextAlign.center),
-                                    Text(
-                                        "This display only supports TV Display use",
-                                        style: TextStyle(
-                                            fontSize: 30, color: Colors.grey),
-                                        textAlign: TextAlign.center),
+                                                                                    );
+                                                                                  },
+                                                                                )),
+                                                                          );
+                                                                        },
+                                                                      )
+                                                                    ],
+                                                                  )
+                                                                : Container(
+                                                                    height: MediaQuery.of(
+                                                                                context)
+                                                                            .size
+                                                                            .height -
+                                                                        340,
+                                                                    width: MediaQuery.of(
+                                                                                context)
+                                                                            .size
+                                                                            .width *
+                                                                        3 /
+                                                                        4,
+                                                                    child: Center(
+                                                                        child: Text(
+                                                                            "No Tickets Serving",
+                                                                            style:
+                                                                                TextStyle(color: Colors.grey))))
+                                                            : Container(
+                                                                height: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .height -
+                                                                    340,
+                                                                width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width *
+                                                                    3 /
+                                                                    4,
+                                                                child: Center(
+                                                                    child: Container(
+                                                                        height:
+                                                                            50,
+                                                                        width: 50,
+                                                                        child:
+                                                                            CircularProgressIndicator())),
+                                                              );
+                                                      },
+                                                    );
+                                                  },
+                                                );
+                                              });
+                                      },
+                                    ),
                                   ],
-                                )),
-                        MediaQuery.of(context).size.width > 1500 ? vqd.data == 0 ? SizedBox(height: 160) : SizedBox(height: 120) : SizedBox(),
-                        MediaQuery.of(context).size.width > 1500
-                            ? FutureBuilder(
+                                )
+                              : Container(
+                                  height: MediaQuery.of(context).size.height,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text("Expand Window to Display Queue",
+                                          style: TextStyle(fontSize: 50),
+                                          textAlign: TextAlign.center),
+                                      Text(
+                                          "This display only supports TV Display use",
+                                          style: TextStyle(
+                                              fontSize: 30, color: Colors.grey),
+                                          textAlign: TextAlign.center),
+                                    ],
+                                  )),
+                          SizedBox(height: vqd.data == 0 ? 120 - (MediaQuery.of(context).size.height < 850 ? 120 : 0) : 100 - (MediaQuery.of(context).size.height < 850 ? 100 : 0)),
+                          Builder(builder: (context) {
+                            return MediaQuery.of(context).size.width > 1500
+                                ? FutureBuilder(
                               future: getSettings(context, 'Sliding Text', 1),
                               builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> slidingText) {
 
                                 return slidingText.connectionState == ConnectionState.done
                                     ? int.parse(slidingText.data!['value']) == 1 ? Container(
-                                      height: 100,
-                                      child: Marquee(
+                                  height: 70,
+                                  child: Marquee(
                                     text:
                                     slidingText.data!['other'].toString(),
                                     style: TextStyle(
@@ -634,16 +638,19 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                     decelerationDuration:
                                     Duration(milliseconds: 500),
                                     decelerationCurve: Curves.easeOut,
-                                                                      ),
-                                                                    )
+                                  ),
+                                )
                                     : SizedBox(height: 50) : Padding(
-                                      padding: const EdgeInsets.all(15.0),
-                                      child: LinearProgressIndicator(),
-                                    );
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: LinearProgressIndicator(),
+                                );
                               },
                             )
-                            : Container()
-                      ],
+                                : Container();
+                          })
+
+                        ],
+                      ),
                     ),
                     RainbowOverlay()
                   ],
