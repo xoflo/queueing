@@ -1630,8 +1630,9 @@ class _AdminScreenState extends State<AdminScreen> {
       }
 
       if (dates.isNotEmpty) {
-        print('hasDates');
         newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(dates![0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
+      } else {
+        newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(DateTime.now())) && e.timeCreatedAsDate!.isBefore(toDateTime(DateTime.now()).add(Duration(days: 1)))).toList();
       }
 
       newTickets.sort((a,b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
@@ -1658,7 +1659,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 Align(
                     alignment: Alignment.topLeft,
                     child: ElevatedButton(
-                        child: Text(dates.isNotEmpty ? "Filter: ${displayDate}" : "Filter Tickets: All"),
+                        child: Text(dates.isNotEmpty ? "Filter: ${displayDate}" : "Filter Tickets: Today"),
                         onPressed: () {
                           showDialog(context: context, builder: (_) => AlertDialog(
                             title: Text("Filter Archive"),
@@ -1681,7 +1682,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                           currentDate: dateNow,
                                           allowSameValueSelection: true,
                                         )),
-                                  )
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text("Select Date Range to Filter", style: TextStyle(color: Colors.grey)),
+                                  SizedBox(height: 5),
                                 ],
                               ),
                             ),
@@ -1691,7 +1695,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                 setStateArchive((){});
                                 Navigator.pop(context);
-                              }, child: Text("All")),
+                              }, child: Text("Today")),
                               TextButton(onPressed: () {
                                 if (dates.length == 1) {
                                   dates.add(dates[0].add(Duration(days: 1)).subtract(Duration(seconds: 1)));
@@ -1764,7 +1768,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                               alignment: Alignment.centerLeft,
                                               child: Text("Ticket Log:")),
                                           SizedBox(height: 5),
-                                          Text("${ticket.log}")
+                                          Text("${ticket.log!.replaceAll(', ', '\n')}")
                                         ],
                                       ),
                                     ),
