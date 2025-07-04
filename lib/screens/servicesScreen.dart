@@ -377,11 +377,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
     ));
   }
 
-
-  toDateTime(DateTime date) {
-    DateTime(date.year, date.month, date.day);
-  }
-
   getTicketSQL(String serviceType) async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');

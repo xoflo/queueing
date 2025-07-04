@@ -128,6 +128,10 @@ getServiceGroupSQL() async {
   }
 }
 
+DateTime toDateTime(DateTime date) {
+  return DateTime(date.year, date.month, date.day);
+}
+
 class RainbowOverlay extends StatefulWidget {
   const RainbowOverlay({super.key});
 

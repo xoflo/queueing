@@ -29,6 +29,10 @@ class _AdminScreenState extends State<AdminScreen> {
   List<String> lastAssigned = [];
   String assignedGroups = "_MAIN_";
 
+
+  List<DateTime> dates = [];
+  String? displayDate;
+
   // Service
 
 
@@ -1613,28 +1617,27 @@ class _AdminScreenState extends State<AdminScreen> {
 
   }
 
-  Future<List<Ticket>> getTicketSQL([List<DateTime>? dates]) async {
+  Future<List<Ticket>> getTicketSQL() async {
+
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
-
       final result = await http.get(uri);
-
       final List<dynamic> response = jsonDecode(result.body);
-
       List<Ticket> newTickets = [];
 
       for (int i = 0; i < response.length; i++) {
         newTickets.add(Ticket.fromJson(response[i]));
       }
 
-      newTickets.sort((a, b) =>
-          DateTime.parse(a.timeCreated!).compareTo(DateTime.parse(b.timeCreated!)));
+      if (dates.isNotEmpty) {
+        print('hasDates');
+        newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(dates![0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
+      }
 
-      List<DateTime> dates = [];
-
-      newTickets.map((e) => dates.add(DateTime.parse(e.timeCreated!)));
+      newTickets.sort((a,b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
 
       return newTickets;
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
@@ -1644,15 +1647,10 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   archiveView() {
-    final dateNow = DateTime.now();
-
-    List<DateTime> dates = [];
-
-    String? displayDate;
+    final DateTime dateNow = DateTime.now();
 
     return Column(
       children: [
-
         StatefulBuilder(
           builder: (context, setStateArchive) {
             return Column(
@@ -1660,11 +1658,12 @@ class _AdminScreenState extends State<AdminScreen> {
                 Align(
                     alignment: Alignment.topLeft,
                     child: ElevatedButton(
-                        child: Text(displayDate ?? "Filter Tickets"),
+                        child: Text(dates.isNotEmpty ? "Filter: ${displayDate}" : "Filter Tickets: All"),
                         onPressed: () {
                           showDialog(context: context, builder: (_) => AlertDialog(
+                            title: Text("Filter Archive"),
                             content: Container(
-                              height: 400,
+                              height: 380,
                               child: Column(
                                 children: [
                                   Container(
@@ -1673,12 +1672,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                     child: CalendarDatePicker2(
                                         onValueChanged: (values) {
                                           dates = values;
-                                          final date1 = DateFormat.yMMMMd().format(values[0]);
-                                          final date2 = DateFormat.yMMMMd().format(values[1]);
-                                          displayDate = "$date1 - $date2";
                                         },
-                                        value: [DateTime.now()],
+                                        value: dates,
                                         config: CalendarDatePicker2Config(
+                                          calendarType: CalendarDatePicker2Type.range,
                                           firstDate: DateTime(2000, 1, 1),
                                           lastDate: DateTime(3000, 1, 1),
                                           currentDate: dateNow,
@@ -1688,30 +1685,92 @@ class _AdminScreenState extends State<AdminScreen> {
                                 ],
                               ),
                             ),
+                            actions: [
+                              TextButton(onPressed: () {
+                                dates = [];
+
+                                setStateArchive((){});
+                                Navigator.pop(context);
+                              }, child: Text("All")),
+                              TextButton(onPressed: () {
+                                if (dates.length == 1) {
+                                  dates.add(dates[0].add(Duration(days: 1)).subtract(Duration(seconds: 1)));
+                                } else {
+                                  dates[1].add(Duration(days: 1)).subtract(Duration(seconds: 1));
+                                }
+
+                                displayDate = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}";
+
+                                setStateArchive((){});
+                                Navigator.pop(context);
+                              }, child: Text("Filter")),
+
+                            ],
                           ));
                         })
                 ),
                 FutureBuilder(
                   future: getTicketSQL(),
-                  builder: (context, snapshot) {
-                    return Container(
+                  builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
+                    return snapshot.connectionState != ConnectionState.done ? Container(
                       height: MediaQuery.of(context).size.height - 200,
-                      width: MediaQuery.of(context).size.width,
-                      child: snapshot.connectionState != ConnectionState.done ? Center(
+                      child: Center(
                         child: Container(
                           height: 50,
                           width: 50,
                           child: CircularProgressIndicator(),
                         ),
-                      ) : snapshot.data!.length != 0 ? Center(
-                        child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
-                      ): ListView.builder(
+                      ),
+                    ) : snapshot.data!.isEmpty ? Center(
+                      child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
+                    ): Container(
+                      height: MediaQuery.of(context).size.height - 200,
+                      child: ListView.builder(
                           itemCount: snapshot.data!.length,
                           itemBuilder: (context, i) {
-                            final ticket = Ticket.fromJson(snapshot.data![i]);
+                            final ticket = snapshot.data![i];
 
                             return ListTile(
-                              title: Text(ticket.codeAndNumber!),
+                              title: Row(
+                                children: [
+                                  statusColorHandler(ticket.status!),
+                                  Text(" | ${ticket.codeAndNumber!} | ${ticket.serviceType!}"),
+                                ],
+                              ),
+                              subtitle: Text(DateFormat.yMMMMd().add_jm().format(ticket.timeCreatedAsDate!)),
+                              onTap: () {
+                                showDialog(context: context, builder: (_) => AlertDialog(
+                                  content: Container(
+                                    height: 350,
+                                    width: 350,
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.vertical,
+                                      child: Column(
+                                        children: [
+                                          Text("${DateFormat.yMMMMd().add_jms().format(ticket.timeCreatedAsDate!)}"),
+                                          Text("${ticket.codeAndNumber} | ${ticket.serviceType}", style: TextStyle(fontSize: 20)),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              statusColorHandler(ticket.status!),
+                                              Text(" | Priority: ${ticket.priorityType}"),
+                                            ],
+                                          ),
+                                          Text("Time Taken: ${ticket.timeTaken ?? "None"}"),
+                                          SizedBox(height: 5),
+                                          Divider(),
+                                          SizedBox(height: 5),
+                                          Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text("Ticket Log:")),
+                                          SizedBox(height: 5),
+                                          Text("${ticket.log}")
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ));
+                              },
                             );
                           }),
                     );
@@ -1723,6 +1782,18 @@ class _AdminScreenState extends State<AdminScreen> {
         )
       ],
     );
+  }
+
+  statusColorHandler(String status)  {
+    Color? color;
+
+    if (status == 'Done') color = Colors.blueGrey;
+    if (status == 'Pending') color = Colors.yellow;
+    if (status == 'Serving') color = Colors.green;
+    if (status == 'Dismissed') color = Colors.orange;
+
+    return Text(status,style: TextStyle(color: color));
+
   }
 
 }
