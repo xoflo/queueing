@@ -1713,72 +1713,75 @@ class _AdminScreenState extends State<AdminScreen> {
                           ));
                         })
                 ),
-                FutureBuilder(
-                  future: getTicketSQL(),
-                  builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
-                    return snapshot.connectionState != ConnectionState.done ? Container(
-                      height: MediaQuery.of(context).size.height - 200,
-                      child: Center(
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          child: CircularProgressIndicator(),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: FutureBuilder(
+                    future: getTicketSQL(),
+                    builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
+                      return snapshot.connectionState != ConnectionState.done ? Container(
+                        height: MediaQuery.of(context).size.height - 200,
+                        child: Center(
+                          child: Container(
+                            height: 50,
+                            width: 50,
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
-                      ),
-                    ) : snapshot.data!.isEmpty ? Center(
-                      child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
-                    ): Container(
-                      height: MediaQuery.of(context).size.height - 200,
-                      child: ListView.builder(
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context, i) {
-                            final ticket = snapshot.data![i];
+                      ) : snapshot.data!.isEmpty ? Center(
+                        child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
+                      ): Container(
+                        height: MediaQuery.of(context).size.height - 200,
+                        child: ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, i) {
+                              final ticket = snapshot.data![i];
 
-                            return ListTile(
-                              title: Row(
-                                children: [
-                                  statusColorHandler(ticket.status!),
-                                  Text(" | ${ticket.codeAndNumber!} | ${ticket.serviceType!}"),
-                                ],
-                              ),
-                              subtitle: Text(DateFormat.yMMMMd().add_jm().format(ticket.timeCreatedAsDate!)),
-                              onTap: () {
-                                showDialog(context: context, builder: (_) => AlertDialog(
-                                  content: Container(
-                                    height: 350,
-                                    width: 350,
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.vertical,
-                                      child: Column(
-                                        children: [
-                                          Text("${DateFormat.yMMMMd().add_jms().format(ticket.timeCreatedAsDate!)}"),
-                                          Text("${ticket.codeAndNumber} | ${ticket.serviceType}", style: TextStyle(fontSize: 20)),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              statusColorHandler(ticket.status!),
-                                              Text(" | Priority: ${ticket.priorityType}"),
-                                            ],
-                                          ),
-                                          Text("Time Taken: ${ticket.timeTaken ?? "None"}"),
-                                          SizedBox(height: 5),
-                                          Divider(),
-                                          SizedBox(height: 5),
-                                          Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Text("Ticket Log:")),
-                                          SizedBox(height: 5),
-                                          Text("${ticket.log!.replaceAll(', ', '\n')}")
-                                        ],
+                              return ListTile(
+                                title: Row(
+                                  children: [
+                                    statusColorHandler(ticket.status!),
+                                    Text(" | ${ticket.codeAndNumber!} | ${ticket.serviceType!}"),
+                                  ],
+                                ),
+                                subtitle: Text(DateFormat.yMMMMd().add_jm().format(ticket.timeCreatedAsDate!)),
+                                onTap: () {
+                                  showDialog(context: context, builder: (_) => AlertDialog(
+                                    content: Container(
+                                      height: 350,
+                                      width: 350,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.vertical,
+                                        child: Column(
+                                          children: [
+                                            Text("${DateFormat.yMMMMd().add_jms().format(ticket.timeCreatedAsDate!)}"),
+                                            Text("${ticket.codeAndNumber} | ${ticket.serviceType}", style: TextStyle(fontSize: 20)),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                statusColorHandler(ticket.status!),
+                                                Text(" | Priority: ${ticket.priorityType}"),
+                                              ],
+                                            ),
+                                            Text("Time Taken: ${ticket.timeTaken ?? "None"}"),
+                                            SizedBox(height: 5),
+                                            Divider(),
+                                            SizedBox(height: 5),
+                                            Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text("Ticket Log:")),
+                                            SizedBox(height: 5),
+                                            Text("${ticket.log!.replaceAll(', ', '\n')}")
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  )
-                                ));
-                              },
-                            );
-                          }),
-                    );
-                  },
+                                    )
+                                  ));
+                                },
+                              );
+                            }),
+                      );
+                    },
+                  ),
                 ),
               ],
             );
