@@ -498,7 +498,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                   updateBlinker(ticket);
 
                                                                                   return Padding(
-                                                                                    padding: const EdgeInsets.all(5),
+                                                                                    padding: const EdgeInsets.all(10),
                                                                                     child: TweenAnimationBuilder<Color?>(
                                                                                       tween: ColorTween(
                                                                                         begin: Colors.red,
@@ -507,6 +507,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                       duration: Duration(seconds: 5),
                                                                                       builder: (BuildContext context, color, Widget? child) {
                                                                                         return Card(
+                                                                                          elevation: 2,
                                                                                           color: color,
                                                                                           clipBehavior: Clip.antiAlias,
                                                                                           child: Padding(
@@ -526,6 +527,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                   );
                                                                                 }
                                                                               ) : Card(
+                                                                                elevation: 2,
                                                                                 child: Padding(
                                                                                   padding: const EdgeInsets.all(30.0),
                                                                                   child: Column(
@@ -562,6 +564,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                     updateBlinker(snapshot.data!.first);
 
                                                                                     return Card(
+                                                                                      elevation: 2,
                                                                                       color: color,
                                                                                       clipBehavior: Clip.antiAlias,
                                                                                       child: Padding(
