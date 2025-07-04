@@ -424,9 +424,24 @@ class _StaffSessionState extends State<StaffSession> {
                                 showDialog(context: context, builder: (_) => AlertDialog(
                                   title: Text("Confirm Done?"),
                                   content: Container(
-                                    child: Text("Next Ticket will be called."),
+                                    child: Text("'Done' to complete and 'Call Next' to serve next ticket."),
                                       height: 40),
                                   actions: [
+
+                                    TextButton(onPressed: () {
+                                      final timestamp = DateTime.now().toString();
+
+                                      serving!.update({
+                                        "status": "Done",
+                                        "timeDone": timestamp,
+                                        "log": "${serving!.log}, $timestamp: Ticket Session Finished"
+                                      });
+
+                                      setState(() {});
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket complete.")));
+
+                                    }, child: Text("Done")),
                                     TextButton(onPressed: () {
                                       final timestamp = DateTime.now().toString();
 
@@ -459,7 +474,7 @@ class _StaffSessionState extends State<StaffSession> {
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                       }
 
-                                    }, child: Text("Confirm"))
+                                    }, child: Text("Call Next"))
                                   ],
                                 ));
                               } else {
