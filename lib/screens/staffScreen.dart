@@ -558,7 +558,7 @@ class _StaffSessionState extends State<StaffSession> {
                                       serving!.update({
                                         'blinker': 0,
                                         "callCheck": 0,
-                                        'log': "${serving!.log!}, ${DateTime.now()}: Ticket Called Again"
+                                        'log': "${serving!.log!}, ${DateTime.now()}: ticket called again"
                                       });
                                     } else {
                                       showDialog(context: context, builder: (_) => AlertDialog(
