@@ -1753,8 +1753,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                         scrollDirection: Axis.vertical,
                                         child: Column(
                                           children: [
-                                            Text("${DateFormat.yMMMMd().add_jms().format(ticket.timeCreatedAsDate!)}"),
-                                            Text("${ticket.codeAndNumber} | ${ticket.serviceType}", style: TextStyle(fontSize: 20)),
+                                            Text("${DateFormat.yMMMMd().add_jms().format(ticket.timeCreatedAsDate!)}", textAlign: TextAlign.center),
+                                            Text("${ticket.codeAndNumber} | ${ticket.serviceType}", style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
@@ -1795,9 +1795,9 @@ class _AdminScreenState extends State<AdminScreen> {
     Color? color;
 
     if (status == 'Done') color = Colors.blueGrey;
-    if (status == 'Pending') color = Colors.yellow;
+    if (status == 'Pending') color = Colors.orangeAccent;
     if (status == 'Serving') color = Colors.green;
-    if (status == 'Dismissed') color = Colors.orange;
+    if (status == 'Dismissed') color = Colors.red;
 
     return Text(status,style: TextStyle(color: color));
 
