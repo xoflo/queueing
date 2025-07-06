@@ -638,7 +638,7 @@ class _StaffSessionState extends State<StaffSession> {
                           );
                         }
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 20),
                     ValueListenableBuilder<int>(
                       valueListenable: callByUI,
                       builder: (BuildContext context, int value, Widget? child) {
