@@ -54,7 +54,14 @@ class _AdminScreenState extends State<AdminScreen> {
 
   @override
   void dispose() {
-    dispose();
+    stationName.dispose();
+    stationNumber.dispose();
+    user.dispose();
+    password.dispose();
+    userServiceType.dispose();
+    userType.dispose();
+    serviceType.dispose();
+    serviceCode.dispose();
     super.dispose();
   }
 
