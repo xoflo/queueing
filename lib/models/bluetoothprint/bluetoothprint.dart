@@ -5,20 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 
 ///Test printing
-class TestPrint {
+class bluetoothprint {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
 
   sample() async {
-    ByteData bytesAsset = await rootBundle.load("assets/images/logo.png");
-    Uint8List imageBytesFromAsset = bytesAsset.buffer
-        .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
 
     bluetooth.isConnected.then((isConnected) {
       if (isConnected == true) {
         bluetooth.printNewLine();
         bluetooth.printCustom("Office of the Ombudsman", Size.extraLarge.val, Align.center.val);
         bluetooth.printNewLine();
-        bluetooth.printImageBytes(imageBytesFromAsset); //image from Asset
         bluetooth.printNewLine();
         bluetooth.printCustom("XXXXX", 15, Align.center.val);
         bluetooth.printNewLine();

@@ -307,7 +307,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                       children: [
                                         Text(control.controlName!),
                                         Spacer(),
-                                        control.controlName! == "Video in Queue Display" ? TextButton(onPressed: () async {
+                                        control.controlName! == "Video in Queue Display" ?
+                                        TextButton(onPressed: () async {
                                           showDialog(context: context, builder: (_) => StatefulBuilder(
                                             builder: (BuildContext context, void Function(void Function()) setStateList) {
                                               return AlertDialog(
@@ -493,6 +494,38 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ],
                                           ));
                                         }, child: Text("Set Text")) : SizedBox(),
+                                        control.controlName! == "Kiosk Password" ? TextButton(onPressed: () {
+                                          TextEditingController pass = TextEditingController();
+
+                                          showDialog(context: context, builder: (_) => AlertDialog(
+                                            title: Text("Kiosk Password"),
+                                            content: Container(
+                                              height: 100,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Column(
+                                                  children: [
+                                                    TextField(
+                                                      decoration: InputDecoration(
+                                                        labelText: 'Set Password'
+                                                      ),
+                                                      controller: pass,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(onPressed: () {
+                                                control.update({
+                                                  'other' : pass.text
+                                                });
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Kiosk Password Updated")));
+                                              }, child: Text("Update"))
+                                            ],
+                                          ));
+                                        }, child: Text("Set Password")) : SizedBox(),
 
                                       ],
                                     ),

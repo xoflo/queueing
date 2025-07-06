@@ -114,6 +114,35 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                SizedBox(height: 10),
+                TextButton(onPressed: () async {
+                  TextEditingController ip = TextEditingController();
+                  ip.text = await getIP();
+
+                  showDialog(context: context, builder: (_) => AlertDialog(
+                    title: Text("Set Database IP"),
+                    content: Container(
+                      height: 60,
+                      child: Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              labelText: 'IP Address'
+                            ),
+                            controller: ip,
+                          )
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(onPressed: () async {
+                        await saveIP(ip.text);
+                        await getIP();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("IP Set to '${site}'")));
+                      }, child: Text("Set"))
+                    ],
+                  ));
+                }, child: Text("Set IP"))
 
               ]
           ),

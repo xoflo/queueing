@@ -6,7 +6,6 @@ import 'loginScreen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // WakelockPlus.enable();
   runApp(const MyApp());
 }
 

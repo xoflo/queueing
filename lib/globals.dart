@@ -2,10 +2,20 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:queueing/hiveService.dart';
 import 'models/media.dart';
 import 'dart:math' as math;
 
-final site = "127.0.0.1:8080";
+String site = "";
+
+getIP() async {
+  site = (await HiveService.getIP())!;
+  return site;
+}
+
+saveIP(String ip) async {
+  return await HiveService.saveIP(ip);
+}
 
 stringToList(String text) {
   if (text != "") {
@@ -18,6 +28,7 @@ stringToList(String text) {
     return [];
   }
 }
+
 
 logoBackground(BuildContext context, [int? width, int? height, int? showColor]) {
   return Stack(
