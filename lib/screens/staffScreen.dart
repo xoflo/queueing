@@ -684,13 +684,13 @@ class _StaffSessionState extends State<StaffSession> {
                                       );
                                     }
                                 ),
-                                Row(
+                                Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text("Upcoming Tickets: ", style: TextStyle(fontWeight: FontWeight.w700)),
+                                    Text("Upcoming Tickets:", style: TextStyle(fontWeight: FontWeight.w700)),
                                     Container(
                                       height: 40,
-                                      width: tickets.length * 70,
+                                      width: tickets.length * 80,
                                       child: ListView.builder(
                                           scrollDirection: Axis.horizontal,
                                           itemCount: tickets.length,
