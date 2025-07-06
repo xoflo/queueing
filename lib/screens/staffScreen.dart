@@ -78,149 +78,152 @@ class _StaffScreenState extends State<StaffScreen> {
             logoBackground(context, 350),
             Container(
               padding: EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Align(
-                      alignment: Alignment.centerLeft,
-                      child: Row(
-                        children: [
-                          IconButton(onPressed: () {
-                            Navigator.pop(context);
-                          }, icon: Icon(Icons.chevron_left)),
-                          Text("Welcome, ${widget.user.username}",
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w700)),
-                          Spacer(),
-                          IconButton(onPressed: () {
-                            List<String> serviceSetToNull = [];
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  children: [
+                    Align(
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          children: [
+                            IconButton(onPressed: () {
+                              Navigator.pop(context);
+                            }, icon: Icon(Icons.chevron_left)),
+                            Text("Welcome, ${widget.user.username}",
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.w700)),
+                            Spacer(),
+                            IconButton(onPressed: () {
+                              List<String> serviceSetToNull = [];
 
-                            if (widget.user.serviceType!.length > 3) {
-                              serviceSetToNull = [widget.user.serviceType![0].toString(), widget.user.serviceType![1].toString(), widget.user.serviceType![2].toString()];
-                            } else {
-                             serviceSetToNull = stringToList(widget.user.serviceType!.toString());
-                            }
+                              if (widget.user.serviceType!.length > 3) {
+                                serviceSetToNull = [widget.user.serviceType![0].toString(), widget.user.serviceType![1].toString(), widget.user.serviceType![2].toString()];
+                              } else {
+                               serviceSetToNull = stringToList(widget.user.serviceType!.toString());
+                              }
 
-                            List<String> servicesSet = widget.user.servicesSet != null ? stringToList(widget.user.servicesSet.toString()) : serviceSetToNull;
+                              List<String> servicesSet = widget.user.servicesSet != null ? stringToList(widget.user.servicesSet.toString()) : serviceSetToNull;
 
-                            showDialog(context: context, builder: (_) => AlertDialog(
-                              title: Text("Select Services (3 Max)"),
-                              content: Container(
-                                height: 400,
-                                width: 400,
-                                child: StatefulBuilder(
-                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                    return ListView.builder(
-                                        itemCount: widget.user.serviceType!.length,
-                                        itemBuilder: (context, i) {
-                                          return CheckboxListTile(
-                                              title: Text(widget.user.serviceType![i]),
-                                              value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
-                                            if (value == true) {
-                                              if (servicesSet.length == 3) {
-                                                servicesSet.removeAt(0);
+                              showDialog(context: context, builder: (_) => AlertDialog(
+                                title: Text("Select Services (3 Max)"),
+                                content: Container(
+                                  height: 400,
+                                  width: 400,
+                                  child: StatefulBuilder(
+                                    builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                      return ListView.builder(
+                                          itemCount: widget.user.serviceType!.length,
+                                          itemBuilder: (context, i) {
+                                            return CheckboxListTile(
+                                                title: Text(widget.user.serviceType![i]),
+                                                value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
+                                              if (value == true) {
+                                                if (servicesSet.length == 3) {
+                                                  servicesSet.removeAt(0);
+                                                }
+                                                servicesSet.add(widget.user.serviceType![i].toString());
+                                                setStateList((){});
+                                              } else {
+                                                servicesSet.remove(widget.user.serviceType![i].toString());
+                                                setStateList((){});
                                               }
-                                              servicesSet.add(widget.user.serviceType![i].toString());
-                                              setStateList((){});
-                                            } else {
-                                              servicesSet.remove(widget.user.serviceType![i].toString());
-                                              setStateList((){});
-                                            }
+                                            });
                                           });
-                                        });
-                                  },
+                                    },
+                                  ),
                                 ),
-                              ),
-                              actions: [
-                                TextButton(onPressed: () async {
-                                  await widget.user.update({
-                                    "servicesSet": servicesSet.toString()
-                                  });
-
-
-
-
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("The selected services will queue to your selected station.")));
-                                }, child: Text("Confirm"))
-                              ],
-                            ));
-                          }, icon: Icon(Icons.settings))
-                        ],
-                      )),
-                  Divider(),
-                  SizedBox(height: 10),
-                  FutureBuilder(
-                    future: getStationSQL(),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                      return snapshot.connectionState == ConnectionState.done
-                          ? Container(
-                        height: MediaQuery.of(context).size.height - 120,
-                        child: GridView.builder(
-                            gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
-                              childAspectRatio: 3 / 1.2,
-                                crossAxisCount: MediaQuery.of(context).size.width < 800 ? MediaQuery.of(context).size.width < 700 ? 2 : 3 : 5),
-                            itemCount: snapshot.data!.length,
-                            itemBuilder: (context, i) {
-                              final station =
-                              Station.fromJson(snapshot.data![i]);
-                              return InkWell(
-                                child: Card(
-                                    child: Container(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text("${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                                          station.inSession == 0
-                                              ? Text("Available",
-                                              style:
-                                              TextStyle(color: Colors.green))
-                                              : Text("${station.userInSession}",
-                                              style: TextStyle(
-                                                  color: Colors.redAccent))
-                                        ],
-                                      ),
-                                    )),
-                                onTap: () async {
-                                  final timestamp = DateTime.now().toString();
-
-                                  if (station.inSession == 1) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                "Station is currently in session.")));
-                                  } else {
-                                    station.update({
-                                      "inSession": 1,
-                                      "userInSession": widget.user.username,
-                                      "sessionPing": timestamp
+                                actions: [
+                                  TextButton(onPressed: () async {
+                                    await widget.user.update({
+                                      "servicesSet": servicesSet.toString()
                                     });
 
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) => StaffSession(
-                                                user: widget.user,
-                                                station: station)));
-                                  }
-                                },
-                              );
-                            }),
-                      )
-                          : Container(
-                        height: MediaQuery.of(context).size.height,
-                            child: Center(
-                                child: Container(
-                                  height: 50,
-                                  width: 50,
-                                  child: CircularProgressIndicator(),
+
+
+
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("The selected services will queue to your selected station.")));
+                                  }, child: Text("Confirm"))
+                                ],
+                              ));
+                            }, icon: Icon(Icons.settings))
+                          ],
+                        )),
+                    Divider(),
+                    SizedBox(height: 10),
+                    FutureBuilder(
+                      future: getStationSQL(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                        return snapshot.connectionState == ConnectionState.done
+                            ? Container(
+                          height: MediaQuery.of(context).size.height - 120,
+                          child: GridView.builder(
+                              gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                childAspectRatio: 3 / 1.2,
+                                  crossAxisCount: MediaQuery.of(context).size.width < 800 ? MediaQuery.of(context).size.width < 700 ? 2 : 3 : 5),
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, i) {
+                                final station =
+                                Station.fromJson(snapshot.data![i]);
+                                return InkWell(
+                                  child: Card(
+                                      child: Container(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text("${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                            station.inSession == 0
+                                                ? Text("Available",
+                                                style:
+                                                TextStyle(color: Colors.green))
+                                                : Text("${station.userInSession}",
+                                                style: TextStyle(
+                                                    color: Colors.redAccent))
+                                          ],
+                                        ),
+                                      )),
+                                  onTap: () async {
+                                    final timestamp = DateTime.now().toString();
+
+                                    if (station.inSession == 1) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  "Station is currently in session.")));
+                                    } else {
+                                      station.update({
+                                        "inSession": 1,
+                                        "userInSession": widget.user.username,
+                                        "sessionPing": timestamp
+                                      });
+
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) => StaffSession(
+                                                  user: widget.user,
+                                                  station: station)));
+                                    }
+                                  },
+                                );
+                              }),
+                        )
+                            : Container(
+                          height: 300,
+                              child: Center(
+                                  child: Container(
+                                    height: 50,
+                                    width: 50,
+                                    child: CircularProgressIndicator(),
+                                  ),
                                 ),
-                              ),
-                          );
-                    },
-                  ),
-                ],
+                            );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -423,8 +426,8 @@ class _StaffSessionState extends State<StaffSession> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text("Call Next"),
-                              SizedBox(width: 5),
-                              Icon(Icons.move_up_sharp)
+                              SizedBox(width: 10),
+                              Icon(Icons.double_arrow)
                             ],
                           ),
                           onPressed: () {
@@ -511,120 +514,128 @@ class _StaffSessionState extends State<StaffSession> {
                             }
                           }),
                     ),
-                    SizedBox(width: 10),
-                    ElevatedButton(
-                        child: Row(
-                          children: [
-                            Text("Transfer"),
-                            SizedBox(width: 5),
-                            Icon(Icons.compare_arrows)
-                          ],
-                        ),
-                        onPressed: () {
-                          if (serving != null) {
-                            showDialog(context: context, builder: (_) => AlertDialog(
-                              title: Text("Select Station to Transfer"),
-                              content: Container(
-                                height: 400,
-                                width: 400,
-                                child: FutureBuilder(
-                                    future: getServiceSQL(),
-                                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                      return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
-                                          itemCount: snapshot.data!.length,
-                                          itemBuilder: (context, i) {
-                                            final service = Service.fromJson(snapshot.data![i]);
+                    SizedBox(height: 10),
+                    Container(
+                      height: 45,
+                      child: ElevatedButton(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("Transfer"),
+                              SizedBox(width: 5),
+                              Icon(Icons.compare_arrows)
+                            ],
+                          ),
+                          onPressed: () {
+                            if (serving != null) {
+                              showDialog(context: context, builder: (_) => AlertDialog(
+                                title: Text("Select Station to Transfer"),
+                                content: Container(
+                                  height: 400,
+                                  width: 400,
+                                  child: FutureBuilder(
+                                      future: getServiceSQL(),
+                                      builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                        return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
+                                            itemCount: snapshot.data!.length,
+                                            itemBuilder: (context, i) {
+                                              final service = Service.fromJson(snapshot.data![i]);
 
-                                            return ListTile(
-                                              title: Text(service.serviceType!),
-                                              onTap: () {
-                                                final timestamp = DateTime.now().toString();
+                                              return ListTile(
+                                                title: Text(service.serviceType!),
+                                                onTap: () {
+                                                  final timestamp = DateTime.now().toString();
 
-                                                serving!.update({
-                                                  'log': "${serving!.log}, $timestamp: ticket transferred to ${service.serviceType}",
-                                                  'status': "Pending",
-                                                  'userAssigned': "",
-                                                  'stationName': "",
-                                                  'stationNumber': "",
-                                                  'serviceType': "${service.serviceType}",
-                                                  'callCheck': 0,
-                                                  'blinker': 0
-                                                });
+                                                  serving!.update({
+                                                    'log': "${serving!.log}, $timestamp: ticket transferred to ${service.serviceType}",
+                                                    'status': "Pending",
+                                                    'userAssigned': "",
+                                                    'stationName': "",
+                                                    'stationNumber': "",
+                                                    'serviceType': "${service.serviceType}",
+                                                    'callCheck': 0,
+                                                    'blinker': 0
+                                                  });
 
-                                                Navigator.pop(context);
-                                                setState(() {});
-                                                callByUI.value = 0;
-                                              },
-                                            );
-                                          }) : Center(
-                                        child: Text("No Stations", style: TextStyle(color: Colors.grey)),
-                                      ) : Container(
-                                        height: 300,
-                                        child: Center(
-                                          child: Container(
-                                            height: 50,
-                                            width: 50,
-                                            child: CircularProgressIndicator(),
+                                                  Navigator.pop(context);
+                                                  setState(() {});
+                                                  callByUI.value = 0;
+                                                },
+                                              );
+                                            }) : Center(
+                                          child: Text("No Stations", style: TextStyle(color: Colors.grey)),
+                                        ) : Container(
+                                          height: 300,
+                                          child: Center(
+                                            child: Container(
+                                              height: 50,
+                                              width: 50,
+                                              child: CircularProgressIndicator(),
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    }),
-                              ),
-                            ));
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
-                          }
-                        }),
-                    SizedBox(width: 10),
+                                        );
+                                      }),
+                                ),
+                              ));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
+                            }
+                          }),
+                    ),
+                    SizedBox(height: 10),
                     Builder(
                         builder: (context) {
                           int callAgainCounter = 0;
 
-                          return ElevatedButton(
-                              child: Row(
-                                children: [
-                                  Text("Call Again"),
-                                  SizedBox(width: 5),
-                                  Icon(Icons.ring_volume)
-                                ],
-                              ),
-                              onPressed: () {
-                                if (serving != null) {
+                          return Container(
+                            height: 45,
+                            child: ElevatedButton(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("Call Again"),
+                                    SizedBox(width: 5),
+                                    Icon(Icons.ring_volume)
+                                  ],
+                                ),
+                                onPressed: () {
+                                  if (serving != null) {
 
-                                  if (callAgainCounter < 3) {
-                                    callAgainCounter += 1;
-                                    serving!.update({
-                                      'blinker': 0,
-                                      "callCheck": 0,
-                                      'log': "${serving!.log!}, ${DateTime.now()}: ticket called again"
-                                    });
+                                    if (callAgainCounter < 3) {
+                                      callAgainCounter += 1;
+                                      serving!.update({
+                                        'blinker': 0,
+                                        "callCheck": 0,
+                                        'log': "${serving!.log!}, ${DateTime.now()}: ticket called again"
+                                      });
+                                    } else {
+                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                        title: Text("Dismiss Ticket?"),
+                                        content: Container(
+                                          child: Text("Ticket has been called a few times."),
+                                          height: 40,
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                              child: Text("Dismiss"),
+                                              onPressed: () {
+                                                serving!.update({
+                                                  "status": 'Dismissed',
+                                                  'log': "${serving!.log!}, ${DateTime.now()}: Ticket Dismissed"
+                                                });
+
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Dismissed")));
+                                                setState(() {});
+                                              })
+                                        ],
+                                      ));
+                                    }
+
                                   } else {
-                                    showDialog(context: context, builder: (_) => AlertDialog(
-                                      title: Text("Dismiss Ticket?"),
-                                      content: Container(
-                                        child: Text("Ticket has been called a few times."),
-                                        height: 40,
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                            child: Text("Dismiss"),
-                                            onPressed: () {
-                                              serving!.update({
-                                                "status": 'Dismissed',
-                                                'log': "${serving!.log!}, ${DateTime.now()}: Ticket Dismissed"
-                                              });
-
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Dismissed")));
-                                              setState(() {});
-                                            })
-                                      ],
-                                    ));
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
                                   }
-
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
-                                }
-                              });
+                                }),
+                          );
                         }
                     ),
                     SizedBox(height: 20),
@@ -645,7 +656,7 @@ class _StaffSessionState extends State<StaffSession> {
                                       return Container(
                                         height: 40,
                                         width: 300,
-                                        child: ElevatedButton(
+                                        child: TextButton(
                                             child: Text("Sort By: $callBy", textAlign: TextAlign.center),
                                             onPressed: () {
                                               showDialog(context: context, builder: (_) => AlertDialog(
@@ -700,7 +711,7 @@ class _StaffSessionState extends State<StaffSession> {
                     ),
                    ],
                 ) : Container(
-                  height: MediaQuery.of(context).size.height - 120,
+                  height: 300,
                   child: Center(child: Container(
                       height: 50,
                       width: 50,
