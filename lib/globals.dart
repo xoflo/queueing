@@ -155,7 +155,7 @@ class _RainbowOverlayState extends State<RainbowOverlay>
     with SingleTickerProviderStateMixin {
   // 🎛 Adjustable
   final int visibleSeconds = 5;
-  final int invisibleSeconds = 25;
+  final int invisibleSeconds = 1800;
   final double fadeSeconds = 1.0; // how long fade in/out takes
 
   late final AnimationController _controller;

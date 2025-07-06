@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:file_picker/file_picker.dart';
@@ -734,6 +735,9 @@ class _AdminScreenState extends State<AdminScreen> {
                     children: [
                       Container(
                           child: TextField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.deny(RegExp(',')),
+                            ],
                         controller: serviceType,
                         decoration: InputDecoration(
                           labelText: 'Service Type',
@@ -741,6 +745,9 @@ class _AdminScreenState extends State<AdminScreen> {
                       )),
                       Container(
                           child: TextField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.deny(RegExp(',')),
+                            ],
                         controller: serviceCode,
                         decoration: InputDecoration(labelText: 'Service Code'),
                       )),
@@ -865,7 +872,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     child: ListView.builder(
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, i) {
-                          final user = User.fromJson(snapshot.data![i]);
+                          User user = User.fromJson(snapshot.data![i], 0);
 
                           return ListTile(
                             title: Text("${user.username}"),

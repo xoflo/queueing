@@ -13,7 +13,7 @@ class User {
   List<dynamic>? servicesSet;
 
 
-  User.fromJson(dynamic data) {
+  User.fromJson(dynamic data, int logIn) {
 
     id = int.parse(data['id']);
     pass = data['pass'];
@@ -23,9 +23,7 @@ class User {
     loggedIn = data['loggedIn'] == null || data['loggedIn'] == "" ? null : DateTime.parse(data['loggedIn']);
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : null;
 
-    getUserUpdate();
-
-    if (userType == "Staff") {
+    if (userType == "Staff" && logIn == 1) {
       updateAssignedServices();
     }
   }
@@ -42,6 +40,11 @@ class User {
         'servicesSet': data['servicesSet'] ?? servicesSet.toString(),
       };
 
+      print(body);
+
+      this.serviceType = data['serviceType'] != null ? stringToList(data['serviceType']) : serviceType;
+      this.servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet']) : servicesSet;
+
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
       print(response.body);
@@ -50,25 +53,7 @@ class User {
     }
   }
 
-  getUserUpdate() async {
-    try {
-      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
-      final response = await http.get(uri);
-      final List<dynamic> result =  jsonDecode(response.body);
-      final data = result.where((e) => int.parse(e['id']) == id).toList()[0];
 
-      id = int.parse(data['id']);
-      pass = data['pass'];
-      userType = data['userType'];
-      serviceType = data['serviceType'] != null || data['serviceType'] != "" ? stringToList(data['serviceType'].toString()) : "";
-      username = data['username'];
-      loggedIn = data['loggedIn'] != null ? DateTime.parse(data['loggedIn']) : null;
-      servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : "";
-
-    } catch(e) {
-      print(e);
-    }
-  }
 
   updateAssignedServices() async {
 

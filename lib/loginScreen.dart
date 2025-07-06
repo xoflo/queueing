@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
       } else {
         print(sorted[0]);
-        final user = User.fromJson(sorted[0]);
+        final user = User.fromJson(sorted[0], 1);
 
 
         if (user.loggedIn == null || user.loggedIn!.difference(DateTime.now()).inSeconds < -3) {

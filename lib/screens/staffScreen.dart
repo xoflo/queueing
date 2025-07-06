@@ -135,7 +135,10 @@ class _StaffScreenState extends State<StaffScreen> {
                                   await widget.user.update({
                                     "servicesSet": servicesSet.toString()
                                   });
-                                  await widget.user.getUserUpdate();
+
+
+
+
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("The selected services will queue to your selected station.")));
                                 }, child: Text("Confirm"))
