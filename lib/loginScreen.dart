@@ -145,6 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         await saveIP(ip.text);
                         await getIP();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("IP Set to '$site'")));
+                        Navigator.pop(context);
                       }, child: Text("Set"))
                     ],
                   ));

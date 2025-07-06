@@ -21,7 +21,8 @@ class Usbprint {
       content: StatefulBuilder(
         builder: (BuildContext context, setState) {
           return Container(
-            height: 450,
+            width: 400,
+            height: 400,
             child: SingleChildScrollView(
               child: Column(
                 children: [

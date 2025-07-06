@@ -1053,6 +1053,9 @@ class _AdminScreenState extends State<AdminScreen> {
                                                           'serviceType': services.toString(),
                                                           'servicesSet': servicesSetToAdd
                                                         });
+
+                                                        print(services.toString());
+                                                        print(servicesSetToAdd);
                                                         setStateView(() {});
                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
                                                         Navigator.pop(context);

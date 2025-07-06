@@ -83,8 +83,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 child: Padding(
                   padding: EdgeInsets.all(5),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Device: ${usb!.selectedDevice == null ? _device?.name ?? "None" : usb!.selectedDevice?.name ?? "None"}"),
+                      Text("Device: ${usb!.selectedDevice == null ? _device?.name ?? "None" : usb!.selectedDevice?.name ?? "None"}", style: TextStyle(fontWeight: FontWeight.w700),),
                       IconButton(
                           onPressed: () {
                             settingSecurity();
@@ -130,7 +131,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                   ? Container(
                                       height:
                                           MediaQuery.of(context).size.height -
-                                              100,
+                                              120,
                                       child: Padding(
                                         padding: const EdgeInsets.all(15.0),
                                         child: GridView.builder(
@@ -218,7 +219,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                                     style: TextStyle(
                                                                         fontSize: service.serviceType!.length >
                                                                                 20
-                                                                            ? 35
+                                                                            ? 30
                                                                             : 40,
                                                                         fontWeight:
                                                                             FontWeight.w700),
@@ -713,7 +714,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                               ),
                               onPressed: () {
                                 try {
-                                  if (Platform.isAndroid) {
+                                  if (!kIsWeb) {
                                     showDialog(
                                         context: context,
                                         builder: (_) =>
@@ -744,7 +745,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 ),
                                 onPressed: () {
                                  try {
-                                   if (Platform.isAndroid) {
+                                   if (!kIsWeb) {
                                      showDialog(
                                          context: context,
                                          builder: (_) =>
@@ -758,6 +759,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                    child:
                                                    Container(
                                                      height: 400,
+                                                     width: 400,
                                                      child:
                                                      ListView(
                                                        children: <Widget>[
@@ -888,7 +890,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           return kioskControl.connectionState == ConnectionState.done ? StatefulBuilder(
             builder: (context, setState) {
               return Container(
-                height: 100,
+                height: 120,
                 child: Column(
                   children: [
                     TextField(
