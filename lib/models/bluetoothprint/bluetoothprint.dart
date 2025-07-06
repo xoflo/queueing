@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 
 ///Test printing
-class bluetoothprint {
+class BluetoothPrinter {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
 
   sample() async {

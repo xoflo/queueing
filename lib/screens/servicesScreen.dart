@@ -32,7 +32,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _device;
   bool _connected = false;
-  bluetoothprint printer = bluetoothprint();
+  BluetoothPrinter printer = BluetoothPrinter();
+
+  Usbprint? usb;
 
   Timer? timer;
 
@@ -45,11 +47,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
   @override
   void initState() {
     _resetTimer();
+
+    if (!kIsWeb) {
+      if (Platform.isAndroid) {
+        usb = Usbprint();
+      }
+    }
+
     super.initState();
   }
 
   _resetTimer() {
-    print('reset');
     timer?.cancel();
     timer = Timer(const Duration(seconds: 60), () {
       Navigator.push(
@@ -66,17 +74,24 @@ class _ServicesScreenState extends State<ServicesScreen> {
       child: Stack(
         children: [
           logoBackground(context, 300),
-          Column(
+          usb == null ? Center(
+            child: Text("Kiosk View Supports Android Devices Only.", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center,),
+          ) : Column(
             children: [
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: EdgeInsets.all(5),
-                  child: IconButton(
-                      onPressed: () {
-                        settingSecurity();
-                      },
-                      icon: Icon(Icons.settings)),
+                  child: Row(
+                    children: [
+                      Text("Device: ${usb!.selectedDevice == null ? _device?.name ?? "None" : usb!.selectedDevice?.name ?? "None"}"),
+                      IconButton(
+                          onPressed: () {
+                            settingSecurity();
+                          },
+                          icon: Icon(Icons.settings)),
+                    ],
+                  ),
                 ),
               ),
               Column(
@@ -458,8 +473,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "blinker": 0
       };
 
-      final value = printer.ticket("${serviceCode}${numberParsed}",
-          "$timestamp", "$priorityType", "$ticketName");
+      int value;
+
+      if (usb?.selectedDevice != null) {
+        value = usb!.buildTicketQueue("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
+      } else {
+        value = printer.ticket("${serviceCode}${numberParsed}",
+            "$timestamp", "$priorityType", "$ticketName");
+      }
 
       // must be 1
       if (value == 1) {
@@ -696,7 +717,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                     showDialog(
                                         context: context,
                                         builder: (_) =>
-                                            Usbprint());
+                                            usb!.interface());
                                   } else {
                                     ScaffoldMessenger.of(
                                         context)

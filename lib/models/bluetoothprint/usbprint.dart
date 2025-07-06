@@ -6,14 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform_image_3/flutter_pos_printer_platform_image_3.dart';
 
-class Usbprint extends StatefulWidget {
-  const Usbprint({super.key});
 
-  @override
-  State<Usbprint> createState() => _UsbprintState();
-}
-
-class _UsbprintState extends State<Usbprint> {
+class Usbprint {
   List<PrinterDevice> devices = [];
   var printerManager = PrinterManager.instance;
   List<int>? pendingTask;
@@ -21,8 +15,8 @@ class _UsbprintState extends State<Usbprint> {
 
   PrinterDevice? selectedDevice;
 
-  @override
-  Widget build(BuildContext context) {
+
+  interface() {
     return AlertDialog(
       content: StatefulBuilder(
         builder: (BuildContext context, setState) {
@@ -46,27 +40,27 @@ class _UsbprintState extends State<Usbprint> {
                     child: ListView.builder(
                         itemCount: devices.length,
                         itemBuilder: (context, i) {
-                      return ListTile(
-                        title: Text(devices[i].name),
-                        onTap: () async {
-                          final PrinterDevice device = PrinterDevice(name: devices[i].name, productId: devices[i].productId, vendorId: devices[i].vendorId);
-                          await _connectDevice(device);
-                          selectedDevice = device;
-                          setState((){});
-                        },
-                      );
-                    }),
+                          return ListTile(
+                            title: Text(devices[i].name),
+                            onTap: () async {
+                              final PrinterDevice device = PrinterDevice(name: devices[i].name, productId: devices[i].productId, vendorId: devices[i].vendorId);
+                              await _connectDevice(context, device);
+                              selectedDevice = device;
+                              setState((){});
+                            },
+                          );
+                        }),
                   ),
                   TextButton(
                       child: Text("Print Test"),
                       onPressed: () async {
-                    try {
-                      final bytes  = await buildTicket();
-                      await printTicket(bytes);
-                    } catch(e) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                    }
-                  })
+                        try {
+                          final bytes  = await buildTicket();
+                          await printTicket(bytes);
+                        } catch(e) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                        }
+                      })
                 ],
               ),
             ),
@@ -89,25 +83,31 @@ class _UsbprintState extends State<Usbprint> {
   }
 
   buildTicketQueue(String codeAndNumber, String timeCreated, String priority, String ticketname) async {
-    final profile = await CapabilityProfile.load();
-    final generator = Generator(PaperSize.mm58, profile);
-    List<int> bytes = [];
+    try {
+      final profile = await CapabilityProfile.load();
+      final generator = Generator(PaperSize.mm58, profile);
+      List<int> bytes = [];
 
-    bytes += utf8.encode('\n');
-    bytes += [0x1B, 0x21, 0x30];
-    bytes += utf8.encode('Office of the Ombudsman\n');
-    bytes += [0x1B, 0x21, 0x08];
-    bytes += utf8.encode('Davao City, Philippines\n');
-    bytes += utf8.encode('\n');
-    bytes += [0x1B, 0x21, 0x10];
-    bytes += utf8.encode('YOUR TICKET NUMBER IS:\n');
-    bytes += [0x1D, 0x21, 0x33];
-    bytes += utf8.encode('$codeAndNumber\n');
-    bytes += [0x1D, 0x21, 0x00];
-    bytes += utf8.encode('Time: $timeCreated\n');
-    bytes += utf8.encode('Priority: $priority\n');
-    bytes += utf8.encode('Name: $ticketname\n');
-    bytes += [0x1D, 0x56, 0x00];
+      bytes += utf8.encode('\n');
+      bytes += [0x1B, 0x21, 0x30];
+      bytes += utf8.encode('Office of the Ombudsman\n');
+      bytes += [0x1B, 0x21, 0x08];
+      bytes += utf8.encode('Davao City, Philippines\n');
+      bytes += utf8.encode('\n');
+      bytes += [0x1B, 0x21, 0x10];
+      bytes += utf8.encode('YOUR TICKET NUMBER IS:\n');
+      bytes += [0x1D, 0x21, 0x33];
+      bytes += utf8.encode('$codeAndNumber\n');
+      bytes += [0x1D, 0x21, 0x00];
+      bytes += utf8.encode('Time: $timeCreated\n');
+      bytes += utf8.encode('Priority: $priority\n');
+      bytes += utf8.encode('Name: $ticketname\n');
+      bytes += [0x1D, 0x56, 0x00];
+
+      return 1;
+    } catch(e) {
+      return 0;
+    }
   }
 
   _scan(PrinterType type) {
@@ -117,7 +117,7 @@ class _UsbprintState extends State<Usbprint> {
     });
   }
 
-  _connectDevice(PrinterDevice selectedPrinter) async {
+  _connectDevice(BuildContext context, PrinterDevice selectedPrinter) async {
     await printerManager.connect(
         type: PrinterType.usb,
         model: UsbPrinterInput(name: selectedPrinter.name, productId: selectedPrinter.productId, vendorId: selectedPrinter.vendorId));
