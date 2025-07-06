@@ -6,15 +6,16 @@ import 'package:queueing/hiveService.dart';
 import 'models/media.dart';
 import 'dart:math' as math;
 
-String site = "";
+String? site;
 
 getIP() async {
-  site = (await HiveService.getIP())!;
+  final ip = await HiveService.getIP();
+  site = ip ?? "";
   return site;
 }
 
 saveIP(String ip) async {
-  return await HiveService.saveIP(ip);
+  await HiveService.saveIP(ip);
 }
 
 stringToList(String text) {
