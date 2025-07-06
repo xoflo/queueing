@@ -20,7 +20,7 @@ class User {
     userType = data['userType'];
     serviceType = data['serviceType'] != null || data['serviceType'] != "" ? stringToList(data['serviceType'].toString()) : null;
     username = data['username'];
-    loggedIn = data['loggedIn'] == null ? null : DateTime.parse(data['loggedIn']);
+    loggedIn = data['loggedIn'] == null || data['loggedIn'] == "" ? null : DateTime.parse(data['loggedIn']);
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : null;
 
     getUserUpdate();
@@ -38,12 +38,13 @@ class User {
         'userType': data['userType'] ?? userType,
         'serviceType': data['serviceType'] ?? serviceType.toString(),
         'username': data['username'] ?? username,
-        'loggedIn': data['loggedIn'] ?? loggedIn,
+        'loggedIn': data['loggedIn'] ?? loggedIn.toString(),
         'servicesSet': data['servicesSet'] ?? servicesSet.toString(),
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
+      print(response.body);
     } catch(e) {
       print(e);
     }

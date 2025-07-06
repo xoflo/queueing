@@ -943,7 +943,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 showDialog(context: context, builder: (_) => AlertDialog(
                                   title: Text("Edit User"),
                                   content: Container(
-                                    height: 200,
+                                    height: 130,
                                     width: 200,
                                     child: Column(
                                       children: [
@@ -1049,13 +1049,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                                       TextButton(onPressed: () async {
                                                         final servicesSetToAdd = services.length > 3 ? services.sublist(0, 3).toString() : services.toString();
                                                         await user.update({
-                                                          'id': user.id!,
                                                           'serviceType': services.toString(),
                                                           'servicesSet': servicesSetToAdd
                                                         });
 
-                                                        print(services.toString());
-                                                        print(servicesSetToAdd);
                                                         setStateView(() {});
                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
                                                         Navigator.pop(context);
