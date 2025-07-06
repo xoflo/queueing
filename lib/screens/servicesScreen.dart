@@ -477,16 +477,18 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "blinker": 0
       };
 
-      late int value;
+      int? value = 0;
 
-      if (usb?.selectedDevice != null) {
-        value = usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
-      } else {
-        value = printer.ticket("$serviceCode$numberParsed",
+      if (usb?.selectedDevice == null) {
+        final int valueBlue = await printer.ticket("$serviceCode$numberParsed",
             "$timestamp", "$priorityType", "$ticketName");
+        value = valueBlue;
+      } else {
+        final valueUSB = usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
+        value = valueUSB;
+
       }
 
-      // must be 1
       if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
@@ -494,13 +496,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
             SnackBar(content: Text("Ticket Created Successfully")));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("No Bluetooth Printer Connected.")));
+            SnackBar(content: Text("No Printer Connected.")));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
 
-      print("nigg: $e");
+      print(e);
     }
   }
 
@@ -562,14 +564,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
     bluetooth.onStateChanged().listen((state) {
       switch (state) {
         case BlueThermalPrinter.CONNECTED:
+          _connected = true;
           setState(() {
-            _connected = true;
             print("bluetooth device state: connected");
           });
           break;
         case BlueThermalPrinter.DISCONNECTED:
+          _connected = false;
           setState(() {
-            _connected = false;
             print("bluetooth device state: disconnected");
           });
           break;
@@ -649,9 +651,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
       bluetooth.isConnected.then((isConnected) {
         if (isConnected == false) {
           bluetooth.connect(_device!).catchError((error) {
-            setState(() => _connected = false);
+            _connected = false;
           });
-          setState(() => _connected = true);
+          _connected = true;
         }
       });
     } else {
@@ -661,7 +663,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   void _disconnect() {
     bluetooth.disconnect();
-    setState(() => _connected = false);
+    _connected = false;
   }
 
   Future show(
@@ -748,17 +750,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                  showDialog(
                                      context: context,
                                      builder: (_) =>
-                                         AlertDialog(
-                                             content:
-                                             Padding(
-                                               padding:
-                                               const EdgeInsets
-                                                   .all(
-                                                   8.0),
-                                               child:
-                                               StatefulBuilder(
-                                                 builder: (context, setStateDialog) {
-                                                   return Container(
+                                         StatefulBuilder(
+                                           builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+                                             return AlertDialog(
+                                                 content:
+                                                 Padding(
+                                                   padding:
+                                                   const EdgeInsets
+                                                       .all(
+                                                       8.0),
+                                                   child:
+                                                   Container(
                                                      height: 200,
                                                      width: 400,
                                                      child:
@@ -824,9 +826,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                              ElevatedButton(
                                                                style:
                                                                ElevatedButton.styleFrom(backgroundColor: _connected ? Colors.red : Colors.green),
-                                                               onPressed: _connected
-                                                                   ? _disconnect
-                                                                   : _connect,
+                                                               onPressed: () {
+                                                                 if (_connected == false) {
+                                                                   _connect();
+                                                                   setState(() {});
+                                                                   setStateDialog((){});
+                                                                 } else {
+                                                                   _disconnect();
+                                                                   setState(() {});
+                                                                   setStateDialog((){});
+                                                                 }
+                                                               },
                                                                child:
                                                                Text(
                                                                  _connected ? 'Disconnect' : 'Connect',
@@ -859,10 +869,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                          ),
                                                        ],
                                                      ),
-                                                   );
-                                                 },
-                                               ),
-                                             )));
+                                                   ),
+                                                 ));
+                                           },
+                                         ));
                                } else {
                                  ScaffoldMessenger.of(
                                      context)

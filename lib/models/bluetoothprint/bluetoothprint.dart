@@ -27,11 +27,12 @@ class BluetoothPrinter {
     });
   }
 
-  ticket(String codeAndNumber, String timeCreated, String priority, String ticketname) {
+  ticket(String codeAndNumber, String timeCreated, String priority, String ticketname) async {
 
     try {
-      bluetooth.isConnected.then((isConnected) {
+      final result = await bluetooth.isConnected.then((isConnected) {
         if (isConnected == true) {
+
           bluetooth.printNewLine();
           bluetooth.printCustom("Office of the Ombudsman", Size.boldLarge.val, Align.center.val);
           bluetooth.printCustom("Davao City, Philippines", Size.bold.val, Align.center.val);
@@ -47,10 +48,11 @@ class BluetoothPrinter {
           bluetooth
               .paperCut();
 
-
           return 1;
         }
       });
+
+      return result;
     } catch(e) {
       return 0;
     }

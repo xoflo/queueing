@@ -23,8 +23,8 @@ class User {
     loggedIn = data['loggedIn'] == null || data['loggedIn'] == "" ? null : DateTime.parse(data['loggedIn']);
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : null;
 
-    if (userType == "Staff" && logIn == 1) {
-      updateAssignedServices();
+    if (serviceType! == "Staff") {
+      updateAssignedServices(id!);
     }
   }
 
@@ -40,8 +40,9 @@ class User {
         'servicesSet': data['servicesSet'] ?? servicesSet.toString(),
       };
 
-      this.serviceType = data['serviceType'] != null ? stringToList(data['serviceType']) : serviceType;
-      this.servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet']) : servicesSet;
+      if (serviceType! == "Staff") {
+        updateAssignedServices(id!);
+      }
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
@@ -52,22 +53,24 @@ class User {
 
 
 
-  updateAssignedServices() async {
+  updateAssignedServices(int id) async {
+
+    final User user = getUserSQL(id);
 
     List<String> existingServices = [];
     List<String> toKeep = [];
     String? serviceSetHere;
 
-    if (serviceType != null) {
+    if (user.serviceType != null) {
       final List<dynamic> services = await getServiceSQL();
 
-      services.forEach((e) {
-        existingServices.add(e['serviceType']!);
-      });
+      for (int i = 0; i < services.length; i++) {
+        existingServices.add(services[i]['serviceType']!);
+      }
 
-      for (int i = 0; i < serviceType!.length; i++) {
-        if (existingServices.contains(serviceType![i])) {
-          toKeep.add(serviceType![i]);
+      for (int i = 0; i < user.serviceType!.length; i++) {
+        if (existingServices.contains(user.serviceType![i])) {
+          toKeep.add(user.serviceType![i]);
         }
       }
 
@@ -84,5 +87,18 @@ class User {
 
     }
 
+  }
+
+  getUserSQL(int id) async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
+      final result = await http.get(uri);
+      final List<dynamic> response = jsonDecode(result.body);
+      final user = response.where((e) => e['id'] == id).toList()[0];
+
+      return User.fromJson(user, 0);
+    } catch (e) {
+      print(e);
+    }
   }
 }
