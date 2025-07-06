@@ -523,7 +523,7 @@ class _StaffSessionState extends State<StaffSession> {
                             children: [
                               Text("Transfer"),
                               SizedBox(width: 10),
-                              Icon(Icons.compare_arrows)
+                              Icon(Icons.move_down_sharp)
                             ],
                           ),
                           onPressed: () {
