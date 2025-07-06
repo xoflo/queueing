@@ -25,6 +25,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool obscure = true;
 
   @override
+  void initState() {
+    getIP();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
@@ -177,7 +183,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       }
     } catch(e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong.")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong. (${site == null ? "No IP" : site})")));
+      print(e);
     }
   }
 

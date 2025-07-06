@@ -10,7 +10,7 @@ String? site;
 
 getIP() async {
   final String? ip = await HiveService.getIP();
-  site = ip.toString() ?? "";
+  site = ip;
   return site;
 }
 
