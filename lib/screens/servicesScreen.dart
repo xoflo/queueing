@@ -87,8 +87,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     children: [
                       Text("Device: ${usb!.selectedDevice == null ? _device?.name ?? "None" : usb!.selectedDevice?.name ?? "None"}", style: TextStyle(fontWeight: FontWeight.w700),),
                       IconButton(
-                          onPressed: () {
-                            settingSecurity();
+                          onPressed: () async {
+                            await settingSecurity();
                           },
                           icon: Icon(Icons.settings)),
                     ],
@@ -477,12 +477,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "blinker": 0
       };
 
-      int value;
+      late int value;
 
       if (usb?.selectedDevice != null) {
-        value = usb!.buildTicketQueue("${serviceCode}${numberParsed}", "$timestamp", "$priorityType", "$ticketName");
+        value = usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
       } else {
-        value = printer.ticket("${serviceCode}${numberParsed}",
+        value = printer.ticket("$serviceCode$numberParsed",
             "$timestamp", "$priorityType", "$ticketName");
       }
 
@@ -500,7 +500,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
 
-      print(e);
+      print("nigg: $e");
     }
   }
 
@@ -787,6 +787,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                                  items: _getDeviceItems(),
                                                                  onChanged: (BluetoothDevice? value) {
                                                                    _device = value;
+                                                                   _connect;
+
                                                                    setStateDialog((){});
                                                                    setState(() {});
                                                                  },
@@ -883,80 +885,65 @@ class _ServicesScreenState extends State<ServicesScreen> {
           ));
   }
 
-  settingSecurity() {
+  settingSecurity() async {
+
+    final Control kioskControl = await getKioskControl();
+
     TextEditingController pass = TextEditingController();
     bool obscure = true;
 
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text("Printer Settings"),
-      content: FutureBuilder(
-        future: getKioskControl(),
-        builder: (BuildContext context, AsyncSnapshot<Control> kioskControl) {
-          return kioskControl.connectionState == ConnectionState.done ? StatefulBuilder(
-            builder: (context, setState) {
-              return Container(
-                height: 120,
-                child: Column(
-                  children: [
-                    TextField(
-                      onSubmitted: (value) {
-                        if (kioskControl.data!.value == 1) {
-                          if (pass.text == kioskControl.data!.other!) {
+    if (kioskControl.value! == 1) {
+      showDialog(context: context, builder: (_) => AlertDialog(
+        title: Text("Printer Settings"),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              height: 120,
+              child: Column(
+                children: [
+                  TextField(
+                    onSubmitted: (value) {
+                      if (pass.text == kioskControl.other!) {
+                        Navigator.pop(context);
+                        printerSettingDialog();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password Incorrect")));
+                      }
+                    },
+                    controller: pass,
+                    obscureText: obscure,
+                    decoration: InputDecoration(
+                        labelText: 'Kiosk Password'
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Row(
+                      children: [
+                        IconButton(onPressed: () {
+                          obscure = !obscure;
+                          setState((){});
+                        }, icon: obscure == true ? Icon(Icons.remove_red_eye_outlined) : Icon(Icons.remove_red_eye)),
+                        TextButton(onPressed: () {
+                          if (pass.text == kioskControl.other!) {
                             Navigator.pop(context);
                             printerSettingDialog();
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password Incorrect")));
                           }
-                        } else {
-                          printerSettingDialog();
-                        }
-                      },
-                      controller: pass,
-                      obscureText: obscure,
-                      decoration: InputDecoration(
-                          labelText: 'Kiosk Password'
-                      ),
+                        }, child: Text("Access")),
+                      ],
                     ),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Row(
-                        children: [
-                          IconButton(onPressed: () {
-                            obscure = !obscure;
-                            setState((){});
-                          }, icon: obscure == true ? Icon(Icons.remove_red_eye_outlined) : Icon(Icons.remove_red_eye)),
-                          TextButton(onPressed: () {
-                            if (kioskControl.data!.value == 1) {
-                              if (pass.text == kioskControl.data!.other!) {
-                                Navigator.pop(context);
-                                printerSettingDialog();
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password Incorrect")));
-                              }
-                            } else {
-                              printerSettingDialog();
-                            }
-                          }, child: Text("Access")),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              );
-            },
-          ) : Container(
-            height: 100,
-            child: Center(
-              child: Container(
-                height: 50,
-                width: 50,
-                child: CircularProgressIndicator(),
+                  )
+                ],
               ),
-            ),
-          );
-        },
-      ),
-    ));
+            );
+          },
+        ),
+      ));
+    } else {
+      printerSettingDialog();
+    }
   }
 }
 

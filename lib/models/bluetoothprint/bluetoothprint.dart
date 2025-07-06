@@ -30,8 +30,6 @@ class BluetoothPrinter {
   ticket(String codeAndNumber, String timeCreated, String priority, String ticketname) {
 
     try {
-      int result = 0;
-
       bluetooth.isConnected.then((isConnected) {
         if (isConnected == true) {
           bluetooth.printNewLine();
@@ -49,11 +47,10 @@ class BluetoothPrinter {
           bluetooth
               .paperCut();
 
-          result = 1;
+
+          return 1;
         }
       });
-
-      return result;
     } catch(e) {
       return 0;
     }
