@@ -54,7 +54,7 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
       Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        color: showColor == null ? Colors.white60 : null,
+        color: showColor == null ? Colors.white70 : null,
       ),
     ],
   );

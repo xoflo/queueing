@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: 10),
                 TextButton(onPressed: () async {
                   TextEditingController ip = TextEditingController();
-                  ip.text = await getIP();
+                  ip.text = site ?? "";
 
                   showDialog(context: context, builder: (_) => AlertDialog(
                     title: Text("Set Database IP"),
