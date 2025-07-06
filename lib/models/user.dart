@@ -40,14 +40,11 @@ class User {
         'servicesSet': data['servicesSet'] ?? servicesSet.toString(),
       };
 
-      print(body);
-
       this.serviceType = data['serviceType'] != null ? stringToList(data['serviceType']) : serviceType;
       this.servicesSet = data['servicesSet'] != null ? stringToList(data['servicesSet']) : servicesSet;
 
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
-      print(response.body);
     } catch(e) {
       print(e);
     }
