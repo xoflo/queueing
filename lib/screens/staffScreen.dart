@@ -522,7 +522,7 @@ class _StaffSessionState extends State<StaffSession> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text("Transfer"),
-                              SizedBox(width: 5),
+                              SizedBox(width: 10),
                               Icon(Icons.compare_arrows)
                             ],
                           ),
@@ -594,8 +594,8 @@ class _StaffSessionState extends State<StaffSession> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text("Call Again"),
-                                    SizedBox(width: 5),
-                                    Icon(Icons.ring_volume)
+                                    SizedBox(width: 10),
+                                    Icon(Icons.volume_up)
                                   ],
                                 ),
                                 onPressed: () {
@@ -638,7 +638,7 @@ class _StaffSessionState extends State<StaffSession> {
                           );
                         }
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 10),
                     ValueListenableBuilder<int>(
                       valueListenable: callByUI,
                       builder: (BuildContext context, int value, Widget? child) {
@@ -657,7 +657,7 @@ class _StaffSessionState extends State<StaffSession> {
                                         height: 40,
                                         width: 300,
                                         child: TextButton(
-                                            child: Text("Sort By: $callBy", textAlign: TextAlign.center),
+                                            child: Text("Sort By: $callBy", textAlign: TextAlign.center, style: TextStyle(fontSize: 15)),
                                             onPressed: () {
                                               showDialog(context: context, builder: (_) => AlertDialog(
                                                 content: Container(
