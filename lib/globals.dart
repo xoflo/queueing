@@ -9,8 +9,8 @@ import 'dart:math' as math;
 String? site;
 
 getIP() async {
-  final ip = await HiveService.getIP();
-  site = ip ?? "";
+  final String? ip = await HiveService.getIP();
+  site = ip.toString() ?? "";
   return site;
 }
 

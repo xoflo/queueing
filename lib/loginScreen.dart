@@ -154,8 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
   submit() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
-
-      print(uri.toString());
       final result = await http.get(uri);
       final users = jsonDecode(result.body);
       final sorted = users.where((e) => e['username'] == username.text.trim() && e['pass'] == pass.text.trim()).toList();
