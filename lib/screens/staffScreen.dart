@@ -31,7 +31,7 @@ class _StaffScreenState extends State<StaffScreen> {
       List<dynamic> pingSorted = result.where((e) => e['sessionPing'] != "").toList();
 
       final DateTime newTime = DateTime.now();
-      widget.user.update({
+      await widget.user.update({
         'loggedIn': DateTime.now().toString()
       });
 

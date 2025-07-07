@@ -18,10 +18,10 @@ class User {
     id = int.parse(data['id']);
     pass = data['pass'];
     userType = data['userType'];
-    serviceType = data['serviceType'] != null || data['serviceType'] != "" ? stringToList(data['serviceType'].toString()) : null;
+    serviceType = data['serviceType'] == null ? [] : stringToList(data['serviceType'].toString());
     username = data['username'];
-    loggedIn = data['loggedIn'] == null || data['loggedIn'] == "" ? null : DateTime.parse(data['loggedIn']);
-    servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" ? stringToList(data['servicesSet'].toString()) : null;
+    loggedIn = data['loggedIn'] == null || data['loggedIn'] == "" || data['loggedIn'] == "null" ? null : DateTime.parse(data['loggedIn']);
+    servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" || data['serviceType'] != "[]" ? stringToList(data['servicesSet'].toString()) : null;
 
     if (serviceType! == "Staff") {
       updateAssignedServices(id!);
@@ -29,23 +29,25 @@ class User {
   }
 
   update(dynamic data) async {
+
+
+    print(data['serviceType']);
+
+
     try {
       final body = {
         'id': data['id'] ?? id,
         'pass' : data['pass'] ?? pass,
         'userType': data['userType'] ?? userType,
-        'serviceType': data['serviceType'] ?? serviceType.toString(),
+        'serviceType': data['serviceType'] == null ? null : data['serviceType'].toString(),
         'username': data['username'] ?? username,
-        'loggedIn': data['loggedIn'] ?? loggedIn.toString(),
-        'servicesSet': data['servicesSet'] ?? servicesSet.toString(),
+        'loggedIn': data['loggedIn'].toString() == "null" ? null : loggedIn.toString(),
+        'servicesSet': data['servicesSet'] == null ? null : data['servicesSet'].toString(),
       };
-
-      if (serviceType! == "Staff") {
-        updateAssignedServices(id!);
-      }
-
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
+
+
     } catch(e) {
       print(e);
     }
@@ -55,7 +57,7 @@ class User {
 
   updateAssignedServices(int id) async {
 
-    final User user = getUserSQL(id);
+    final User user = await getUserSQL(id);
 
     List<String> existingServices = [];
     List<String> toKeep = [];
@@ -77,11 +79,11 @@ class User {
       if (toKeep.length > 3) {
         serviceSetHere = toKeep.sublist(0, 3).toString();
       } else {
-        serviceSetHere = toKeep.isNotEmpty ? toKeep.toString() : "";
+        serviceSetHere = toKeep.isNotEmpty ? toKeep.toString() == "[]" ? null : toKeep.toString() : "";
       }
 
       update({
-        'serviceType': toKeep.isNotEmpty ? toKeep.toString() : "",
+        'serviceType': toKeep.isNotEmpty ? toKeep.toString() == "[]" ? null : toKeep.toString() : "",
         'servicesSet' : serviceSetHere,
       });
 
@@ -94,7 +96,10 @@ class User {
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final result = await http.get(uri);
       final List<dynamic> response = jsonDecode(result.body);
-      final user = response.where((e) => e['id'] == id).toList()[0];
+
+      print(response);
+
+      final user = response.where((e) => int.parse(e['id']) == id).toList()[0];
 
       return User.fromJson(user, 0);
     } catch (e) {

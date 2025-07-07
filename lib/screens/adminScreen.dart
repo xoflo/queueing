@@ -772,8 +772,8 @@ class _AdminScreenState extends State<AdminScreen> {
                             addServiceSQL();
                           } else {
                             service!.update({
-                              'serviceType': serviceType.text,
-                              'serviceCode': serviceCode.text,
+                              'serviceType': serviceType.text.trim(),
+                              'serviceCode': serviceCode.text.trim(),
                             });
 
                             Navigator.pop(context);
@@ -932,11 +932,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                       ),
                                     ),
                                     actions: [
-                                      TextButton(onPressed: () {
+                                      TextButton(onPressed: () async {
                                         if (oldPassController.text != user.pass) {
                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Current Password does not match.")));
                                         } else {
-                                          user.update({
+                                          await user.update({
                                             'pass': userController.text
                                           });
 
@@ -997,8 +997,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                                   ),
                                                 ),
                                                 actions: [
-                                                  TextButton(onPressed: () {
-                                                    user.update({
+                                                  TextButton(onPressed: () async {
+                                                    await user.update({
                                                       'username': userController.text,
                                                       'pass': userController.text
                                                     });
@@ -1018,7 +1018,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                             Navigator.pop(context);
                                             showDialog(context: context, builder: (_) => Builder(
                                                 builder: (context) {
-                                                  List<String> services = stringToList(user.serviceType.toString());
+                                                  List<String> services = [];
+
+                                                  if (user.serviceType!.isNotEmpty) {
+                                                    services = stringToList(user.serviceType.toString());
+                                                  }
 
                                                   return AlertDialog(
                                                     title: Text("Assign Service Types"),
@@ -1061,10 +1065,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                                     ),
                                                     actions: [
                                                       TextButton(onPressed: () async {
-                                                        final servicesSetToAdd = services.length > 3 ? services.sublist(0, 3).toString() : services.toString();
+                                                        final servicesSetToAdd = services.length > 3 ? services.sublist(0, 3).toString() : services.isNotEmpty ? services.toString() : null;
                                                         await user.update({
-                                                          'serviceType': services.toString(),
-                                                          'servicesSet': servicesSetToAdd
+                                                          'serviceType': services.isEmpty ? null : services.toString(),
+                                                          'servicesSet': services.isEmpty ? null : servicesSetToAdd
                                                         });
 
                                                         setStateView(() {});
@@ -1264,49 +1268,7 @@ class _AdminScreenState extends State<AdminScreen> {
                             : Container(
                                 height: 20,
                               ),
-                        /*
-                        Row(
-                          spacing: 5,
-                          children: [
-                            /*
-                            GestureDetector(
-                                onTap: () {
-                                  userType = "Admin";
-                                  setStateDialog(() {});
-                                },
-                                child: Container(
-                                  height: 50,
-                                  width: 100,
-                                  child: Card(
-                                    child: Center(
-                                      child: Text("Admin"),
-                                    ),
-                                    color: userType == "Admin"
-                                        ? Colors.redAccent
-                                        : Colors.white,
-                                  ),
-                                )),
-                             */
-                            GestureDetector(
-                                onTap: () {
-                                  userType = "Staff";
-                                  setStateDialog(() {});
-                                },
-                                child: Container(
-                                  height: 50,
-                                  width: 100,
-                                  child: Card(
-                                    child: Center(
-                                      child: Text("Staff"),
-                                    ),
-                                    color: userType == "Staff"
-                                        ? Colors.redAccent
-                                        : Colors.white,
-                                  ),
-                                ))
-                          ],
-                        )
-                         */
+
                       ],
                     ),
                   );
@@ -1333,10 +1295,10 @@ class _AdminScreenState extends State<AdminScreen> {
       final body = jsonEncode({
         "username": user.text,
         "pass": password.text,
-        "serviceType": services.toString(),
+        "serviceType": services.isEmpty ? null : services.toString(),
         "userType": userType,
         "loggedIn": null,
-        "servicesSet": services.length > 3 ? "[${services[0]}, ${services[1]}, ${services[2]}]" : services.toString()
+        "servicesSet": services.length > 3 ? "[${services[0]}, ${services[1]}, ${services[2]}]" : services.isEmpty ? null : services.toString()
       });
 
       final result = await http.post(uri, body: body);
