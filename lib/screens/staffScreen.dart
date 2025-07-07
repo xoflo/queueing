@@ -689,7 +689,6 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                             setStateTickets((){});
                                                             Navigator.pop(context);
-
                                                           },
                                                         );
                                                       }),
