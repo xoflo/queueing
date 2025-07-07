@@ -661,7 +661,6 @@ class _StaffSessionState extends State<StaffSession> {
                                 Builder(
                                     builder: (context) {
                                       List<String> callByList = [];
-
                                       if (widget.user.servicesSet!.isNotEmpty) {
                                         stringToList(widget.user.servicesSet!.toString());
                                       }

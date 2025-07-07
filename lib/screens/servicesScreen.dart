@@ -717,7 +717,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 showDialog(
                                     context: context,
                                     builder: (_) =>
-                                        usb!.interface());
+                                        usb?.interface());
                               } else {
                                 ScaffoldMessenger.of(
                                     context)

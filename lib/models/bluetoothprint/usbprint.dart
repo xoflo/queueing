@@ -77,8 +77,8 @@ class Usbprint {
     final generator = Generator(PaperSize.mm58, profile);
     List<int> bytes = [];
 
-    bytes += bytes + generator.text('Office of the Ombudsman', styles: const PosStyles(align: PosAlign.center));
-    bytes += bytes + generator.text('Test Print');
+    bytes += generator.text('Office of the Ombudsman', styles: const PosStyles(align: PosAlign.center));
+    bytes += generator.text('Test Print');
 
     return bytes;
   }
