@@ -358,7 +358,7 @@ class _StaffSessionState extends State<StaffSession> {
                         return FutureBuilder(
                           future: getServingTicketSQL(),
                           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshotServing) {
-                            return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.length != 0 ? Builder(
+                            return snapshotServing.connectionState == ConnectionState.done ? snapshotServing.data!.isNotEmpty ? Builder(
                                 builder: (context) {
                                   serving = snapshotServing.data!.last;
                                   return Card(
@@ -395,13 +395,18 @@ class _StaffSessionState extends State<StaffSession> {
                                   ) ;
                                 }
                             ): Card(
-                              child: Container(
-                                height: 300,
-                                width: 200,
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text("No ticket to serve at the moment.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 15)),
-                                ),
+                              child: Builder(
+                                builder: (context) {
+                                  serving = null;
+                                  return Container(
+                                    height: 300,
+                                    width: 200,
+                                    child: Align(
+                                      alignment: Alignment.center,
+                                      child: Text("No ticket to serve at the moment.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 15)),
+                                    ),
+                                  );
+                                }
                               ),
                             ) : Container(
                               height: 300,
@@ -448,7 +453,6 @@ class _StaffSessionState extends State<StaffSession> {
                                       "timeDone": timestamp,
                                       "log": "${serving!.log}, $timestamp: Ticket Session Finished"
                                     });
-                                    serving = null;
 
                                     setState(() {});
                                     Navigator.pop(context);
