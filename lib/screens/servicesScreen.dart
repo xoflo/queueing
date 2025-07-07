@@ -74,9 +74,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       child: Stack(
         children: [
           logoBackground(context, 300),
-          usb == null ? Center(
-            child: Text("Kiosk View Supports Android Devices Only.", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center,),
-          ) : Column(
+          Column(
             children: [
               Align(
                 alignment: Alignment.topRight,
@@ -85,7 +83,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Device: ${usb!.selectedDevice == null ? _device?.name ?? "None" : usb!.selectedDevice?.name ?? "None"}", style: TextStyle(fontWeight: FontWeight.w700),),
+                      Text("Device: ${usb?.selectedDevice == null ? _device?.name ?? "None" : usb?.selectedDevice?.name ?? "None"}", style: TextStyle(fontWeight: FontWeight.w700),),
                       IconButton(
                           onPressed: () async {
                             await settingSecurity();

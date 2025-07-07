@@ -448,6 +448,7 @@ class _StaffSessionState extends State<StaffSession> {
                                       "timeDone": timestamp,
                                       "log": "${serving!.log}, $timestamp: Ticket Session Finished"
                                     });
+                                    serving = null;
 
                                     setState(() {});
                                     Navigator.pop(context);
@@ -624,6 +625,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                   'log': "${serving!.log!}, ${DateTime.now()}: Ticket Dismissed"
                                                 });
 
+                                                Navigator.pop(context);
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Dismissed")));
                                                 setState(() {});
                                               })
