@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
@@ -426,6 +427,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                     Container(
                       height: 45,
+                      width: kIsWeb == true ? 200 : MediaQuery.of(context).size.width - 20,
                       child: ElevatedButton(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -522,6 +524,7 @@ class _StaffSessionState extends State<StaffSession> {
                     SizedBox(height: 10),
                     Container(
                       height: 45,
+                      width: kIsWeb == true ? 200 : MediaQuery.of(context).size.width - 20,
                       child: ElevatedButton(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -594,6 +597,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                           return Container(
                             height: 45,
+                            width: kIsWeb == true ? 200 : MediaQuery.of(context).size.width - 20,
                             child: ElevatedButton(
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -656,7 +660,12 @@ class _StaffSessionState extends State<StaffSession> {
                               children: [
                                 Builder(
                                     builder: (context) {
-                                      List<String> callByList = stringToList(widget.user.servicesSet!.toString());
+                                      List<String> callByList = [];
+
+                                      if (widget.user.servicesSet!.isNotEmpty) {
+                                        stringToList(widget.user.servicesSet!.toString());
+                                      }
+
                                       callByList.insert(0, "Time Order");
 
                                       return Container(
