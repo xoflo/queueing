@@ -475,19 +475,19 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "blinker": 0
       };
 
-      int? value = 0;
+      int value = 0;
 
       if (usb?.selectedDevice == null) {
-        final int valueBlue = await printer.ticket("$serviceCode$numberParsed",
+        int? valueBlue = await printer.ticket("$serviceCode$numberParsed",
             "$timestamp", "$priorityType", "$ticketName");
-        value = valueBlue;
+        value = valueBlue ?? 0;
       } else {
         final valueUSB = usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
-        value = valueUSB;
-
+        value = valueUSB ?? 0;
       }
 
-      if (value == 1) {
+
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(

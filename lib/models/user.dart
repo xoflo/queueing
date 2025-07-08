@@ -13,19 +13,16 @@ class User {
   List<dynamic>? servicesSet;
 
 
-  User.fromJson(dynamic data, int logIn) {
+  User.fromJson(dynamic data) {
 
     id = int.parse(data['id']);
     pass = data['pass'];
     userType = data['userType'];
     serviceType = data['serviceType'] == null ? [] : stringToList(data['serviceType'].toString());
     username = data['username'];
-    loggedIn = data['loggedIn'] == null || data['loggedIn'] == "" || data['loggedIn'] == "null" ? null : DateTime.parse(data['loggedIn']);
+    loggedIn = data['loggedIn'] == null ? null : DateTime.parse(data['loggedIn']);
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" || data['serviceType'] != "[]" ? stringToList(data['servicesSet'].toString()) : null;
 
-    if (serviceType! == "Staff") {
-      updateAssignedServices(id!);
-    }
   }
 
   update(dynamic data) async {
@@ -34,10 +31,10 @@ class User {
         'id': data['id'] ?? id,
         'pass' : data['pass'] ?? pass,
         'userType': data['userType'] ?? userType,
-        'serviceType': data['serviceType'] == null ? null : data['serviceType'].toString(),
+        'serviceType': data['serviceType'] == null ? serviceType!.isEmpty ? null : serviceType.toString() : data['serviceType'].toString(),
         'username': data['username'] ?? username,
-        'loggedIn': data['loggedIn'].toString() == "null" ? null : loggedIn.toString(),
-        'servicesSet': data['servicesSet'] == null ? null : data['servicesSet'].toString(),
+        'loggedIn': data['loggedIn'] == null ? loggedIn == null ? null : data['loggedIn'].toString() : loggedIn,
+        'servicesSet': data['servicesSet'] == null ? servicesSet!.isEmpty ? null : servicesSet.toString() : data['servicesSet'].toString(),
       };
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
@@ -92,7 +89,7 @@ class User {
 
       final user = response.where((e) => int.parse(e['id']) == id).toList()[0];
 
-      return User.fromJson(user, 0);
+      return User.fromJson(user);
     } catch (e) {
       print(e);
     }

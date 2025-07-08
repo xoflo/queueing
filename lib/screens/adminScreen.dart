@@ -879,7 +879,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     child: ListView.builder(
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, i) {
-                          User user = User.fromJson(snapshot.data![i], 0);
+                          User user = User.fromJson(snapshot.data![i]);
 
                           return ListTile(
                             title: Text("${user.username}"),

@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -9,6 +9,7 @@ import 'loginScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await WakelockPlus.enable();
   await Hive.initFlutter();
   runApp(const MyApp());
 }
