@@ -279,9 +279,6 @@ class _StaffSessionState extends State<StaffSession> {
   @override
   void initState() {
     initPing();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      initRinger();
-    });
   }
 
   @override
@@ -307,13 +304,16 @@ class _StaffSessionState extends State<StaffSession> {
         tickets = retrievedTickets;
         callByUpdate = 1;
         callByUI.value = 0;
+        print("1 $tickets");
       }
 
       if (ticketLength != retrievedTickets.length) {
         loadDone = 1;
         tickets = retrievedTickets;
         ticketLength = retrievedTickets.length;
+        initRinger();
         setState(() {});
+
       } else {
         if (loadDone == 0) {
           loadDone = 1;
@@ -508,7 +508,8 @@ class _StaffSessionState extends State<StaffSession> {
                                     }, child: Text("Call Next"))
                                   ],
                                 ));
-                              } else {
+                              }
+                              else {
                                 if (tickets.isNotEmpty) {
                                   if (tickets[0].serviceType! == callBy || callBy == 'Time Order') {
                                     final timestamp = DateTime.now().toString();
@@ -888,21 +889,32 @@ class _StaffSessionState extends State<StaffSession> {
 
   initRinger() {
     print("ringerCalled");
-    print(serving);
-    print(tickets);
     print(tickets.isNotEmpty && serving == null);
 
     if (serving == null && tickets.isNotEmpty) {
       print("ringerStart");
-      ringTimer = Timer.periodic(Duration(seconds: 10), (value) {
-        Timer.periodic(Duration(seconds: 5), (value) {
-          AudioPlayer player = AudioPlayer();
-          player
-              .play(AssetSource('ringer.mp3'));
+      if (ringTimer != null) {
+        ringTimer!.cancel();
+        ringTimer = Timer.periodic(Duration(seconds: 10), (value) {
+          Timer.periodic(Duration(seconds: 5), (value) {
+            AudioPlayer player = AudioPlayer();
+            player
+                .play(AssetSource('ringer.mp3'));
 
-          inactiveDialog();
+            inactiveDialog();
+          });
         });
-      });
+      } else {
+        ringTimer = Timer.periodic(Duration(seconds: 10), (value) {
+          Timer.periodic(Duration(seconds: 5), (value) {
+            AudioPlayer player = AudioPlayer();
+            player
+                .play(AssetSource('ringer.mp3'));
+
+            inactiveDialog();
+          });
+        });
+      }
     } else {
       print("Nah");
     }

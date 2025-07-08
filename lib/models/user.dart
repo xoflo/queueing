@@ -33,7 +33,7 @@ class User {
         'userType': data['userType'] ?? userType,
         'serviceType': data['serviceType'] == null ? serviceType!.isEmpty ? null : serviceType.toString() : data['serviceType'].toString(),
         'username': data['username'] ?? username,
-        'loggedIn': data['loggedIn'] == null ? loggedIn == null ? null : data['loggedIn'].toString() : loggedIn,
+        'loggedIn': data['loggedIn'] == null ? loggedIn == null ? null : loggedIn.toString() : data['loggedIn'].toString(),
         'servicesSet': data['servicesSet'] == null ? servicesSet!.isEmpty ? null : servicesSet.toString() : data['servicesSet'].toString(),
       };
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');

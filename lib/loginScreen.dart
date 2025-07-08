@@ -33,125 +33,127 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-                fit: BoxFit.fill,
-                image: Image.asset('images/background.jpg').image),
-          ),
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 25),
-                Container(
-                  height: MediaQuery.of(context).size.width < 400 ? 150 : 300,
-                  child: Image.asset('images/logo.png'),
-                ),
-                SizedBox(height: 25),
-                Center(child: Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
-                Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-                SizedBox(height: 20),
-                Container(
-                    width: 300,
-                    child: TextField(
-                      onSubmitted: (value) {
-                        submit();
-                      },
-                      controller: username,
-                      decoration: InputDecoration(
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              fit: BoxFit.fill,
+              image: Image.asset('images/background.jpg').image),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 25),
+                  Container(
+                    height: MediaQuery.of(context).size.width < 400 ? 150 : 300,
+                    child: Image.asset('images/logo.png'),
+                  ),
+                  SizedBox(height: 25),
+                  Center(child: Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
+                  Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
+                  SizedBox(height: 20),
+                  Container(
+                      width: 300,
+                      child: TextField(
+                        onSubmitted: (value) {
+                          submit();
+                        },
+                        controller: username,
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)
+                            ),
+                            hintText: 'User'
+                        ),
+                      )),
+                  SizedBox(height: 10),
+                  Container(
+                      width: 300,
+                      child: TextField(
+                        obscureText: obscure,
+                        controller: pass,
+                        onSubmitted: (value) {
+                          submit();
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Password',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10)
                           ),
-                          hintText: 'User'
-                      ),
-                    )),
-                SizedBox(height: 10),
-                Container(
+                        ),
+                      )),
+                  IconButton(onPressed: () {
+                    obscure = !obscure;
+                    setState(() {
+
+                    });
+                  }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
+                  SizedBox(height: 10),
+                  Container(
+                    height: 50,
                     width: 300,
-                    child: TextField(
-                      obscureText: obscure,
-                      controller: pass,
-                      onSubmitted: (value) {
-                        submit();
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10)
+                    padding: EdgeInsets.all(5),
+                    child: ElevatedButton(
+                        onPressed: () {
+                      submit();
+                    }, child: Text("Log-in")),
+                  ),
+
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 40,
+                        child: ElevatedButton(onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
+                        }, child: Text("Queue Screen")),
+                      ),
+                      SizedBox(width: 10),
+                      Container(
+                        height: 40,
+                        child: ElevatedButton(onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                        }, child: Text("Services Kiosk")),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextButton(onPressed: () async {
+                    TextEditingController ip = TextEditingController();
+                    ip.text = site ?? "";
+
+                    showDialog(context: context, builder: (_) => AlertDialog(
+                      title: Text("Set Database IP"),
+                      content: Container(
+                        height: 60,
+                        child: Column(
+                          children: [
+                            TextField(
+                              decoration: InputDecoration(
+                                labelText: 'IP Address'
+                              ),
+                              controller: ip,
+                            )
+                          ],
                         ),
                       ),
-                    )),
-                IconButton(onPressed: () {
-                  obscure = !obscure;
-                  setState(() {
+                      actions: [
+                        TextButton(onPressed: () async {
+                          await saveIP(ip.text);
+                          await getIP();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("IP Set to '$site'")));
+                          Navigator.pop(context);
+                        }, child: Text("Set"))
+                      ],
+                    ));
+                  }, child: Text("Set IP"))
 
-                  });
-                }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
-                SizedBox(height: 10),
-                Container(
-                  height: 50,
-                  width: 300,
-                  padding: EdgeInsets.all(5),
-                  child: ElevatedButton(
-                      onPressed: () {
-                    submit();
-                  }, child: Text("Log-in")),
-                ),
-
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: 40,
-                      child: ElevatedButton(onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
-                      }, child: Text("Queue Screen")),
-                    ),
-                    SizedBox(width: 10),
-                    Container(
-                      height: 40,
-                      child: ElevatedButton(onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
-                      }, child: Text("Services Kiosk")),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextButton(onPressed: () async {
-                  TextEditingController ip = TextEditingController();
-                  ip.text = site ?? "";
-
-                  showDialog(context: context, builder: (_) => AlertDialog(
-                    title: Text("Set Database IP"),
-                    content: Container(
-                      height: 60,
-                      child: Column(
-                        children: [
-                          TextField(
-                            decoration: InputDecoration(
-                              labelText: 'IP Address'
-                            ),
-                            controller: ip,
-                          )
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      TextButton(onPressed: () async {
-                        await saveIP(ip.text);
-                        await getIP();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("IP Set to '$site'")));
-                        Navigator.pop(context);
-                      }, child: Text("Set"))
-                    ],
-                  ));
-                }, child: Text("Set IP"))
-
-              ]
+                ]
+            ),
           ),
         ),
       )
