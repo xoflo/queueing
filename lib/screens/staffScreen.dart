@@ -904,6 +904,7 @@ class _StaffSessionState extends State<StaffSession> {
             inactiveDialog();
           });
         });
+        Navigator.pop(context);
       } else {
         ringTimer = Timer.periodic(Duration(seconds: 10), (value) {
           Timer.periodic(Duration(seconds: 5), (value) {
