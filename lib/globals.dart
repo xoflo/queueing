@@ -46,7 +46,7 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
                   height: height.toDouble(),
                   child: Image.asset('images/logo.png')) : Image.asset('images/logo.png'),
               SizedBox(height: 20),
-              Text("Office of the Ombudsman", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700), textAlign: TextAlign.center)
+              Text("OFFICE OF THE OMBUDSMAN", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700), textAlign: TextAlign.center)
             ],
           )),
         )
@@ -56,6 +56,11 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
         width: MediaQuery.of(context).size.width,
         color: showColor == null ? Colors.white70 : null,
       ),
+      Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        color: showColor == null ? Colors.white24 : null,
+      )
     ],
   );
 }

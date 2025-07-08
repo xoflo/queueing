@@ -48,7 +48,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       scrollDirection: Axis.vertical,
                       child: Column(
                         children: [
-                          MediaQuery.of(context).size.width > 1500 && MediaQuery.of(context).size.height > 800
+                          MediaQuery.of(context).size.width > 500 && MediaQuery.of(context).size.height > 500
                               ? Column(
                                   children: [
                                     vqd.data == 0
