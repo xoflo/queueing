@@ -180,37 +180,44 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                                 }
                                                               }
                                                             },
-                                                            child: Card(
-                                                              child: Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            15.0),
-                                                                    child: Text(
-                                                                      service
-                                                                          .serviceType!,
-                                                                      style: TextStyle(
-                                                                          fontSize: service.serviceType!.length >
-                                                                                  20
-                                                                              ? 30
-                                                                              : 40,
-                                                                          fontWeight:
-                                                                              FontWeight.w700),
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                      maxLines: 2,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                    ),
+                                                            child: Opacity(
+                                                              opacity: 0.75,
+                                                              child: Card(
+                                                                child: InkWell(
+                                                                  splashColor: Theme.of(context).splashColor,
+                                                                  highlightColor: Theme.of(context).highlightColor,
+                                                                  child: Column(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
+                                                                    children: [
+                                                                      Padding(
+                                                                        padding:
+                                                                            const EdgeInsets
+                                                                                .all(
+                                                                                15.0),
+                                                                        child: Text(
+                                                                          service
+                                                                              .serviceType!,
+                                                                          style: TextStyle(
+                                                                              fontSize: service.serviceType!.length >
+                                                                                      20
+                                                                                  ? 30
+                                                                                  : 40,
+                                                                              fontWeight:
+                                                                                  FontWeight.w700),
+                                                                          textAlign:
+                                                                              TextAlign
+                                                                                  .center,
+                                                                          maxLines: 2,
+                                                                          overflow:
+                                                                              TextOverflow
+                                                                                  .ellipsis,
+                                                                        ),
+                                                                      ),
+                                                                    ],
                                                                   ),
-                                                                ],
+                                                                ),
                                                               ),
                                                             ),
                                                           ),
@@ -465,7 +472,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(

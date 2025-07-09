@@ -29,7 +29,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
-    await flutterTts.speak("$code, please proceed to $teller");
+    await flutterTts.speak("$code, $teller");
   }
 
   @override

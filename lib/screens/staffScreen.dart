@@ -28,7 +28,6 @@ class _StaffScreenState extends State<StaffScreen> {
   @override
   void initState() {
     initUpdate();
-
     super.initState();
   }
 
@@ -916,12 +915,12 @@ class _StaffSessionState extends State<StaffSession> {
             Navigator.pop(context);
           },
           child: Container(
-            height: 100,
+            height: 80,
             width: 200,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("INACTIVITY DETECTED", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700)),
+                Text("INACTIVITY DETECTED", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
                 Text("Press to Dismiss", style: TextStyle(fontSize: 15)),
               ],
             ),
