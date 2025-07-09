@@ -56,7 +56,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             padding:
                                                 EdgeInsets.fromLTRB(0, 20, 0, 0),
                                             height: 70,
-                                            child: Text("Now Serving",
+                                            child: Text("NOW SERVING",
                                                 style: TextStyle(
                                                     fontSize: 40,
                                                     fontWeight: FontWeight.w700)))
@@ -241,7 +241,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                           }
                                                                         });
 
-                                                                        return Container(
+                                                                        return SizedBox(
                                                                             width: MediaQuery.of(context).size.width -
                                                                                 600,
                                                                             height:
@@ -250,7 +250,18 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                 ? Center(
                                                                                     child: Container(height: 50, width: 50, child: CircularProgressIndicator()),
                                                                                   )
-                                                                                : VideoPlayer(controller!));
+                                                                                : ClipRRect(
+                                                                                  borderRadius: BorderRadius.circular(15),
+                                                                                  child: Container(
+                                                                                    color: Colors.black,
+                                                                                    height: MediaQuery.of(context).size.height - 300,
+                                                                                    child: AspectRatio(
+                                                                                      aspectRatio: 16 / 9,
+                                                                                      child: VideoPlayer(
+                                                                                      controller!),
+                                                                                    ),
+                                                                                  ),
+                                                                                ));
                                                                       },
                                                                     );
                                                                   })
@@ -304,7 +315,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                         Container(
                                                             height: 50,
                                                             child: Text(
-                                                                "Now Serving",
+                                                                "NOW SERVING",
                                                                 style: TextStyle(
                                                                     fontSize: 40,
                                                                     fontWeight:
@@ -368,50 +379,59 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                                       itemCount: snapshot.data!.length > 10 ? 10 : snapshot.data!.length,
                                                                                       itemBuilder: (context, i) {
                                                                                         final ticket = snapshot.data![i];
-                                                                                        return ticket.blinker == 0 ? Builder(
-                                                                                          builder: (context) {
-                                                                                            ticket.update({
-                                                                                              'blinker': 1
-                                                                                            });
+                                                                                        return Column(
+                                                                                          children: [
+                                                                                            ticket.blinker == 0 ? Builder(
+                                                                                              builder: (context) {
+                                                                                                ticket.update({
+                                                                                                  'blinker': 1
+                                                                                                });
 
-                                                                                            return TweenAnimationBuilder<Color?>(
-                                                                                              tween: ColorTween(
-                                                                                                begin: Colors.red,
-                                                                                                end: Colors.transparent
-                                                                                              ),
-                                                                                              duration: Duration(seconds: 5),
-                                                                                              builder: (BuildContext context, color, Widget? child) {
-                                                                                                return Container(
-                                                                                                  color: color,
-                                                                                                  height: 80,
-                                                                                                  child: Padding(
-                                                                                                    padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                                                                    child: Row(
-                                                                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                      children: [
-                                                                                                        Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
-                                                                                                        Spacer(),
-                                                                                                        Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
-                                                                                                      ],
-                                                                                                    ),
+                                                                                                return TweenAnimationBuilder<Color?>(
+                                                                                                  tween: ColorTween(
+                                                                                                    begin: Colors.red,
+                                                                                                    end: Colors.transparent
                                                                                                   ),
+                                                                                                  duration: Duration(seconds: 5),
+                                                                                                  builder: (BuildContext context, color, Widget? child) {
+                                                                                                    return Column(
+                                                                                                      children: [
+                                                                                                        Container(
+                                                                                                          color: color,
+                                                                                                          height: 80,
+                                                                                                          child: Padding(
+                                                                                                            padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                                                                                                            child: Row(
+                                                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                              children: [
+                                                                                                                Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
+                                                                                                                Spacer(),
+                                                                                                                Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                                                              ],
+                                                                                                            ),
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                      ],
+                                                                                                    );
+                                                                                                  },
                                                                                                 );
-                                                                                              },
-                                                                                            );
-                                                                                          }
-                                                                                        ) : Container(
-                                                                                          height: 80,
-                                                                                          child: Padding(
-                                                                                            padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                                                            child: Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.center,
-                                                                                              children: [
-                                                                                                Text("${ticket.stationName!} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
-                                                                                                Spacer(),
-                                                                                                Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
-                                                                                              ],
+                                                                                              }
+                                                                                            ) : Container(
+                                                                                              height: 80,
+                                                                                              child: Padding(
+                                                                                                padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+                                                                                                child: Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                  children: [
+                                                                                                    Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 50)),
+                                                                                                    Spacer(),
+                                                                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 50)),
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ),
                                                                                             ),
-                                                                                          ),
+                                                                                            Divider()
+                                                                                          ],
                                                                                         );
                                                                                       })
                                                                                   : Center(
@@ -666,7 +686,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                     text:
                                     slidingText.data!['other'].toString(),
                                     style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w700,
                                         color: Colors.black,
                                         fontSize: 60),
                                     scrollAxis: Axis.horizontal,
