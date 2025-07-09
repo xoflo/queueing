@@ -68,6 +68,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.print),
+          onPressed: () async {
+            await settingSecurity();
+      }),
         body: Listener(
       behavior: HitTestBehavior.translucent,
       onPointerDown: (_) => _resetTimer(),
@@ -76,38 +81,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
           logoBackground(context, 300),
           Column(
             children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Device: ${usb?.selectedDevice == null ? _device?.name ?? "None" : usb?.selectedDevice?.name ?? "None"}", style: TextStyle(fontWeight: FontWeight.w700),),
-                      IconButton(
-                          onPressed: () async {
-                            await settingSecurity();
-                          },
-                          icon: Icon(Icons.settings)),
-                    ],
-                  ),
-                ),
-              ),
               SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 10,
-                      children: [
-                        Text("Select Service to Queue",
-                            style: TextStyle(
-                                fontSize: 30, fontWeight: FontWeight.w700)),
-                        Icon(Icons.receipt_long)
-                      ],
-                    ),
                     StatefulBuilder(
                       builder: (BuildContext context,
                           void Function(void Function()) setStateList) {
@@ -143,7 +121,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                                   .size
                                                                   .width >
                                                               1200
-                                                          ? 3
+                                                          ? 4
                                                           : MediaQuery.of(context)
                                                                       .size
                                                                       .width >
