@@ -452,7 +452,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "timeDone": "",
         "status": "Pending",
         "log": "$timestamp: ticketGenerated",
-        "priority": priorityType != "None" ? 1 : 0,
+        "priority": priorityType != "Regular" ? 1 : 0,
         "priorityType": "$priorityType",
         "printStatus": 1,
         "callCheck": 0,
@@ -527,7 +527,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     final uri = Uri.parse('http://$site/queueing_api/api_priorities.php');
     final result = await http.get(uri);
     List<dynamic> response = jsonDecode(result.body);
-    response.add({"priorityName": "None", "id": 999.toString()});
+    response.add({"priorityName": "Regular", "id": 9999.toString()});
     return response;
   }
 

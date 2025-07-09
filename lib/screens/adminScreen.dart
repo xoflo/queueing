@@ -32,10 +32,16 @@ class _AdminScreenState extends State<AdminScreen> {
 
 
   List<DateTime> dates = [];
+  List<String> users = [];
+  List<String> serviceTypes = [];
+  List<String> priorities = [];
+
   String? displayDate;
+  String? displayUsers;
+  String? displayServiceTypes;
+  String? displayPriorities;
 
   // Service
-
 
   TextEditingController serviceType = TextEditingController();
   TextEditingController serviceCode = TextEditingController();
@@ -875,7 +881,7 @@ class _AdminScreenState extends State<AdminScreen> {
                       ? snapshot.data!.isNotEmpty
                       ? Container(
                     padding: EdgeInsets.all(10),
-                    height: 400,
+                    height: MediaQuery.of(context).size.height - 200,
                     child: ListView.builder(
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, i) {
@@ -1322,93 +1328,94 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   stationsView() {
-    return Container(
-      child: Column(
-        children: [
-          Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton(
-                  onPressed: () {
-                    addStation();
-                  },
-                  child: Text("+ Add Station"))),
-          FutureBuilder(
-            future: getStationSQL(),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done
-                  ? snapshot.data!.isNotEmpty
-                      ? Container(
-                          padding: EdgeInsets.all(10),
-                          height: 400,
-                          child: ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, i) {
-                                final station =
-                                    Station.fromJson(snapshot.data![i]);
+    return Column(
+      children: [
+        Align(
+            alignment: Alignment.centerLeft,
+            child: ElevatedButton(
+                onPressed: () {
+                  addStation(0);
+                },
+                child: Text("+ Add Station"))),
+        FutureBuilder(
+          future: getStationSQL(),
+          builder: (BuildContext context,
+              AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+            return snapshot.connectionState == ConnectionState.done
+                ? snapshot.data!.isNotEmpty
+                    ? Container(
+                        padding: EdgeInsets.all(10),
+                        height: MediaQuery.of(context).size.height - 200,
+                        child: ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, i) {
+                              final station =
+                                  Station.fromJson(snapshot.data![i]);
 
-                                print(station.sessionPing!);
+                              print(station.sessionPing!);
 
-                                if (station.sessionPing! != "") {
-                                  print(DateTime.parse(station.sessionPing!.toString()).difference(DateTime.now()).inSeconds);
+                              if (station.sessionPing! != "") {
+                                print(DateTime.parse(station.sessionPing!.toString()).difference(DateTime.now()).inSeconds);
 
-                                  if (DateTime.parse(station.sessionPing!.toString()).difference(DateTime.now()).inSeconds < -5) {
-                                    station.update({
-                                      "sessionPing": "",
-                                      "userInSession": "",
-                                      "inSession": 0
-                                    });
-                                  }
+                                if (DateTime.parse(station.sessionPing!.toString()).difference(DateTime.now()).inSeconds < -5) {
+                                  station.update({
+                                    "sessionPing": "",
+                                    "userInSession": "",
+                                    "inSession": 0
+                                  });
                                 }
+                              }
 
-                                return ListTile(
-                                  title: Text(
-                                      "${station.stationName} ${station.stationNumber == 0 ? "" : station.stationNumber}"),
-                                  subtitle: Row(
-                                    children: [
-                                      station.inSession == 1
-                                          ? Text(
-                                              "In Session: ${station.userInSession}",
-                                              style:
-                                                  TextStyle(color: Colors.red))
-                                          : Text("Available",
-                                              style: TextStyle(
-                                                  color: Colors.green))
-                                    ],
-                                  ),
-                                  trailing: IconButton(
-                                      onPressed: () {
-                                        if (station.inSession != 1) {
-                                          deleteStation(station.id!);
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station must be inactive to delete.")));
-                                        }
-                                      },
-                                      icon: Icon(Icons.delete)),
-                                );
-                              }),
-                        )
-                      : Container(
-                          height: 400,
-                          child: Text("No stations found",
-                              style: TextStyle(color: Colors.grey)),
-                        )
-                  : Container(
-                height: MediaQuery.of(context).size.height - 200,
-                child: Center(
-                  child: Container(
-                    height: 50,
-                    width: 50,
-                    child: CircularProgressIndicator(
+                              return ListTile(
+                                title: Text(
+                                    "${station.stationName} ${station.stationNumber == 0 ? "" : station.stationNumber}"),
+                                subtitle: Row(
+                                  children: [
+                                    station.inSession == 1
+                                        ? Text(
+                                            "In Session: ${station.userInSession}",
+                                            style:
+                                                TextStyle(color: Colors.red))
+                                        : Text("Available",
+                                            style: TextStyle(
+                                                color: Colors.green))
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                    onPressed: () {
+                                      if (station.inSession != 1) {
+                                        deleteStation(station.id!);
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station must be inactive to delete.")));
+                                      }
+                                    },
+                                    icon: Icon(Icons.delete)),
+                                onTap: () {
+                                  addStation(1, station);
+                                },
+                              );
+                            }),
+                      )
+                    : Container(
+                        height: 400,
+                        child: Text("No stations found",
+                            style: TextStyle(color: Colors.grey)),
+                      )
+                : Container(
+              height: MediaQuery.of(context).size.height - 200,
+              child: Center(
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(
 
-                    ),
                   ),
                 ),
-              );
-            },
-          )
-        ],
-      ),
+              ),
+            );
+          },
+        )
+      ],
     );
   }
 
@@ -1429,23 +1436,30 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  addStation() {
-    String display = "Select";
+  addStation(int i, [Station? station]) {
+
+    if (station != null) {
+      stationName.text = station.stationName!;
+      stationNumber.text = station.stationNumber!.toString();
+    }
 
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
-              title: Text('Add Station'),
+              title: Text('${i == 0 ? "Add" : "Edit"} Station'),
               content: StatefulBuilder(
                 builder: (BuildContext context,
                     void Function(void Function()) setStateDialog) {
                   return Container(
-                    height: 150,
+                    height: 100,
                     width: 250,
                     child: Column(
                       children: [
                         Container(
                             child: TextField(
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]'))
+                              ],
                           controller: stationName,
                           decoration: InputDecoration(
                             labelText: 'Station Name',
@@ -1453,6 +1467,9 @@ class _AdminScreenState extends State<AdminScreen> {
                         )),
                         Container(
                             child: TextField(
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                           controller: stationNumber,
                           decoration:
                               InputDecoration(labelText: 'Station Number'),
@@ -1464,44 +1481,55 @@ class _AdminScreenState extends State<AdminScreen> {
               ),
               actions: [
                 TextButton(
-                    onPressed: () {
+                    onPressed: () async {
                       try {
-                        if (stationName.text.trim() == "") {
-                          addStationSQL(display);
-                          clearUserFields();
+
+                        print(stationName.text);
+                        print(stationNumber.text);
+
+                        if (i == 0) {
+                          if (stationName.text.trim() != "") {
+                            await addStationSQL();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station name cannot be empty.")));
+                          }
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station name cannot be empty.")));
+                          if (station != null) {
+                            await station.update({
+                              'stationName': stationName.text.trim(),
+                              'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim()),
+                            });
+                            clearStationFields();
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Updated.")));
+                            setState(() {});
+                          }
                         }
                       } catch (e) {
                         print(e);
                       }
                     },
-                    child: Text("Add Station"))
+                    child: Text("${i == 0 ? "Add" : "Update"} Station"))
               ],
             ));
   }
 
-  addStationSQL(String serviceType) async {
+  addStationSQL() async {
     final uri = Uri.parse('http://$site/queueing_api/api_station.php');
     final body = jsonEncode({
-      "stationNumber": stationNumber.text,
-      "stationName":
-          "${stationName.text[0].toUpperCase() + stationName.text.substring(1).toLowerCase()}",
-      "serviceType": serviceType,
+      "stationNumber": stationNumber.text.trim(),
+      "stationName": stationName.text.trim(),
       "inSession": 0,
       "userInSession": "",
       "ticketServing": "",
       "sessionPing": ""
     });
 
-    print("serviceType: $serviceType");
-
     final result = await http.post(uri, body: body);
-    print("result: ${result.body}");
-
     Navigator.pop(context);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Station Added")));
+    clearStationFields();
     setState(() {});
   }
 
@@ -1666,61 +1694,69 @@ class _AdminScreenState extends State<AdminScreen> {
             return Column(
               children: [
                 Align(
-                    alignment: Alignment.topLeft,
-                    child: ElevatedButton(
-                        child: Text(dates.isNotEmpty ? "Filter: ${displayDate}" : "Filter Tickets: Today"),
-                        onPressed: () {
-                          showDialog(context: context, builder: (_) => AlertDialog(
-                            title: Text("Filter Archive"),
-                            content: Container(
-                              height: 380,
-                              child: Column(
-                                children: [
-                                  Container(
-                                    height: 350,
-                                    width: 350,
-                                    child: CalendarDatePicker2(
-                                        onValueChanged: (values) {
-                                          dates = values;
-                                        },
-                                        value: dates,
-                                        config: CalendarDatePicker2Config(
-                                          calendarType: CalendarDatePicker2Type.range,
-                                          firstDate: DateTime(2000, 1, 1),
-                                          lastDate: DateTime(3000, 1, 1),
-                                          currentDate: dateNow,
-                                          allowSameValueSelection: true,
-                                        )),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text("Select Date Range to Filter", style: TextStyle(color: Colors.grey)),
-                                  SizedBox(height: 5),
-                                ],
+                  alignment: Alignment.topLeft,
+                  child: Row(
+                    spacing: 10,
+                    children: [
+                      ElevatedButton(
+                          child: Text(dates.isNotEmpty ? "Filter: ${displayDate}" : "Filter Tickets: Today"),
+                          onPressed: () {
+                            showDialog(context: context, builder: (_) => AlertDialog(
+                              title: Text("Filter Archive"),
+                              content: Container(
+                                height: 380,
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      height: 350,
+                                      width: 350,
+                                      child: CalendarDatePicker2(
+                                          onValueChanged: (values) {
+                                            dates = values;
+                                          },
+                                          value: dates,
+                                          config: CalendarDatePicker2Config(
+                                            calendarType: CalendarDatePicker2Type.range,
+                                            firstDate: DateTime(2000, 1, 1),
+                                            lastDate: DateTime(3000, 1, 1),
+                                            currentDate: dateNow,
+                                            allowSameValueSelection: true,
+                                          )),
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text("Select Date Range to Filter", style: TextStyle(color: Colors.grey)),
+                                    SizedBox(height: 5),
+                                  ],
+                                ),
                               ),
-                            ),
-                            actions: [
-                              TextButton(onPressed: () {
-                                dates = [];
+                              actions: [
+                                TextButton(onPressed: () {
+                                  dates = [];
 
-                                setStateArchive((){});
-                                Navigator.pop(context);
-                              }, child: Text("Today")),
-                              TextButton(onPressed: () {
-                                if (dates.length == 1) {
-                                  dates.add(dates[0].add(Duration(days: 1)).subtract(Duration(seconds: 1)));
-                                } else {
-                                  dates[1].add(Duration(days: 1)).subtract(Duration(seconds: 1));
-                                }
+                                  setStateArchive((){});
+                                  Navigator.pop(context);
+                                }, child: Text("Today")),
+                                TextButton(onPressed: () {
+                                  if (dates.length == 1) {
+                                    dates.add(dates[0].add(Duration(days: 1)).subtract(Duration(seconds: 1)));
+                                  } else {
+                                    dates[1].add(Duration(days: 1)).subtract(Duration(seconds: 1));
+                                  }
 
-                                displayDate = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}";
+                                  displayDate = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}";
 
-                                setStateArchive((){});
-                                Navigator.pop(context);
-                              }, child: Text("Filter")),
+                                  setStateArchive((){});
+                                  Navigator.pop(context);
+                                }, child: Text("Filter")),
 
-                            ],
-                          ));
-                        })
+                              ],
+                            ));
+                          }),
+                      ElevatedButton(onPressed: () {}, child: Text(users.isNotEmpty ? "User: $displayUsers" : "User: All")),
+                      ElevatedButton(onPressed: () {}, child: Text(serviceTypes.isNotEmpty ? "Service: $displayServiceTypes" : "Service: All")),
+                      ElevatedButton(onPressed: () {}, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
+                    ],
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(10.0),
@@ -1802,12 +1838,10 @@ class _AdminScreenState extends State<AdminScreen> {
 
   statusColorHandler(String status)  {
     Color? color;
-
     if (status == 'Done') color = Colors.blueGrey;
     if (status == 'Pending') color = Colors.orangeAccent;
     if (status == 'Serving') color = Colors.green;
     if (status == 'Dismissed') color = Colors.red;
-
     return Text(status,style: TextStyle(color: color));
 
   }
