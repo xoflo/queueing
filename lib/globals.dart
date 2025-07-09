@@ -65,6 +65,17 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
   );
 }
 
+graphicBackground(BuildContext context) {
+  return Container(
+      height: MediaQuery.of(context).size.height,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+            fit: BoxFit.fill,
+            image:
+            Image.asset('images/bluebackground.jpg').image),
+      ));
+}
+
 imageBackground(BuildContext context) {
   return Container(
       height: MediaQuery.of(context).size.height,

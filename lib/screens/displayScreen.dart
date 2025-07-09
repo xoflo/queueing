@@ -370,10 +370,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                           child:
                                                                               Stack(
                                                                             children: [
-                                                                              logoBackground(
-                                                                                  context,
-                                                                                  250,
-                                                                                  300),
+
+                                                                              ClipRRect(
+                                                                                borderRadius: BorderRadius.circular(15),
+                                                                                  child: logoBackground(
+                                                                                      context,
+                                                                                      250,
+                                                                                      300)
+                                                                              ),
                                                                               snapshot.data!.length != 0
                                                                                   ? ListView.builder(
                                                                                       itemCount: snapshot.data!.length > 10 ? 10 : snapshot.data!.length,
