@@ -101,12 +101,12 @@ getSettings(BuildContext context, [String? controlName, int? getControl]) async 
 
     if (controlName != null) {
       final result = response.where((e) => e['controlName'] == controlName).toList()[0];
-      final vqd = int.parse(result['value'].toString());
+      final value = int.parse(result['value'].toString());
 
       if (getControl != null) {
         return result;
       } else {
-        return vqd;
+        return value;
       }
     } else {
       return response;
@@ -181,6 +181,9 @@ DateTime toDateTime(DateTime date) {
   return DateTime(date.year, date.month, date.day);
 }
 
+
+
+
 class RainbowOverlay extends StatefulWidget {
   RainbowOverlay({super.key, this.constant, this.control});
 
@@ -193,6 +196,7 @@ class RainbowOverlay extends StatefulWidget {
 
 class _RainbowOverlayState extends State<RainbowOverlay>
     with SingleTickerProviderStateMixin {
+
   // 🎛 Adjustable
   final int visibleSeconds = 5;
   final int invisibleSeconds = 25;
@@ -326,7 +330,7 @@ class _BackgroundVideoPlayerState extends State<BackgroundVideoPlayer> {
   }
 
   Future<void> _initializeAndPlay(String asset) async {
-    _controller = VideoPlayerController.asset(asset)
+    _controller = VideoPlayerController.networkUrl(Uri.parse('http://$site/queueing_api/bgvideos/${widget.videoAssets[_currentVideoIndex]}'))
       ..initialize().then((_) {
         setState(() {}); // refresh after init
         _controller

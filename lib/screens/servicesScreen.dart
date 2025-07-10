@@ -79,6 +79,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       child: Stack(
         children: [
           logoBackground(context, 300),
+          getRainbowOverlay(),
           Column(
             children: [
               SingleChildScrollView(
@@ -886,7 +887,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
   settingSecurity() async {
 
     final Control kioskControl = await getKioskControl();
-
     TextEditingController pass = TextEditingController();
     bool obscure = true;
 
@@ -942,6 +942,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
     } else {
       printerSettingDialog();
     }
+  }
+
+  getRainbowOverlay() {
+    return FutureBuilder(
+        future: getSettings(context, 'RGB Screen (Kiosk)'),
+        builder: (context, snapshot) {
+          return snapshot.connectionState == ConnectionState.done ?
+          snapshot.data! == 1 ?
+          RainbowOverlay(constant: 1) :
+          SizedBox() : SizedBox();
+        });
   }
 }
 

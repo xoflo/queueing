@@ -43,6 +43,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
               ? Stack(
                   children: [
                     graphicBackground(context),
+                    getBackgroundVideoOverlay(),
+                    getRainbowOverlay(),
                     vqd.data == 1 ? Container(
                       height: MediaQuery.of(context).size.height,
                       width: MediaQuery.of(context).size.width,
@@ -738,6 +740,48 @@ class _DisplayScreenState extends State<DisplayScreen> {
       ),
     );
   }
+
+  getRainbowOverlay() {
+    return FutureBuilder(
+        future: getSettings(context, 'RGB Screen (TV)'),
+        builder: (context, snapshot) {
+          return snapshot.connectionState == ConnectionState.done ?
+              snapshot.data! == 1 ?
+                  RainbowOverlay(constant: 1) :
+              SizedBox() : SizedBox();
+        });
+  }
+
+  getBackgroundVideoOverlay() {
+    return FutureBuilder(
+        future: getSettings(context, 'BG Video (TV)'),
+        builder: (context, snapshot) {
+          return snapshot.connectionState == ConnectionState.done ?
+          snapshot.data! == 1 ?
+          FutureBuilder(
+              future: getMediabg(context),
+              builder: (context, AsyncSnapshot<List<dynamic>> snapshotMedia) {
+                return snapshotMedia.connectionState == ConnectionState.done ?
+                Builder(
+                  builder: (context) {
+                    final List<dynamic> mediabg = snapshotMedia.data!;
+                    List<String> links = [];
+
+                    for (int i = 0; i < mediabg.length; i++) {
+                      links.add(mediabg[i]['link']);
+                    }
+
+                    return BackgroundVideoPlayer(videoAssets: links);
+                  }
+                ) :
+                    SizedBox();
+              },
+          ) :
+          SizedBox() : SizedBox();
+        });
+  }
+
+  
 
   Future<List<Ticket>> getTicketSQL() async {
     try {
