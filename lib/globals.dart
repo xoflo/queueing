@@ -82,15 +82,20 @@ graphicBackground(BuildContext context) {
   );
 }
 
-imageBackground(BuildContext context) {
-  return Container(
-      height: MediaQuery.of(context).size.height,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-            fit: BoxFit.fill,
-            image:
-            Image.asset('images/background.jpg').image),
-      ));
+imageBackground(BuildContext context, [int? opacity]) {
+  return Stack(
+    children: [
+      Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              fit: BoxFit.fill,
+              image:
+              Image.asset('images/background.jpg').image),
+        )),
+
+    ],
+  );
 }
 
 getSettings(BuildContext context, [String? controlName, int? getControl]) async {
