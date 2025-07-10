@@ -984,7 +984,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       links.add(mediabg[i]['link']);
                     }
 
-                    return BackgroundVideoPlayer(videoAssets: links);
+                    return links.isEmpty? SizedBox(): BackgroundVideoPlayer(videoAssets: links);
                   }
               ) :
               SizedBox();
