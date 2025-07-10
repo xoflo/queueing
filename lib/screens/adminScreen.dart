@@ -672,10 +672,15 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
 
                                                         if (similar.isEmpty) {
+                                                          if (file.size < 524288000) {
                                                           final response = await request.send();
                                                           addMediabg(file.name, file.name);
+                                                          print(response.headers);
                                                           setStateList((){});
                                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                        } else {
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
+                                                        }
                                                         } else {
                                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
                                                         }
@@ -809,9 +814,15 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
 
                                                         if (similar.isEmpty) {
-                                                          addMediabg(file.name, file.name);
-                                                          setStateList((){});
-                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                          if (file.size < 524288000) {
+                                                            final response = await request.send();
+                                                            addMediabg(file.name, file.name);
+                                                            print(response.headers);
+                                                            setStateList((){});
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                          } else {
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
+                                                          }
                                                         } else {
                                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
                                                         }
