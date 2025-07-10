@@ -112,7 +112,7 @@ class Usbprint {
       bytes += utf8.encode('Priority: $priority\n');
       bytes += utf8.encode('Name: $ticketname\n');
 
-      bytes += utf8.encode('\n\n');
+      bytes += utf8.encode('\n\n\n\n');
       bytes += [0x1D, 0x56, 0x00];               // Full cut
 
 
@@ -135,8 +135,6 @@ class Usbprint {
     await printerManager.connect(
         type: PrinterType.usb,
         model: UsbPrinterInput(name: selectedPrinter.name, productId: selectedPrinter.productId, vendorId: selectedPrinter.vendorId));
-
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${selectedPrinter.name} ${selectedPrinter.productId} ${selectedPrinter.vendorId}")));
   }
 
   printTicket(List<int> bytes) async {
