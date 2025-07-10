@@ -443,22 +443,15 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         List<dynamic> similar = media.where((e) => e['name'] == file.name).toList();
 
                                                         if (similar.isEmpty) {
-                                                          showDialog(
-                                                              barrierDismissible: false,
-                                                              context: context, builder: (_) =>
-                                                              AlertDialog(
-                                                                  content: Container(
-                                                                    height: 50,
-                                                                    width: 50,
-                                                                    child: Center(
-                                                                      child: CircularProgressIndicator(),
-                                                                    ),
-                                                                  )));
-
-                                                          final response = await request.send();
-                                                          addMedia(file.name, file.name);
-                                                          setStateList((){});
-                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                          if (file.size < 524288000) {
+                                                              final response = await request.send();
+                                                              addMedia(file.name, file.name);
+                                                              print(response.headers);
+                                                              setStateList((){});
+                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                            } else {
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
+                                                          }
                                                         } else {
                                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
                                                         }
@@ -679,18 +672,6 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
 
                                                         if (similar.isEmpty) {
-                                                          showDialog(
-                                                              barrierDismissible: false,
-                                                              context: context, builder: (_) =>
-                                                              AlertDialog(
-                                                                  content: Container(
-                                                                    height: 50,
-                                                                    width: 50,
-                                                                    child: Center(
-                                                                      child: CircularProgressIndicator(),
-                                                                    ),
-                                                                  )));
-
                                                           final response = await request.send();
                                                           addMediabg(file.name, file.name);
                                                           setStateList((){});
@@ -828,20 +809,6 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
 
                                                         if (similar.isEmpty) {
-                                                          showDialog(
-                                                              barrierDismissible: false,
-                                                              context: context, builder: (_) =>
-                                                          AlertDialog(
-                                                              content: Container(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Center(
-                                                              child: CircularProgressIndicator(),
-                                                            ),
-                                                          )));
-
-                                                          final response = await request.send();
-                                                          Navigator.pop(context);
                                                           addMediabg(file.name, file.name);
                                                           setStateList((){});
                                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));

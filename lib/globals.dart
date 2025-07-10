@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:queueing/hiveService.dart';
 import 'models/media.dart';
 import 'dart:math' as math;
+import 'package:video_player/video_player.dart';
 
 String? site;
 
@@ -66,14 +67,19 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
 }
 
 graphicBackground(BuildContext context) {
-  return Container(
-      height: MediaQuery.of(context).size.height,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-            fit: BoxFit.fill,
-            image:
-            Image.asset('images/bluebackground.jpg').image),
-      ));
+  return Stack(
+    children: [
+      Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              fit: BoxFit.fill,
+              image:
+              Image.asset('images/bluebackground.jpg').image),
+        )),
+
+    ],
+  );
 }
 
 imageBackground(BuildContext context) {
@@ -290,5 +296,91 @@ class _RainbowOverlayState extends State<RainbowOverlay>
         ),
       ),
     );
+  }
+}
+
+
+
+
+class BackgroundVideoPlayer extends StatefulWidget {
+  final List<String> videoAssets; // List of video asset paths
+
+  const BackgroundVideoPlayer({
+    Key? key,
+    required this.videoAssets,
+  }) : super(key: key);
+
+  @override
+  State<BackgroundVideoPlayer> createState() => _BackgroundVideoPlayerState();
+}
+
+class _BackgroundVideoPlayerState extends State<BackgroundVideoPlayer> {
+  late VideoPlayerController _controller;
+  int _currentVideoIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAndPlay(widget.videoAssets[_currentVideoIndex]);
+  }
+
+  Future<void> _initializeAndPlay(String asset) async {
+    _controller = VideoPlayerController.asset(asset)
+      ..initialize().then((_) {
+        setState(() {}); // refresh after init
+        _controller
+          ..setLooping(false) // we'll manually handle looping across videos
+          ..setVolume(0)
+          ..play();
+      });
+
+    _controller.addListener(_checkVideoEnd);
+  }
+
+  void _checkVideoEnd() {
+    if (_controller.value.position >= _controller.value.duration &&
+        !_controller.value.isPlaying) {
+      _playNextVideo();
+    }
+  }
+
+  Future<void> _playNextVideo() async {
+    _controller.removeListener(_checkVideoEnd);
+    await _controller.dispose();
+
+    setState(() {
+      _currentVideoIndex =
+          (_currentVideoIndex + 1) % widget.videoAssets.length;
+    });
+
+    _initializeAndPlay(widget.videoAssets[_currentVideoIndex]);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_checkVideoEnd);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _controller.value.isInitialized
+        ? Stack(
+      fit: StackFit.expand,
+      children: [
+        FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox(
+            width: _controller.value.size.width,
+            height: _controller.value.size.height,
+            child: VideoPlayer(_controller),
+          ),
+        ),
+        Container(
+          color: Colors.white70, // adjust opacity here
+        ),
+      ],
+    ) : const SizedBox.shrink();
   }
 }

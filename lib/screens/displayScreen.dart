@@ -37,18 +37,21 @@ class _DisplayScreenState extends State<DisplayScreen> {
     containerColor = Theme.of(context).cardTheme.color;
     return Scaffold(
       body: FutureBuilder(
-        future: getSettings(context, 'Video in Queue Display'),
+        future: getSettings(context, 'Video View (TV)'),
         builder: (BuildContext context, AsyncSnapshot<dynamic> vqd) {
           return vqd.connectionState == ConnectionState.done
               ? Stack(
                   children: [
-                    imageBackground(context),
-                    vqd.data == 1 ? Container() : logoBackground(context),
+                    graphicBackground(context),
+                    vqd.data == 1 ? Container(
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      color: Colors.white60) : logoBackground(context),
                     SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: Column(
                         children: [
-                          MediaQuery.of(context).size.width > 500 && MediaQuery.of(context).size.height > 500
+                          MediaQuery.of(context).size.width > 800 && MediaQuery.of(context).size.height > 800
                               ? Column(
                                   children: [
                                     vqd.data == 0
