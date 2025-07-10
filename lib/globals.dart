@@ -180,9 +180,8 @@ DateTime toDateTime(DateTime date) {
 
 
 class RainbowOverlay extends StatefulWidget {
-  RainbowOverlay({super.key, this.constant, this.control, this.visible, this.invisible, this.opacity, this.always});
+  RainbowOverlay({super.key, this.control, this.visible, this.invisible, this.opacity, this.always});
 
-  int? constant;
   int? control;
 
   int? visible;
@@ -210,8 +209,6 @@ class _RainbowOverlayState extends State<RainbowOverlay>
   @override
   void initState() {
     super.initState();
-
-    if (widget.constant != null) alwaysVisible = true;
     if (widget.visible != null) visibleSeconds = widget.visible!;
     if (widget.invisible != null) invisibleSeconds = widget.invisible!;
     if (widget.opacity != null) opacity = widget.opacity!;

@@ -947,11 +947,20 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   getRainbowOverlay() {
     return FutureBuilder(
-        future: getSettings(context, 'RGB Screen (Kiosk)'),
-        builder: (context, snapshot) {
+        future: getSettings(context, 'RGB Screen (Kiosk)', 1),
+        builder: (context, AsyncSnapshot<dynamic> snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
-          snapshot.data! == 1 ?
-          RainbowOverlay(constant: 1) :
+          int.parse(snapshot.data!['value']) == 1 ?
+          Builder(
+              builder: (context) {
+                final visible = int.parse(snapshot.data!['other'].toString().split(":")[0]);
+                final invisible = int.parse(snapshot.data!['other'].toString().split(":")[1]);
+                final opacity = double.parse(snapshot.data!['other'].toString().split(":")[2]);
+                final always = int.parse(snapshot.data!['other'].toString().split(":")[3]) == 1 ? true : false;
+
+                return RainbowOverlay(visible: visible, invisible: invisible, always: always);
+              }
+          ) :
           SizedBox() : SizedBox();
         });
   }
@@ -1018,7 +1027,7 @@ class _ServicesScreenSaverState extends State<ServicesScreenSaver> {
                         style: TextStyle(
                             fontSize: 30, fontWeight: FontWeight.w700),
                       ))),
-              RainbowOverlay(constant: 1)
+              RainbowOverlay(always: true)
             ],
           ),
         ),

@@ -791,9 +791,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       final visible = int.parse(snapshot.data!['other'].toString().split(":")[0]);
                       final invisible = int.parse(snapshot.data!['other'].toString().split(":")[1]);
                       final opacity = double.parse(snapshot.data!['other'].toString().split(":")[2]);
+                      final always = int.parse(snapshot.data!['other'].toString().split(":")[3]) == 1 ? true : false;
 
 
-                      return RainbowOverlay(visible: visible, invisible: invisible, );
+                      return RainbowOverlay(visible: visible, invisible: invisible, always: always);
                     }
                   ) :
               SizedBox() : SizedBox();

@@ -852,8 +852,9 @@ class _AdminScreenState extends State<AdminScreen> {
                                           }
 
                                           showDialog(context: context, builder: (_) => AlertDialog(
+                                            title: Text("RGB (Kiosk)"),
                                             content: Container(
-                                              height: 200,
+                                              height: 250,
                                               width: 150,
                                               child: StatefulBuilder(
                                                 builder: (context, setStateDialog) {
@@ -932,8 +933,9 @@ class _AdminScreenState extends State<AdminScreen> {
                                           }
 
                                           showDialog(context: context, builder: (_) => AlertDialog(
+                                            title: Text("RGB (TV)"),
                                             content: Container(
-                                                height: 200,
+                                                height: 250,
                                                 width: 150,
                                                 child: StatefulBuilder(
                                                   builder: (context, setStateDialog) {
