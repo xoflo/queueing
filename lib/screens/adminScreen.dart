@@ -837,7 +837,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                             },
                                           ));
                                         }, child: Text("Set BG Videos")) : SizedBox(),
-                                        control.controlName! == "RGB Screen (Kiosk)" ? TextButton(onPressed: () {
+                                        control.controlName! == "RGB Screen (Kiosk)" ? TextButton(
+                                            onPressed: () {
 
                                           bool alwaysOn = false;
                                           TextEditingController visibleTime = TextEditingController();
@@ -911,10 +912,15 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ),
                                             actions: [
                                               TextButton(onPressed: () async {
+                                                final realVisible = visibleTime.text.trim() == "" ? "0" : visibleTime.text.trim();
+                                                final realinvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
+                                                final realAlways = alwaysOn == true ? "1" : "0";
+
                                                 await control.update({
-                                                  'other': '${invisibleTime.text}:${visibleTime.text}:$opacity'
+                                                  'other': '$realinvisible:$realVisible:$opacity:$realAlways'
                                                 });
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
+                                                Navigator.pop(context);
                                               }, child: Text("Save"))
                                             ],
                                           ));
@@ -992,10 +998,15 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ),
                                             actions: [
                                               TextButton(onPressed: () async {
+                                                final realVisible = visibleTime.text.trim() == "" ? "0" : visibleTime.text.trim();
+                                                final realinvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
+                                                final realAlways = alwaysOn == true ? "1" : "0";
+
                                                 await control.update({
-                                                  'other': '${invisibleTime.text}:${visibleTime.text}:$opacity'
+                                                  'other': '$realinvisible:$realVisible:$opacity:$realAlways'
                                                 });
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
+                                                Navigator.pop(context);
                                               }, child: Text("Save"))
                                             ],
                                           ));
