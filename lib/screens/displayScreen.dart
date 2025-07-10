@@ -781,7 +781,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
         });
   }
 
-  
 
   Future<List<Ticket>> getTicketSQL() async {
     try {

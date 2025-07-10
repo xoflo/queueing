@@ -79,6 +79,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       child: Stack(
         children: [
           logoBackground(context, 300),
+          getBackgroundVideoOverlay(),
           getRainbowOverlay(),
           Column(
             children: [
@@ -951,6 +952,35 @@ class _ServicesScreenState extends State<ServicesScreen> {
           return snapshot.connectionState == ConnectionState.done ?
           snapshot.data! == 1 ?
           RainbowOverlay(constant: 1) :
+          SizedBox() : SizedBox();
+        });
+  }
+
+  getBackgroundVideoOverlay() {
+    return FutureBuilder(
+        future: getSettings(context, 'BG Video (TV)'),
+        builder: (context, snapshot) {
+          return snapshot.connectionState == ConnectionState.done ?
+          snapshot.data! == 1 ?
+          FutureBuilder(
+            future: getMediabg(context),
+            builder: (context, AsyncSnapshot<List<dynamic>> snapshotMedia) {
+              return snapshotMedia.connectionState == ConnectionState.done ?
+              Builder(
+                  builder: (context) {
+                    final List<dynamic> mediabg = snapshotMedia.data!;
+                    List<String> links = [];
+
+                    for (int i = 0; i < mediabg.length; i++) {
+                      links.add(mediabg[i]['link']);
+                    }
+
+                    return BackgroundVideoPlayer(videoAssets: links);
+                  }
+              ) :
+              SizedBox();
+            },
+          ) :
           SizedBox() : SizedBox();
         });
   }
