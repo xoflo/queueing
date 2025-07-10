@@ -78,8 +78,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
       onPointerDown: (_) => _resetTimer(),
       child: Stack(
         children: [
-          logoBackground(context, 300),
           getBackgroundVideoOverlay(),
+          logoBackground(context, 300),
           getRainbowOverlay(),
           Column(
             children: [
@@ -981,7 +981,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
               SizedBox();
             },
           ) :
-          SizedBox() : SizedBox();
+          SizedBox()
+              : SizedBox();
         });
   }
 }

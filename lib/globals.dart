@@ -56,11 +56,6 @@ logoBackground(BuildContext context, [int? width, int? height, int? showColor]) 
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         color: showColor == null ? Colors.white70 : null,
-      ),
-      Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        color: showColor == null ? Colors.white24 : null,
       )
     ],
   );
@@ -82,20 +77,15 @@ graphicBackground(BuildContext context) {
   );
 }
 
-imageBackground(BuildContext context, [int? opacity]) {
-  return Stack(
-    children: [
-      Container(
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-              fit: BoxFit.fill,
-              image:
-              Image.asset('images/background.jpg').image),
-        )),
-
-    ],
-  );
+imageBackground(BuildContext context) {
+  return Container(
+    height: MediaQuery.of(context).size.height,
+    decoration: BoxDecoration(
+      image: DecorationImage(
+          fit: BoxFit.fill,
+          image:
+          Image.asset('images/background.jpg').image),
+    ));
 }
 
 getSettings(BuildContext context, [String? controlName, int? getControl]) async {
@@ -190,10 +180,15 @@ DateTime toDateTime(DateTime date) {
 
 
 class RainbowOverlay extends StatefulWidget {
-  RainbowOverlay({super.key, this.constant, this.control});
+  RainbowOverlay({super.key, this.constant, this.control, this.visible, this.invisible, this.opacity, this.always});
 
   int? constant;
   int? control;
+
+  int? visible;
+  int? invisible;
+  double? opacity;
+  bool? always;
 
   @override
   State<RainbowOverlay> createState() => _RainbowOverlayState();
@@ -203,9 +198,10 @@ class _RainbowOverlayState extends State<RainbowOverlay>
     with SingleTickerProviderStateMixin {
 
   // 🎛 Adjustable
-  final int visibleSeconds = 5;
-  final int invisibleSeconds = 25;
+  int visibleSeconds = 5;
+  int invisibleSeconds = 25;
   final double fadeSeconds = 1.0;
+  double opacity = 0.7;
   bool alwaysVisible = false; // set this to true for constant rainbow
 
   late final AnimationController _controller;
@@ -215,9 +211,11 @@ class _RainbowOverlayState extends State<RainbowOverlay>
   void initState() {
     super.initState();
 
-    if (widget.constant != null) {
-      alwaysVisible = true;
-    }
+    if (widget.constant != null) alwaysVisible = true;
+    if (widget.visible != null) visibleSeconds = widget.visible!;
+    if (widget.invisible != null) invisibleSeconds = widget.invisible!;
+    if (widget.opacity != null) opacity = widget.opacity!;
+    if (widget.always != null) alwaysVisible = widget.always!;
 
     totalCycleSeconds = visibleSeconds + invisibleSeconds;
     _controller = AnimationController(
@@ -243,15 +241,15 @@ class _RainbowOverlayState extends State<RainbowOverlay>
           builder: (context, _) {
             final value = _controller.value;
             final cyclePos = value * totalCycleSeconds;
-            double opacity = 0.8;
+            double opacityConst = opacity;
 
             if (!alwaysVisible) {
               if (cyclePos < fadeSeconds) {
-                opacity = cyclePos / fadeSeconds;
+                opacityConst = cyclePos / fadeSeconds;
               } else if (cyclePos < visibleSeconds - fadeSeconds) {
-                opacity = 0.8;
+                opacityConst = opacity;
               } else if (cyclePos < visibleSeconds) {
-                opacity = (visibleSeconds - cyclePos) / fadeSeconds;
+                opacityConst = (visibleSeconds - cyclePos) / fadeSeconds;
               } else {
                 opacity = 0;
               }
@@ -386,9 +384,6 @@ class _BackgroundVideoPlayerState extends State<BackgroundVideoPlayer> {
             height: _controller.value.size.height,
             child: VideoPlayer(_controller),
           ),
-        ),
-        Container(
-          color: Colors.white70, // adjust opacity here
         ),
       ],
     ) : const SizedBox.shrink();

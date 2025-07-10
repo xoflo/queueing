@@ -836,7 +836,168 @@ class _AdminScreenState extends State<AdminScreen> {
                                               );
                                             },
                                           ));
-                                        }, child: Text("Set BG Videos")) : SizedBox()
+                                        }, child: Text("Set BG Videos")) : SizedBox(),
+                                        control.controlName! == "RGB Screen (Kiosk)" ? TextButton(onPressed: () {
+
+                                          bool alwaysOn = false;
+                                          TextEditingController visibleTime = TextEditingController();
+                                          TextEditingController invisibleTime = TextEditingController();
+                                          double opacity = 0;
+
+
+                                          if (control.other != null) {
+                                            visibleTime.text = control.other.toString().split(':')[0];
+                                            invisibleTime.text = control.other.toString().split(':')[1];
+                                            opacity = double.parse(control.other.toString().split(':')[2]);
+                                          }
+
+                                          showDialog(context: context, builder: (_) => AlertDialog(
+                                            content: Container(
+                                              height: 200,
+                                              width: 150,
+                                              child: StatefulBuilder(
+                                                builder: (context, setStateDialog) {
+                                                  return Column(
+                                                    children: [
+                                                      CheckboxListTile(
+                                                        title: Text("Always On"),
+                                                          value: alwaysOn, onChanged: (value) {
+                                                        alwaysOn = !alwaysOn;
+                                                        setStateDialog((){});
+                                                      }),
+                                                      alwaysOn == false ?
+                                                          Column(
+                                                            children: [
+                                                              TextField(
+                                                                inputFormatters: [
+                                                                  FilteringTextInputFormatter.digitsOnly
+                                                                ],
+                                                                controller: visibleTime,
+                                                                decoration: InputDecoration(
+                                                                    labelText: 'Display Length (In Seconds)'
+                                                                ),
+                                                              ),
+                                                              TextField(
+                                                                inputFormatters: [
+                                                                  FilteringTextInputFormatter.digitsOnly
+                                                                ],
+                                                                controller: invisibleTime,
+                                                                decoration: InputDecoration(
+                                                                    labelText: 'Pause Interval (In Seconds)'
+                                                                ),
+                                                              ),
+                                                              SizedBox(height: 10),
+                                                              Center(child: Text("Opacity: $opacity", style: TextStyle(fontWeight: FontWeight.w700))),
+                                                              Slider(
+                                                                value: opacity,
+                                                                min: 0,
+                                                                max: 1,
+                                                                divisions: 10, // step of 0.1
+                                                                label: opacity.toStringAsFixed(1),
+                                                                onChanged: (v) => setStateDialog(() => opacity = v),
+                                                              ),
+                                                            ],
+                                                          ) : Container(
+                                                        height: 200,
+                                                        child: Center(
+                                                          child: Text("RGB Screen will always be on.", style: TextStyle(color: Colors.grey)),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  );
+                                                },
+                                              )
+                                            ),
+                                            actions: [
+                                              TextButton(onPressed: () async {
+                                                await control.update({
+                                                  'other': '${invisibleTime.text}:${visibleTime.text}:$opacity'
+                                                });
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
+                                              }, child: Text("Save"))
+                                            ],
+                                          ));
+                                        }, child: Text("Customize")) : SizedBox(),
+                                        control.controlName! == "RGB Screen (TV)" ? TextButton(onPressed: () {
+                                          bool alwaysOn = false;
+                                          TextEditingController visibleTime = TextEditingController();
+                                          TextEditingController invisibleTime = TextEditingController();
+                                          double opacity = 0;
+
+
+                                          if (control.other != null) {
+                                            visibleTime.text = control.other.toString().split(':')[0];
+                                            invisibleTime.text = control.other.toString().split(':')[1];
+                                            opacity = double.parse(control.other.toString().split(':')[2]);
+                                          }
+
+                                          showDialog(context: context, builder: (_) => AlertDialog(
+                                            content: Container(
+                                                height: 200,
+                                                width: 150,
+                                                child: StatefulBuilder(
+                                                  builder: (context, setStateDialog) {
+                                                    return Column(
+                                                      children: [
+                                                        CheckboxListTile(
+                                                            title: Text("Always On"),
+                                                            value: alwaysOn, onChanged: (value) {
+                                                          alwaysOn = !alwaysOn;
+                                                          setStateDialog((){});
+                                                        }),
+                                                        alwaysOn == false ?
+                                                        Column(
+                                                          children: [
+                                                            TextField(
+                                                              inputFormatters: [
+                                                                FilteringTextInputFormatter.digitsOnly
+                                                              ],
+                                                              controller: visibleTime,
+                                                              decoration: InputDecoration(
+                                                                  labelText: 'Display Length (In Seconds)'
+                                                              ),
+                                                            ),
+                                                            TextField(
+                                                              inputFormatters: [
+                                                                FilteringTextInputFormatter.digitsOnly
+                                                              ],
+                                                              controller: invisibleTime,
+                                                              decoration: InputDecoration(
+                                                                  labelText: 'Pause Interval (In Seconds)'
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 10),
+                                                            Center(child: Text("Opacity: $opacity", style: TextStyle(fontWeight: FontWeight.w700))),
+                                                            Slider(
+                                                              value: opacity,
+                                                              min: 0,
+                                                              max: 1,
+                                                              divisions: 10, // step of 0.1
+                                                              label: opacity.toStringAsFixed(1),
+                                                              onChanged: (v) => setStateDialog(() => opacity = v),
+                                                            ),
+                                                          ],
+                                                        ) : Container(
+                                                          height: 200,
+                                                          child: Center(
+                                                            child: Text("RGB Screen will always be on.", style: TextStyle(color: Colors.grey)),
+                                                          ),
+                                                        )
+                                                      ],
+                                                    );
+                                                  },
+                                                )
+                                            ),
+                                            actions: [
+                                              TextButton(onPressed: () async {
+                                                await control.update({
+                                                  'other': '${invisibleTime.text}:${visibleTime.text}:$opacity'
+                                                });
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
+                                              }, child: Text("Save"))
+                                            ],
+                                          ));
+                                        }, child: Text("Customize")) : SizedBox()
                                       ],
                                     ),
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
