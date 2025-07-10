@@ -321,8 +321,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                       children: [
                                         Text(control.controlName!),
                                         Spacer(),
-                                        control.controlName! == "Video View (TV)" ?
-                                        TextButton(onPressed: () async {
+                                        control.controlName! == "Video View (TV)" ? TextButton(onPressed: () async {
                                           showDialog(context: context, builder: (_) => StatefulBuilder(
                                             builder: (BuildContext context, void Function(void Function()) setStateList) {
                                               return AlertDialog(
@@ -438,11 +437,19 @@ class _AdminScreenState extends State<AdminScreen> {
                                                               filename: file.name,
                                                             ));
 
-                                                        final response = await request.send();
-                                                        addMedia(file.name, file.name);
-                                                        setStateList((){});
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
 
+
+                                                        List<dynamic> media = await getMedia(context);
+                                                        List<dynamic> similar = media.where((e) => e['name'] == file.name).toList();
+
+                                                        if (similar.isEmpty) {
+                                                          final response = await request.send();
+                                                          addMedia(file.name, file.name);
+                                                          setStateList((){});
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                        } else {
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
+                                                        }
 
                                                       }
                                                     } catch(e) {
@@ -656,10 +663,17 @@ class _AdminScreenState extends State<AdminScreen> {
                                                               filename: file.name,
                                                             ));
 
-                                                        final response = await request.send();
-                                                        addMedia(file.name, file.name);
-                                                        setStateList((){});
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                        List<dynamic> mediabg = await getMediabg(context);
+                                                        List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
+
+                                                        if (similar.isEmpty) {
+                                                          final response = await request.send();
+                                                          addMediabg(file.name, file.name);
+                                                          setStateList((){});
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                        } else {
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
+                                                        }
                                                       }
                                                     } catch(e) {
                                                       print(e);
@@ -786,10 +800,17 @@ class _AdminScreenState extends State<AdminScreen> {
                                                               filename: file.name,
                                                             ));
 
-                                                        final response = await request.send();
-                                                        addMedia(file.name, file.name);
-                                                        setStateList((){});
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                        List<dynamic> mediabg = await getMediabg(context);
+                                                        List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
+
+                                                        if (similar.isEmpty) {
+                                                          final response = await request.send();
+                                                          addMediabg(file.name, file.name);
+                                                          setStateList((){});
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                        } else {
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
+                                                        }
                                                       }
                                                     } catch(e) {
                                                       print(e);
@@ -1905,6 +1926,16 @@ class _AdminScreenState extends State<AdminScreen> {
 
   addMedia(String name, String link) async {
     final uri = Uri.parse('http://$site/queueing_api/api_media.php');
+    final body = jsonEncode({
+      'name': name,
+      'link': link
+    });
+
+    final response = await http.post(uri, body: body);
+  }
+
+  addMediabg(String name, String link) async {
+    final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
     final body = jsonEncode({
       'name': name,
       'link': link

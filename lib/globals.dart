@@ -190,7 +190,7 @@ class _RainbowOverlayState extends State<RainbowOverlay>
   final int visibleSeconds = 5;
   final int invisibleSeconds = 25;
   final double fadeSeconds = 1.0;
-  bool alwaysVisible = false; // 👈 set this to true for constant rainbow
+  bool alwaysVisible = false; // set this to true for constant rainbow
 
   late final AnimationController _controller;
   late final int totalCycleSeconds;
@@ -227,14 +227,13 @@ class _RainbowOverlayState extends State<RainbowOverlay>
           builder: (context, _) {
             final value = _controller.value;
             final cyclePos = value * totalCycleSeconds;
-
             double opacity = 0.8;
 
             if (!alwaysVisible) {
               if (cyclePos < fadeSeconds) {
                 opacity = cyclePos / fadeSeconds;
               } else if (cyclePos < visibleSeconds - fadeSeconds) {
-                opacity = 1;
+                opacity = 0.8;
               } else if (cyclePos < visibleSeconds) {
                 opacity = (visibleSeconds - cyclePos) / fadeSeconds;
               } else {

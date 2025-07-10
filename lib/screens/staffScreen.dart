@@ -743,8 +743,8 @@ class _StaffSessionState extends State<StaffSession> {
                                       Text("Upcoming Tickets:", style: TextStyle(fontWeight: FontWeight.w700)),
                                       SizedBox(height: 10),
                                       Container(
-                                        height: 250,
-                                        width: 150,
+                                        height: 200,
+                                        width: 80,
                                         child: tickets.isEmpty ? Text("No pending tickets\nat the moment.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center) : ListView.builder(
                                             scrollDirection: Axis.vertical,
                                             itemCount: tickets.length,
@@ -898,7 +898,7 @@ class _StaffSessionState extends State<StaffSession> {
   inactiveDialog() {
     dialogOn = true;
     _play();
-    final ringerSound = Timer.periodic(Duration(seconds: 5), (callback) {
+    final ringerSound = Timer.periodic(Duration(seconds: 10), (callback) {
       _play();
     });
 
@@ -915,7 +915,7 @@ class _StaffSessionState extends State<StaffSession> {
             Navigator.pop(context);
           },
           child: Container(
-            height: 80,
+            height: 100,
             width: 200,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
