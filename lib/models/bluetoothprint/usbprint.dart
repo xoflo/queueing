@@ -90,20 +90,33 @@ class Usbprint {
       List<int> bytes = [];
 
       bytes += utf8.encode('\n');
-      bytes += [0x1B, 0x21, 0x30];
-      bytes += utf8.encode('Office of the Ombudsman\n');
-      bytes += [0x1B, 0x21, 0x08];
+
+      bytes += [0x1B, 0x61, 0x01];               // ESC a 1 -> center
+      bytes += [0x1B, 0x21, 0x30];               // Double height + double width
+      bytes += utf8.encode('Office of the\nOmbudsman\n');
+
+      bytes += [0x1B, 0x21, 0x08];               // Emphasized
       bytes += utf8.encode('Davao City, Philippines\n');
       bytes += utf8.encode('\n');
-      bytes += [0x1B, 0x21, 0x10];
+
+      bytes += [0x1B, 0x21, 0x10];               // Slightly larger
       bytes += utf8.encode('YOUR TICKET NUMBER IS:\n');
-      bytes += [0x1D, 0x21, 0x33];
+
+      bytes += [0x1D, 0x21, 0x33];               // Very large
       bytes += utf8.encode('$codeAndNumber\n');
-      bytes += [0x1D, 0x21, 0x00];
+
+      bytes += [0x1D, 0x21, 0x00];               // Normal size
+
+      bytes += [0x1B, 0x61, 0x00];               // ESC a 0 -> left
       bytes += utf8.encode('Time: $timeCreated\n');
       bytes += utf8.encode('Priority: $priority\n');
       bytes += utf8.encode('Name: $ticketname\n');
-      bytes += [0x1D, 0x56, 0x00];
+
+      bytes += utf8.encode('\n\n');
+      bytes += [0x1D, 0x56, 0x00];               // Full cut
+
+
+      await printTicket(bytes);
 
       return 1;
     } catch(e) {

@@ -467,12 +467,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
             "$timestamp", "$priorityType", "$ticketName");
         value = valueBlue ?? 0;
       } else {
-        final valueUSB = usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
-        value = valueUSB ?? 0;
+        try {
+          final valueUSB = await usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
+          value = valueUSB ?? 0;
+        } catch(e) {
+          print(e);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+        }
       }
 
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -971,7 +976,7 @@ class _ServicesScreenSaverState extends State<ServicesScreenSaver> {
                         style: TextStyle(
                             fontSize: 30, fontWeight: FontWeight.w700),
                       ))),
-              RainbowOverlay()
+              RainbowOverlay(constant: 1)
             ],
           ),
         ),

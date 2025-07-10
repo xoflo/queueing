@@ -321,7 +321,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                       children: [
                                         Text(control.controlName!),
                                         Spacer(),
-                                        control.controlName! == "Video in Queue Display" ?
+                                        control.controlName! == "Video View (TV)" ?
                                         TextButton(onPressed: () async {
                                           showDialog(context: context, builder: (_) => StatefulBuilder(
                                             builder: (BuildContext context, void Function(void Function()) setStateList) {
@@ -455,7 +455,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                             },
                                           ));
                                         }, child: Text("Set Videos")) : SizedBox(),
-                                        control.controlName! == "Sliding Text" ? TextButton(onPressed: () {
+                                        control.controlName! == "Sliding Text" ? TextButton(
+                                            onPressed: () {
                                           TextEditingController sliding = TextEditingController();
 
 
@@ -540,7 +541,266 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ],
                                           ));
                                         }, child: Text("Set Password")) : SizedBox(),
+                                        control.controlName! == "BG Video (TV)" ? TextButton(onPressed: () async {
+                                          showDialog(context: context, builder: (_) => StatefulBuilder(
+                                            builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                              return AlertDialog(
+                                                title: Text("BG Video List"),
+                                                content: FutureBuilder(
+                                                  future: getMediabg(context),
+                                                  builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                    return snapshot.connectionState == ConnectionState.done ?
+                                                    Container(
+                                                      height: 400,
+                                                      width: 400,
+                                                      child: snapshot.data!.length == 0 ? Center(child: Text("No BG Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
+                                                          itemCount: snapshot.data!.length,
+                                                          itemBuilder: (context, i) {
+                                                            final media = Media.fromJson(snapshot.data![i]);
+                                                            return ListTile(
+                                                              title: Text(media.name!),
+                                                              onTap: () async {
+                                                                final link = Uri.parse("http://$site/queueing_api/bgvideos/${media.link}");
+                                                                final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
+                                                                  setStateSetting(() {}); // refresh UI when video is ready
+                                                                });
 
+                                                                videoController.setLooping(true);
+                                                                int player = 0;
+
+                                                                dispose(){
+                                                                  videoController.dispose();
+                                                                }
+
+                                                                showDialog(context: context, builder: (_) => AlertDialog(
+                                                                  content: StatefulBuilder(
+                                                                    builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                                                      return Container(
+                                                                        height: 400,
+                                                                        width: 400,
+                                                                        child: Column(
+                                                                          children: [
+                                                                            Container(
+                                                                                height: 350,
+                                                                                width: 350,
+                                                                                child: VideoPlayer(videoController)
+                                                                            ),
+                                                                            IconButton(onPressed: () {if (player == 0) {
+                                                                              player = 1;
+                                                                              videoController.play();
+                                                                              setStateSetting((){});
+                                                                            } else {
+                                                                              player = 0;
+                                                                              videoController.pause();
+                                                                              setStateSetting((){});
+                                                                            }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
+                                                                          ],
+                                                                        ),
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ));
+                                                              },
+                                                              trailing: IconButton(onPressed: () async {
+                                                                final uri = Uri.parse(
+                                                                    "http://$site/queueing_api/api_videoDeletebg.php");
+
+                                                                final response = await http.post(uri, body: {
+                                                                  'filename': media.link,
+                                                                });
+
+                                                                if (response.statusCode == 200) {
+                                                                  print("Response: ${response.body}");
+
+                                                                  final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
+                                                                  final body = jsonEncode({'id': media.id});
+                                                                  final result = await http.delete(uri, body: body);
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
+                                                                  setStateList((){});
+
+
+                                                                } else {
+                                                                  print("Error: ${response.statusCode}");
+                                                                }
+
+                                                              }, icon: Icon(Icons.delete)),
+                                                            );
+                                                          }),
+                                                    ) : Container(
+                                                      height: 50,
+                                                      width: 50,
+                                                      child: CircularProgressIndicator(),
+                                                    );
+                                                  },
+                                                ),
+                                                actions: [
+                                                  TextButton(onPressed: () async {
+                                                    try {
+                                                      final result = await FilePicker.platform.pickFiles(
+                                                        type: FileType.video,
+                                                        allowMultiple: false,
+                                                        withData: true,
+                                                      );
+
+                                                      if (result != null && result.files.isNotEmpty) {
+                                                        final file = result.files.first;
+                                                        final uri = Uri.parse(
+                                                            "http://$site/queueing_api/api_videobg.php");
+
+                                                        final request = http.MultipartRequest(
+                                                            "POST", uri);
+                                                        request.files.add(
+                                                            http.MultipartFile.fromBytes(
+                                                              'file',
+                                                              file.bytes!,
+                                                              filename: file.name,
+                                                            ));
+
+                                                        final response = await request.send();
+                                                        addMedia(file.name, file.name);
+                                                        setStateList((){});
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                      }
+                                                    } catch(e) {
+                                                      print(e);
+                                                    }
+
+                                                  }, child: Text("Add Video"))
+                                                ],
+                                              );
+                                            },
+                                          ));
+                                        }, child: Text("Set BG Videos")) : SizedBox(),
+                                        control.controlName! == "BG Video (Kiosk)" ? TextButton(onPressed: () async {
+                                          showDialog(context: context, builder: (_) => StatefulBuilder(
+                                            builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                              return AlertDialog(
+                                                title: Text("BG Video List"),
+                                                content: FutureBuilder(
+                                                  future: getMediabg(context),
+                                                  builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                    return snapshot.connectionState == ConnectionState.done ?
+                                                    Container(
+                                                      height: 400,
+                                                      width: 400,
+                                                      child: snapshot.data!.length == 0 ? Center(child: Text("No BG Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
+                                                          itemCount: snapshot.data!.length,
+                                                          itemBuilder: (context, i) {
+                                                            final media = Media.fromJson(snapshot.data![i]);
+                                                            return ListTile(
+                                                              title: Text(media.name!),
+                                                              onTap: () async {
+                                                                final link = Uri.parse("http://$site/queueing_api/bgvideos/${media.link}");
+                                                                final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
+                                                                  setStateSetting(() {}); // refresh UI when video is ready
+                                                                });
+
+                                                                videoController.setLooping(true);
+                                                                int player = 0;
+
+                                                                dispose(){
+                                                                  videoController.dispose();
+                                                                }
+
+                                                                showDialog(context: context, builder: (_) => AlertDialog(
+                                                                  content: StatefulBuilder(
+                                                                    builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                                                      return Container(
+                                                                        height: 400,
+                                                                        width: 400,
+                                                                        child: Column(
+                                                                          children: [
+                                                                            Container(
+                                                                                height: 350,
+                                                                                width: 350,
+                                                                                child: VideoPlayer(videoController)
+                                                                            ),
+                                                                            IconButton(onPressed: () {if (player == 0) {
+                                                                              player = 1;
+                                                                              videoController.play();
+                                                                              setStateSetting((){});
+                                                                            } else {
+                                                                              player = 0;
+                                                                              videoController.pause();
+                                                                              setStateSetting((){});
+                                                                            }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
+                                                                          ],
+                                                                        ),
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ));
+                                                              },
+                                                              trailing: IconButton(onPressed: () async {
+                                                                final uri = Uri.parse(
+                                                                    "http://$site/queueing_api/api_videoDeletebg.php");
+
+                                                                final response = await http.post(uri, body: {
+                                                                  'filename': media.link,
+                                                                });
+
+                                                                if (response.statusCode == 200) {
+                                                                  print("Response: ${response.body}");
+
+                                                                  final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
+                                                                  final body = jsonEncode({'id': media.id});
+                                                                  final result = await http.delete(uri, body: body);
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
+                                                                  setStateList((){});
+
+
+                                                                } else {
+                                                                  print("Error: ${response.statusCode}");
+                                                                }
+
+                                                              }, icon: Icon(Icons.delete)),
+                                                            );
+                                                          }),
+                                                    ) : Container(
+                                                      height: 50,
+                                                      width: 50,
+                                                      child: CircularProgressIndicator(),
+                                                    );
+                                                  },
+                                                ),
+                                                actions: [
+                                                  TextButton(onPressed: () async {
+                                                    try {
+                                                      final result = await FilePicker.platform.pickFiles(
+                                                        type: FileType.video,
+                                                        allowMultiple: false,
+                                                        withData: true,
+                                                      );
+
+                                                      if (result != null && result.files.isNotEmpty) {
+                                                        final file = result.files.first;
+                                                        final uri = Uri.parse(
+                                                            "http://$site/queueing_api/api_videobg.php");
+
+                                                        final request = http.MultipartRequest(
+                                                            "POST", uri);
+                                                        request.files.add(
+                                                            http.MultipartFile.fromBytes(
+                                                              'file',
+                                                              file.bytes!,
+                                                              filename: file.name,
+                                                            ));
+
+                                                        final response = await request.send();
+                                                        addMedia(file.name, file.name);
+                                                        setStateList((){});
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                      }
+                                                    } catch(e) {
+                                                      print(e);
+                                                    }
+
+                                                  }, child: Text("Add Video"))
+                                                ],
+                                              );
+                                            },
+                                          ));
+                                        }, child: Text("Set BG Videos")) : SizedBox()
                                       ],
                                     ),
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {

@@ -128,6 +128,21 @@ getMedia(BuildContext context) async {
   }
 }
 
+getMediabg(BuildContext context) async {
+  try {
+    final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
+    final result = await http.get(uri);
+    List<dynamic> response = jsonDecode(result.body);
+
+    return response;
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Cannot connect to the server. Please try again.")));
+    print(e);
+    return null;
+  }
+}
+
 getServiceSQL() async {
   try {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
@@ -161,7 +176,9 @@ DateTime toDateTime(DateTime date) {
 }
 
 class RainbowOverlay extends StatefulWidget {
-  const RainbowOverlay({super.key});
+  RainbowOverlay({super.key, this.constant});
+
+  int? constant;
 
   @override
   State<RainbowOverlay> createState() => _RainbowOverlayState();
@@ -171,8 +188,9 @@ class _RainbowOverlayState extends State<RainbowOverlay>
     with SingleTickerProviderStateMixin {
   // 🎛 Adjustable
   final int visibleSeconds = 5;
-  final int invisibleSeconds = 1800;
-  final double fadeSeconds = 1.0; // how long fade in/out takes
+  final int invisibleSeconds = 25;
+  final double fadeSeconds = 1.0;
+  bool alwaysVisible = false; // 👈 set this to true for constant rainbow
 
   late final AnimationController _controller;
   late final int totalCycleSeconds;
@@ -180,6 +198,11 @@ class _RainbowOverlayState extends State<RainbowOverlay>
   @override
   void initState() {
     super.initState();
+
+    if (widget.constant != null) {
+      alwaysVisible = true;
+    }
+
     totalCycleSeconds = visibleSeconds + invisibleSeconds;
     _controller = AnimationController(
       vsync: this,
@@ -205,19 +228,18 @@ class _RainbowOverlayState extends State<RainbowOverlay>
             final value = _controller.value;
             final cyclePos = value * totalCycleSeconds;
 
-            double opacity = 0;
-            if (cyclePos < fadeSeconds) {
-              // fade in
-              opacity = cyclePos / fadeSeconds;
-            } else if (cyclePos < visibleSeconds - fadeSeconds) {
-              // fully visible
-              opacity = 0.8;
-            } else if (cyclePos < visibleSeconds) {
-              // fade out
-              opacity = (visibleSeconds - cyclePos) / fadeSeconds;
-            } else {
-              // invisible part
-              opacity = 0;
+            double opacity = 0.8;
+
+            if (!alwaysVisible) {
+              if (cyclePos < fadeSeconds) {
+                opacity = cyclePos / fadeSeconds;
+              } else if (cyclePos < visibleSeconds - fadeSeconds) {
+                opacity = 1;
+              } else if (cyclePos < visibleSeconds) {
+                opacity = (visibleSeconds - cyclePos) / fadeSeconds;
+              } else {
+                opacity = 0;
+              }
             }
 
             // scroll value loops within visibleSeconds
@@ -226,7 +248,7 @@ class _RainbowOverlayState extends State<RainbowOverlay>
 
             return AnimatedOpacity(
               opacity: opacity,
-              duration: const Duration(milliseconds: 200), // short duration for smooth update
+              duration: const Duration(milliseconds: 200),
               child: ClipRect(
                 child: Transform.translate(
                   offset: Offset(dx, 0),
