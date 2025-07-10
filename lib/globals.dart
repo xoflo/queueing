@@ -182,9 +182,10 @@ DateTime toDateTime(DateTime date) {
 }
 
 class RainbowOverlay extends StatefulWidget {
-  RainbowOverlay({super.key, this.constant});
+  RainbowOverlay({super.key, this.constant, this.control});
 
   int? constant;
+  int? control;
 
   @override
   State<RainbowOverlay> createState() => _RainbowOverlayState();
