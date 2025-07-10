@@ -641,7 +641,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                     duration: Duration(seconds: 5),
                                     builder: (BuildContext context, color, Widget? child) {
                                       return Opacity(
-                                        opacity: 0.75,
+                                        opacity: 0.8,
                                         child: Card(
                                           elevation: 2,
                                           color: color,
@@ -651,9 +651,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
-                                                Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
-                                                Text(ticket.serviceType!, style: TextStyle(fontSize: 30), textAlign: TextAlign.center),
+                                                Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700)),
+                                                Divider(thickness: 3),
+                                                Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
+                                                Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
                                               ],
                                             ),
                                           ),
@@ -664,7 +665,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 );
                               }
                           ) : Opacity(
-                            opacity: 0.75,
+                            opacity: 0.8,
                             child: Card(
                               elevation: 2,
                               child: Padding(
@@ -672,9 +673,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}", style: TextStyle(fontSize: 30)),
-                                    Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700)),
-                                    Text(ticket.serviceType!, style: TextStyle(fontSize: 30), textAlign: TextAlign.center),
+                                    Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700)),
+                                    Divider(thickness: 3),
+                                    Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
+                                    Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
                                   ],
                                 ),
                               ),
@@ -699,15 +701,17 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             padding: const EdgeInsets.all(10.0),
                             child: TweenAnimationBuilder<Color?>(
                               tween: ColorTween(
-                                begin: snapshot.data!.first.blinker == 0 ? Colors.red : Colors.white70,
-                                end: Colors.white70,
+                                begin: snapshot.data!.first.blinker == 0 ? Colors.red : Theme.of(context).cardColor,
+                                end: Theme.of(context).cardColor,
                               ),
                               duration: Duration(seconds: 5),
                               builder: (context, color, child) {
                                 updateBlinker(snapshot.data!.first);
 
+                                final ticket = snapshot.data!.first;
+
                                 return Opacity(
-                                  opacity: 0.75,
+                                  opacity: 0.8,
                                   child: Card(
                                     elevation: 2,
                                     color: color,
@@ -720,9 +724,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                         child: Column(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Text("${snapshot.data!.first.stationName} ${snapshot.data!.first.stationNumber}", style: TextStyle(fontSize: 30)),
-                                            Text("${snapshot.data!.first.codeAndNumber}", style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
-                                            Text("${snapshot.data!.first.serviceType}", style: TextStyle(fontSize: 30), textAlign: TextAlign.center),
+                                            Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 55, fontWeight: FontWeight.w700)),
+                                            Divider(thickness: 3),
+                                            Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
+                                            Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
                                           ],
                                         ),
                                       ),
