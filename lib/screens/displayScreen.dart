@@ -636,28 +636,25 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                   child: TweenAnimationBuilder<Color?>(
                                     tween: ColorTween(
                                         begin: Colors.red,
-                                        end: Theme.of(context).cardColor
+                                        end: Colors.white.withValues(alpha: 0.8)
                                     ),
                                     duration: Duration(seconds: 5),
                                     builder: (BuildContext context, color, Widget? child) {
-                                      return Opacity(
-                                        opacity: 0.8,
-                                        child: Card(
-                                          elevation: 2,
-                                          color: color,
-                                          clipBehavior: Clip.antiAlias,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(30.0),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700)),
-                                                Divider(thickness: 3),
-                                                Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
-                                                Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
-                                              ],
-                                            ),
-                                          ),
+                                      return Card(
+                                        elevation: 2,
+                                        color: color,
+                                        clipBehavior: Clip.antiAlias,
+                                        child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700)),
+                                            Divider(thickness: 3),
+                                            Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
+                                            Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
+                                          ],
+                                        ),
                                         ),
                                       );
                                     },
@@ -669,7 +666,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             child: Card(
                               elevation: 2,
                               child: Padding(
-                                padding: const EdgeInsets.all(30.0),
+                                padding: const EdgeInsets.all(20.0),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -717,7 +714,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                     color: color,
                                     clipBehavior: Clip.antiAlias,
                                     child: Padding(
-                                      padding: const EdgeInsets.all(30.0),
+                                      padding: const EdgeInsets.all(20.0),
                                       child: Container(
                                         height: 350,
                                         width: 250,
