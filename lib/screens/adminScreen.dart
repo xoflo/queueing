@@ -913,11 +913,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                             actions: [
                                               TextButton(onPressed: () async {
                                                 final realVisible = visibleTime.text.trim() == "" ? "0" : visibleTime.text.trim();
-                                                final realinvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
+                                                final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
                                                 final realAlways = alwaysOn == true ? "1" : "0";
 
                                                 await control.update({
-                                                  'other': '$realinvisible:$realVisible:$opacity:$realAlways'
+                                                  'other': '$realVisible:$realInvisible:$opacity:$realAlways'
                                                 });
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
                                                 Navigator.pop(context);
@@ -999,11 +999,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                             actions: [
                                               TextButton(onPressed: () async {
                                                 final realVisible = visibleTime.text.trim() == "" ? "0" : visibleTime.text.trim();
-                                                final realinvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
+                                                final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
                                                 final realAlways = alwaysOn == true ? "1" : "0";
 
                                                 await control.update({
-                                                  'other': '$realinvisible:$realVisible:$opacity:$realAlways'
+                                                  'other': '$realVisible:$realInvisible:$opacity:$realAlways'
                                                 });
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
                                                 Navigator.pop(context);
