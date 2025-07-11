@@ -953,10 +953,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
           int.parse(snapshot.data!['value']) == 1 ?
           Builder(
               builder: (context) {
-                final visible = int.parse(snapshot.data!['other'].toString().split(":")[0]);
+                int visible = int.parse(snapshot.data!['other'].toString().split(":")[0]);
                 final invisible = int.parse(snapshot.data!['other'].toString().split(":")[1]);
                 final opacity = double.parse(snapshot.data!['other'].toString().split(":")[2]);
                 final always = int.parse(snapshot.data!['other'].toString().split(":")[3]) == 1 ? true : false;
+
+                if (visible == 0) visible = 10;
 
                 return RainbowOverlay(visible: visible, invisible: invisible, always: always);
               }
