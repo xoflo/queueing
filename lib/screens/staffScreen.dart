@@ -339,7 +339,7 @@ class _StaffSessionState extends State<StaffSession> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: true,
       child: Scaffold(
         body: MediaQuery.of(context).size.width < 350 || MediaQuery.of(context).size.height < 550 ? Container(
           child: Center(child: Text("Expand Screen Size to Display", style: TextStyle(fontSize: 30), textAlign: TextAlign.center)),
@@ -361,6 +361,9 @@ class _StaffSessionState extends State<StaffSession> {
                         alignment: Alignment.centerLeft,
                         child: IconButton(
                             onPressed: () {
+                              if (ringTimer != null) {
+                                ringTimer!.cancel();
+                              }
                               Navigator.pop(context);
                             },
                             icon: Icon(Icons.chevron_left))
@@ -391,19 +394,20 @@ class _StaffSessionState extends State<StaffSession> {
                                     return Card(
                                       clipBehavior: Clip.antiAlias,
                                       child: Padding(
-                                        padding: const EdgeInsets.all(30.0),
+                                        padding: const EdgeInsets.all(15.0),
                                         child: Container(
-                                          height: 150,
+                                          height: 130,
                                           width: 200,
                                           child: Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              Text("${serving!.serviceType}",
-                                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                                              Text(
+                                                  overflow: TextOverflow.ellipsis,
+                                                  "${serving!.serviceType}",
+                                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
                                               Text(
                                                   serving!.codeAndNumber!,
-                                                  style: TextStyle(fontSize: 30)),
-                                              SizedBox(height: 10),
+                                                  style: TextStyle(fontSize: 45)),
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 spacing: 5,
@@ -426,11 +430,14 @@ class _StaffSessionState extends State<StaffSession> {
                                   builder: (context) {
                                     serving = null;
                                     return Container(
-                                      height: 150,
+                                      height: 130,
                                       width: 200,
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("No ticket to serve at the moment.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 15)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Align(
+                                          alignment: Alignment.center,
+                                          child: Text("No ticket being served at the moment.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 15)),
+                                        ),
                                       ),
                                     );
                                   }
@@ -750,16 +757,34 @@ class _StaffSessionState extends State<StaffSession> {
                                     children: [
                                       Text("Upcoming Tickets:", style: TextStyle(fontWeight: FontWeight.w700)),
                                       Container(
-                                        height: 200,
-                                        width: 80,
+                                        height: 280,
                                         child: tickets.isEmpty ? Text("No pending tickets\nat the moment.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center) :
                                         ListView.builder(
                                             scrollDirection: Axis.vertical,
                                             itemCount: tickets.length,
                                             itemBuilder: (context, i) {
+
+                                              return ListTile(
+                                                dense: true,
+                                                title: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                                                subtitle: Text("${tickets[i].priorityType == "Regular" ? "" : "(${smartAbbreviate(tickets[i].priorityType!)})"}", style: TextStyle(fontWeight: FontWeight.bold)),
+                                                trailing: tickets[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
+                                              );
+
                                               return Padding(
                                                 padding: const EdgeInsets.all(2.0),
-                                                child: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                                child: Row(
+                                                  children: [
+                                                    Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                                    SizedBox(width: 5),
+                                                    Text("${tickets[i].priorityType == "Regular" ? "" : "(${smartAbbreviate(tickets[i].priorityType!)})"}", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                                    tickets[i].priorityType == "Regular" ? SizedBox() : Row(
+                                                      children: [
+                                                        SizedBox(width: 5),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
                                               );
                                             }),
                                       ),
@@ -786,6 +811,28 @@ class _StaffSessionState extends State<StaffSession> {
         ),
       ),
     );
+  }
+
+  String smartAbbreviate(String input) {
+    input = input.trim();
+    if (input.isEmpty) return '';
+    if (RegExp(r'^[A-Z]+$').hasMatch(input) && input.length <= 5) return input;
+    var words = input.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    if (words.length > 1) {
+      var letters = words.map((w) => w[0].toUpperCase()).join();
+      return letters.length > 5 ? letters.substring(0, 5) : letters;
+    } else {
+      String word = words[0];
+      if (word.length <= 5) return word.toUpperCase();
+      String result = word[0].toUpperCase();
+      for (var c in word.substring(1).split('')) {
+        if (!'aeiouAEIOU'.contains(c)) {
+          result += c.toUpperCase();
+          if (result.length >= 4) break;
+        }
+      }
+      return result;
+    }
   }
   
   getInactiveTime() async {
@@ -925,32 +972,29 @@ class _StaffSessionState extends State<StaffSession> {
       _play();
     });
 
-    showDialog(context: context, builder: (_) => PopScope(
-      onPopInvokedWithResult: (bool, value){
-        ringerSound.cancel();
-        _stop();
-      },
-      child: AlertDialog(
-        content: GestureDetector(
-          onTap: () {
-            ringerSound.cancel();
-            _stop();
-            Navigator.pop(context);
-          },
-          child: Container(
-            height: 150,
-            width: 200,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("INACTIVITY DETECTED", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
-                Text("Press to Dismiss", style: TextStyle(fontSize: 15), textAlign: TextAlign.center),
-              ],
+    showDialog(
+        barrierDismissible: false,
+        context: context, builder: (_) => AlertDialog(
+          content: GestureDetector(
+            onTap: () {
+              ringerSound.cancel();
+              _stop();
+              resetRinger();
+              Navigator.pop(context);
+              },
+            child: Container(
+              height: 150,
+              width: 200,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("INACTIVITY DETECTED", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                  Text("Press to Dismiss", style: TextStyle(fontSize: 15), textAlign: TextAlign.center),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
-    ));
+        ));
   }
 
   resetRinger() {
@@ -969,7 +1013,7 @@ class _StaffSessionState extends State<StaffSession> {
         if (ringTimer == null) {
           print('ringerStart');
           ringTimer = Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {
-            if (!dialogOn) {
+            if (dialogOn == false) {
               inactiveDialog();
             }
           });
@@ -977,8 +1021,7 @@ class _StaffSessionState extends State<StaffSession> {
           print('ringerStart');
           ringTimer!.cancel();
           ringTimer = Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {
-            if (!dialogOn) {
-              Navigator.pop(context);
+            if (dialogOn == false) {
               inactiveDialog();
             }
           });
