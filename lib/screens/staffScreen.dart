@@ -275,6 +275,8 @@ class _StaffSessionState extends State<StaffSession> {
 
   AudioPlayer player = AudioPlayer();
   bool dialogOn = false;
+  
+  int? inactiveLength;
 
   @override
   void initState() {
@@ -301,6 +303,7 @@ class _StaffSessionState extends State<StaffSession> {
         "userInSession": widget.user.username,
       });
 
+      inactiveLength = await int.parse(getInactiveTime()['other']);
       List<Ticket> retrievedTickets = await getTicketSQL();
 
       if (callByUpdate == 0) {
@@ -471,31 +474,31 @@ class _StaffSessionState extends State<StaffSession> {
                                           child: Text("'Done' to complete and 'Call Next' to serve next ticket."),
                                           height: 40),
                                       actions: [
-                              
+
                                         TextButton(onPressed: () {
                                           final timestamp = DateTime.now().toString();
-                              
+
                                           serving!.update({
                                             "status": "Done",
                                             "timeDone": timestamp,
                                             "log": "${serving!.log}, $timestamp: Ticket Session Finished"
                                           });
-                              
+
                                           setState(() {});
                                           Navigator.pop(context);
                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket complete.")));
-                              
+
                                         }, child: Text("Done")),
                                         TextButton(onPressed: () {
                                           final timestamp = DateTime.now().toString();
-                              
+
                                           serving!.update({
                                             "status": "Done",
                                             "timeDone": timestamp,
                                             "log": "${serving!.log}, $timestamp: Ticket Session Finished"
                                           });
-                              
-                              
+
+
                                           if (tickets.isNotEmpty) {
                                             if (tickets[0].serviceType! == callBy || callBy == 'Time Order') {
                                               tickets[0].update({
@@ -507,8 +510,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                 "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                                 "timeTaken": timestamp
                                               });
-                              
-                              
+
+
                                               setState(() {});
                                               Navigator.pop(context);
                                             } else {
@@ -517,7 +520,7 @@ class _StaffSessionState extends State<StaffSession> {
                                           } else {
                                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                           }
-                              
+
                                         }, child: Text("Call Next"))
                                       ],
                                     ));
@@ -535,12 +538,12 @@ class _StaffSessionState extends State<StaffSession> {
                                           "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                           "timeTaken": timestamp
                                         });
-                              
+
                                         callByUI.value = 0;
                                       } else {
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
                                       }
-                              
+
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                     }
@@ -779,6 +782,16 @@ class _StaffSessionState extends State<StaffSession> {
       ),
     );
   }
+  
+  getInactiveTime() async {
+
+    final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
+    final result = await http.get(uri);
+    final List<dynamic> response = jsonDecode(result.body);
+    
+    final control = response.where((e) => e['controlName'] == 'Staff Inactive Time').toList()[0];
+    return control;
+  }
 
   getTicketSQL() async {
     try {
@@ -941,26 +954,28 @@ class _StaffSessionState extends State<StaffSession> {
 
   initRinger() {
     print('ringerCalled');
-    if (serving == null && tickets.isNotEmpty) {
-      if (ringTimer == null) {
-        print('ringerStart');
-        ringTimer = Timer.periodic(Duration(seconds: 20), (value) {
-          if (!dialogOn) {
-            inactiveDialog();
-          }
-        });
+    if (inactiveLength != null) {
+      if (serving == null && tickets.isNotEmpty) {
+        if (ringTimer == null) {
+          print('ringerStart');
+          ringTimer = Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {
+            if (!dialogOn) {
+              inactiveDialog();
+            }
+          });
+        } else {
+          print('ringerStart');
+          ringTimer!.cancel();
+          ringTimer = Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {
+            if (!dialogOn) {
+              Navigator.pop(context);
+              inactiveDialog();
+            }
+          });
+        }
       } else {
-        print('ringerStart');
-        ringTimer!.cancel();
-        ringTimer = Timer.periodic(Duration(seconds: 20), (value) {
-          if (!dialogOn) {
-            Navigator.pop(context);
-            inactiveDialog();
-          }
-        });
+        print('Has Serving or No Pending');
       }
-    } else {
-      print('Has Serving or No Pending');
     }
   }
 
