@@ -912,7 +912,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ),
                                             actions: [
                                               TextButton(onPressed: () async {
-                                                final realVisible = visibleTime.text.trim() == "" ? "0" : visibleTime.text.trim();
+                                                final visibleValue = removeExtraZeros(visibleTime.text.trim());
+                                                final realVisible = visibleValue == "0" || visibleValue == "" ? "10" : visibleTime.text.trim();
                                                 final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
                                                 final realAlways = alwaysOn == true ? "1" : "0";
 
@@ -930,7 +931,6 @@ class _AdminScreenState extends State<AdminScreen> {
                                           TextEditingController visibleTime = TextEditingController();
                                           TextEditingController invisibleTime = TextEditingController();
                                           double opacity = 0;
-
 
                                           if (control.other != null) {
                                             visibleTime.text = control.other.toString().split(':')[0];
@@ -998,7 +998,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ),
                                             actions: [
                                               TextButton(onPressed: () async {
-                                                final realVisible = visibleTime.text.trim() == "" ? "0" : visibleTime.text.trim();
+                                                final visibleValue = removeExtraZeros(visibleTime.text.trim());
+                                                final realVisible = visibleValue == "0" || visibleValue == "" ? "10" : visibleTime.text.trim();
                                                 final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
                                                 final realAlways = alwaysOn == true ? "1" : "0";
 
@@ -1010,7 +1011,50 @@ class _AdminScreenState extends State<AdminScreen> {
                                               }, child: Text("Save"))
                                             ],
                                           ));
-                                        }, child: Text("Customize")) : SizedBox()
+                                        }, child: Text("Customize")) : SizedBox(),
+                                        control.controlName! == "Staff Inactive Beep" ? TextButton(onPressed: () {
+
+                                          TextEditingController time = TextEditingController();
+
+                                          showDialog(context: context, builder: (_) => AlertDialog(
+                                            title: Text("Update Timer"),
+                                            content: Container(
+                                              height: 150,
+                                              width: 150,
+                                              child: Column(
+                                                children: [
+                                                  TextField(
+                                                    decoration: InputDecoration(
+                                                      labelText: 'Inactive Time (Seconds)'
+                                                    ),
+                                                    controller: time,
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter.digitsOnly
+                                                    ],
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                              actions: [
+                                                TextButton(
+                                                    onPressed: () async {
+                                                      final timeValue = removeExtraZeros(time.text.trim());
+
+                                                      if (timeValue != "0" || timeValue != "") {
+                                                        await control.update({
+                                                          'other': time.text.trim()
+                                                        });
+                                                        Navigator.pop(context);
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Inactive Timer updated.")));
+                                                      } else {
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Value cannot be zero")));
+                                                      }
+
+                                                }, child: Text("Update"))
+                                              ],
+                                          ));
+                                        }, child: Text("Set Time")) : SizedBox()
+
                                       ],
                                     ),
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
@@ -1152,6 +1196,16 @@ class _AdminScreenState extends State<AdminScreen> {
         ],
       ),
     );
+  }
+
+  String removeExtraZeros(String str) {
+    if (RegExp(r'^0+$').hasMatch(str)) {
+      // String contains only zeros → return single "0"
+      return "0";
+    } else {
+      // Remove leading zeros normally
+      return str.replaceFirst(RegExp(r'^0+'), '');
+    }
   }
 
   addPriority(String name) async {

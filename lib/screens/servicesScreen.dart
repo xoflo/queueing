@@ -958,8 +958,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 final opacity = double.parse(snapshot.data!['other'].toString().split(":")[2]);
                 final always = int.parse(snapshot.data!['other'].toString().split(":")[3]) == 1 ? true : false;
 
-                if (visible == 0) visible = 10;
-
                 return RainbowOverlay(visible: visible, invisible: invisible, always: always);
               }
           ) :

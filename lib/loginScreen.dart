@@ -108,15 +108,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Container(
                         height: 40,
-                        child: ElevatedButton(onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
+                        child: ElevatedButton(onPressed: () async {
+                          try {
+                            final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
+                            final result = await http.get(uri);
+
+                            if (result.statusCode == 200) {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
+                            }
+                          } catch(e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
+                          }
                         }, child: Text("Queue Screen")),
                       ),
                       SizedBox(width: 10),
                       Container(
                         height: 40,
-                        child: ElevatedButton(onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                        child: ElevatedButton(onPressed: () async {
+                          try {
+                            final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
+                            final result = await http.get(uri);
+
+                            if (result.statusCode == 200) {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                            }
+                          } catch(e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
+                          }
+
                         }, child: Text("Services Kiosk")),
                       ),
                     ],

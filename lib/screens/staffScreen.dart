@@ -277,6 +277,7 @@ class _StaffSessionState extends State<StaffSession> {
   bool dialogOn = false;
   
   int? inactiveLength;
+  int? inactiveOn;
 
   @override
   void initState() {
@@ -303,7 +304,11 @@ class _StaffSessionState extends State<StaffSession> {
         "userInSession": widget.user.username,
       });
 
-      inactiveLength = await int.parse(getInactiveTime()['other']);
+      final timeControl = await getInactiveTime();
+
+      inactiveLength = int.parse(timeControl['other']);
+      inactiveOn = int.parse(timeControl['value']);
+
       List<Ticket> retrievedTickets = await getTicketSQL();
 
       if (callByUpdate == 0) {
@@ -744,16 +749,16 @@ class _StaffSessionState extends State<StaffSession> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text("Upcoming Tickets:", style: TextStyle(fontWeight: FontWeight.w700)),
-                                      SizedBox(height: 10),
                                       Container(
                                         height: 200,
                                         width: 80,
-                                        child: tickets.isEmpty ? Text("No pending tickets\nat the moment.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center) : ListView.builder(
+                                        child: tickets.isEmpty ? Text("No pending tickets\nat the moment.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center) :
+                                        ListView.builder(
                                             scrollDirection: Axis.vertical,
                                             itemCount: tickets.length,
                                             itemBuilder: (context, i) {
                                               return Padding(
-                                                padding: const EdgeInsets.all(8.0),
+                                                padding: const EdgeInsets.all(2.0),
                                                 child: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                                               );
                                             }),
@@ -789,11 +794,14 @@ class _StaffSessionState extends State<StaffSession> {
     final result = await http.get(uri);
     final List<dynamic> response = jsonDecode(result.body);
     
-    final control = response.where((e) => e['controlName'] == 'Staff Inactive Time').toList()[0];
+    final control = response.where((e) => e['controlName'] == 'Staff Inactive Beep').toList()[0];
     return control;
   }
 
   getTicketSQL() async {
+    
+    final dateNow = DateTime.now();
+    
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
@@ -810,11 +818,13 @@ class _StaffSessionState extends State<StaffSession> {
             e['status'] == "Pending")
             .toList());
       }
-
+      
       List<Ticket> newTickets = [];
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
+      
+      newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
 
       if (callBy == "Time Order") {
         newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
@@ -911,7 +921,7 @@ class _StaffSessionState extends State<StaffSession> {
   inactiveDialog() {
     dialogOn = true;
     _play();
-    final ringerSound = Timer.periodic(Duration(seconds: 10), (callback) {
+    final ringerSound = Timer.periodic(Duration(seconds: 5), (callback) {
       _play();
     });
 
@@ -928,13 +938,13 @@ class _StaffSessionState extends State<StaffSession> {
             Navigator.pop(context);
           },
           child: Container(
-            height: 100,
+            height: 150,
             width: 200,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("INACTIVITY DETECTED", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-                Text("Press to Dismiss", style: TextStyle(fontSize: 15)),
+                Text("INACTIVITY DETECTED", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                Text("Press to Dismiss", style: TextStyle(fontSize: 15), textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -954,7 +964,7 @@ class _StaffSessionState extends State<StaffSession> {
 
   initRinger() {
     print('ringerCalled');
-    if (inactiveLength != null) {
+    if (inactiveLength != null && inactiveOn == 1) {
       if (serving == null && tickets.isNotEmpty) {
         if (ringTimer == null) {
           print('ringerStart');

@@ -34,7 +34,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   constraint(BuildContext context, Widget widget) {
-    return MediaQuery.of(context).size.height > 600 && MediaQuery.of(context).size.width > 700
+    return MediaQuery.of(context).size.height > 800 && MediaQuery.of(context).size.width > 800
         ? widget : Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
@@ -515,9 +515,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                               child: Row(
                                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                                 children: [
-                                                                  Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 40)),
+                                                                  Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45)),
                                                                   Spacer(),
-                                                                  Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40)),
+                                                                  Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 50)),
                                                                 ],
                                                               ),
                                                             ),
@@ -534,9 +534,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 50)),
-                                                    Spacer(),
                                                     Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 50)),
+                                                    Spacer(),
+                                                    Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 45)),
                                                   ],
                                                 ),
                                               ),
@@ -834,6 +834,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
   Future<List<Ticket>> getTicketSQL() async {
+    final dateNow = DateTime.now();
+
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
@@ -846,6 +848,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
+
+      newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
+
 
       newTickets.sort((a, b) =>
           DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
