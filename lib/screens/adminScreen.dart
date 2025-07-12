@@ -15,6 +15,9 @@ import '../models/priority.dart';
 import '../models/station.dart';
 import '../models/ticket.dart';
 import '../models/user.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:excel/excel.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key, required this.user});
@@ -35,11 +38,13 @@ class _AdminScreenState extends State<AdminScreen> {
   List<String> users = [];
   List<String> serviceTypes = [];
   List<String> priorities = [];
+  List<String> statuses = [];
 
   String? displayDate;
   String? displayUsers;
   String? displayServiceTypes;
   String? displayPriorities;
+  String? displayStatus;
 
   // Service
 
@@ -2284,6 +2289,15 @@ class _AdminScreenState extends State<AdminScreen> {
           }
           newTickets = prioritySorted;
         }
+
+        if (statuses.isNotEmpty) {
+          List<Ticket> statusSorted = [];
+
+          for (int i = 0; i < statuses.length; i++) {
+            statusSorted.addAll(newTickets.where((e) => e.status! == statuses[i]).toList());
+          }
+          newTickets = statusSorted;
+        }
       }
 
       newTickets.sort((a,b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
@@ -2551,6 +2565,53 @@ class _AdminScreenState extends State<AdminScreen> {
                           ));
                         }, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
                         SizedBox(width: 10),
+                        ElevatedButton(onPressed: () {
+                          final _listViewKey = GlobalKey();
+                          List<String> statusList = ['Pending', 'Serving', 'Done', 'Dismissed'];
+
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            title: Text("Filter Status"),
+                            content: Container(
+                              height: 300,
+                              width: 400,
+                              child: StatefulBuilder(
+                                key: _listViewKey,
+                                builder: (context, setStateList) {
+                                  return ListView.builder(
+                                      itemCount: statusList.length,
+                                      itemBuilder: (context, i) {
+                                        return CheckboxListTile(
+                                          title: Text(statusList[i]),
+                                          value: statuses.contains(statusList[i]),
+                                          onChanged: (bool? value) {
+                                            if (statuses.contains(statusList[i])) {
+                                              statuses.remove(statusList[i]);
+                                              setStateList((){});
+                                            } else {
+                                              statuses.add(statusList[i]);
+                                              setStateList((){});
+                                            }
+                                          },
+                                        );
+                                      });
+                                },
+                              ),
+                            ),
+                            actions: [
+                              TextButton(onPressed: () {
+                                priorities.clear();
+                                _listViewKey.currentState!.setState(() {});
+                                setStateArchive((){});
+                              }, child: Text("Clear")),
+                              TextButton(onPressed: () {
+                                displayPriorities = priorities.length > 3 ? "4 Priorities" : priorities.sublist(0, priorities.length).join(', ');
+                                Navigator.pop(context);
+                                setStateArchive((){});
+                              }, child: Text("Filter"))
+                            ],
+                          ));
+                        }, child: Text(statuses.isNotEmpty ? "Status: $displayPriorities" : "Status: All")),
+                        SizedBox(width: 10),
                         TextButton(
                             child: Row(
                               children: [
@@ -2630,11 +2691,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                           child: Text("Export"),
                                           onPressed: () {
                                             if (fileType == '.XLSX') {
-
+                                              createExcel(paperSize);
                                             }
 
                                             if (fileType == '.PDF') {
-
+                                              createPDF(paperSize);
                                             }
                                           })
                                     ],
@@ -2725,6 +2786,22 @@ class _AdminScreenState extends State<AdminScreen> {
         )
       ],
     );
+  }
+
+  createExcel(dynamic size) {
+
+  }
+
+  createPDF(dynamic size) {
+    final pdf = pw.Document();
+
+    pdf.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Center(
+            child: pw.Text("Hello World"),
+          ); // Center
+        }));
   }
 
   statusColorHandler(String status)  {
