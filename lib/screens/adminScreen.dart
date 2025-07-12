@@ -1302,26 +1302,30 @@ class _AdminScreenState extends State<AdminScreen> {
                             addServiceSQL();
                           } else {
 
-                            final oldName = service!.serviceType!;
+                            if (serviceType.text.trim() != "" && serviceCode.text.trim() != "") {
+                              final oldName = service!.serviceType!;
 
-                            service.update({
-                              'serviceType': serviceType.text.trim(),
-                              'serviceCode': serviceCode.text.trim(),
-                            });
-
-                            final ticket = await getTicketSQL(1);
-
-                            await Future.wait(ticket.where((e) => e.serviceType! == oldName).map((e) async {
-                              await e.update({
+                              service.update({
                                 'serviceType': serviceType.text.trim(),
                                 'serviceCode': serviceCode.text.trim(),
                               });
-                            }));
 
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(SnackBar(content: Text("Service Updated")));
-                            setState(() {});
+                              final ticket = await getTicketSQL(1);
+
+                              await Future.wait(ticket.where((e) => e.serviceType! == oldName).map((e) async {
+                                await e.update({
+                                  'serviceType': serviceType.text.trim(),
+                                  'serviceCode': serviceCode.text.trim(),
+                                });
+                              }));
+
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(content: Text("Service Updated")));
+                              setState(() {});
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty.")));
+                            }
                           }
                           clearServiceFields();
                         } else {
@@ -1540,25 +1544,29 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 ),
                                                 actions: [
                                                   TextButton(onPressed: () async {
+                                                    if (userController.text.trim() != "" && passController.text.trim() != "") {
+                                                      final oldName = user.username;
 
-                                                    final oldName = user.username;
 
-                                                    await user.update({
-                                                      'username': userController.text,
-                                                      'pass': passController.text
-                                                    });
-
-                                                    final ticket = await getTicketSQL(1);
-
-                                                    await Future.wait(ticket.where((e) => e.userAssigned! == oldName!).map((e) async {
-                                                      await e.update({
-                                                        'userAssigned': userController.text,
+                                                      await user.update({
+                                                        'username': userController.text.trim(),
+                                                        'pass': passController.text.trim()
                                                       });
-                                                    }));
 
-                                                    Navigator.pop(context);
-                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
-                                                    setStateView((){});
+                                                      final ticket = await getTicketSQL(1);
+
+                                                      await Future.wait(ticket.where((e) => e.userAssigned! == oldName!).map((e) async {
+                                                        await e.update({
+                                                          'userAssigned': userController.text,
+                                                        });
+                                                      }));
+
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                                      setStateView((){});
+                                                    } else {
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty")));
+                                                    }
                                                   }, child: Text("Update"))
                                                 ],
                                               );
@@ -2043,27 +2051,30 @@ class _AdminScreenState extends State<AdminScreen> {
                           }
                         } else {
                           if (station != null) {
+                            if (stationName.text.trim() != "") {
+                              final oldName = station.stationName;
 
-                            final oldName = station.stationName;
-
-                            await station.update({
-                              'stationName': stationName.text.trim(),
-                              'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim()),
-                            });
-
-                            final ticket = await getTicketSQL(1);
-
-                            await Future.wait(ticket.where((e) => e.stationName! == oldName!).map((e) async {
-                              await e.update({
+                              await station.update({
                                 'stationName': stationName.text.trim(),
-                                'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim())
+                                'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim()),
                               });
-                            }));
 
-                            clearStationFields();
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Updated.")));
-                            setState(() {});
+                              final ticket = await getTicketSQL(1);
+
+                              await Future.wait(ticket.where((e) => e.stationName! == oldName!).map((e) async {
+                                await e.update({
+                                  'stationName': stationName.text.trim(),
+                                  'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim())
+                                });
+                              }));
+
+                              clearStationFields();
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Updated.")));
+                              setState(() {});
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Name cannot be empty")));
+                            }
                           }
                         }
                       } catch (e) {
