@@ -2291,52 +2291,61 @@ class _AdminScreenState extends State<AdminScreen> {
                           child: Text(users.isNotEmpty ? "User: $displayUsers" : "User: All"),
                           onPressed: () {
 
+                            final _listViewKey = GlobalKey();
+
                             showDialog(context: context, builder: (_) => AlertDialog(
                               title: Text("Filter User"),
                               content: FutureBuilder(future: getUserSQL("Staff"),
                                   builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                return snapshot.connectionState == ConnectionState.done ? StatefulBuilder(
-                                  builder: (BuildContext context, void Function(void Function()) setStateList) { 
-                                    return Container(
+                                    return snapshot.connectionState == ConnectionState.done ? Container(
                                       height: 400,
                                       width: 400,
-                                      child: ListView.builder(
-                                          itemCount: snapshot.data!.length,
-                                          itemBuilder: (context, i) {
-                                        final user = User.fromJson(snapshot.data![i]);
-                                        
-                                        return CheckboxListTile(
-                                          title: Text(user.username!),
-                                          value: users.contains(user.username!),
-                                          onChanged: (bool? value) {
-                                            if (users.contains(user.username!)) {
-                                              users.remove(user.username!);
-                                              setStateList((){});
-                                            } else {
-                                              users.add(user.username!);
-                                              setStateList((){});
-                                            }
-                                          },
-                                        );
-                                      }),
+                                      child: StatefulBuilder(
+                                        key: _listViewKey,
+                                        builder: (context, setStateList) {
+                                          return ListView.builder(
+                                              itemCount: snapshot.data!.length,
+                                              itemBuilder: (context, i) {
+                                                final user = User.fromJson(snapshot.data![i]);
+
+                                                return CheckboxListTile(
+                                                  title: Text(user.username!),
+                                                  value: users.contains(user.username!),
+                                                  onChanged: (bool? value) {
+                                                    if (users.contains(user.username!)) {
+                                                      users.remove(user.username!);
+                                                      setStateList((){});
+                                                    } else {
+                                                      users.add(user.username!);
+                                                      setStateList((){});
+                                                    }
+                                                  },
+                                                );
+                                              });
+                                        },
+                                      ),
+                                    ) : Container(
+                                        height: 400,
+                                        child: Center(
+                                          child: Container(
+                                              height: 50,
+                                              width: 50,
+                                              child: CircularProgressIndicator()),
+                                        )
                                     );
-                                  }
-                                ) : Container(
-                                  height: 400,
-                                  child: Center(
-                                    child: Container(
-                                        height: 50,
-                                        width: 50,
-                                        child: CircularProgressIndicator()),
-                                  )
-                                );
-                              }),
-                                actions: [
-                                  TextButton(onPressed: () {
-                                    displayUsers = users.length > 3 ? "4 Users" : "${users.sublist(0, 3).join(', ')}";
-                                    setStateArchive((){});
-                                  }, child: Text("Filter"))
-                                ],
+                                  }),
+                              actions: [
+                                TextButton(onPressed: () {
+                                  users.clear();
+                                  _listViewKey.currentState!.setState(() {});
+                                  setStateArchive((){});
+                                }, child: Text("Clear")),
+                                TextButton(onPressed: () {
+                                  displayUsers = users.length > 3 ? "4 Users" : users.sublist(0, users.length).join(', ');
+                                  Navigator.pop(context);
+                                  setStateArchive((){});
+                                }, child: Text("Filter"))
+                              ],
                             ));
                       }),
                       ElevatedButton(onPressed: () {}, child: Text(serviceTypes.isNotEmpty ? "Service: $displayServiceTypes" : "Service: All")),
