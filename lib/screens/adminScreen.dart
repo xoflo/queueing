@@ -2822,7 +2822,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     contain(pw.Widget widget) {
       return pw.Container(
-          height: 35,
+          height: 30,
           width: 60,
           child: widget
       );
@@ -2944,7 +2944,7 @@ class _AdminScreenState extends State<AdminScreen> {
               pw.Row(
                   children: [
                     pw.Container(
-                      height: 35,
+                      height: 30,
                       child: pw.Text(i.toString(), style: pw.TextStyle(fontSize: 8))
                     ),
                     pw.SizedBox(width: 5),
@@ -2954,7 +2954,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     pw.Spacer(),
                     contain(pw.Text(tickets[i].userAssigned!)),
                     pw.Spacer(),
-                    contain(pw.Text(tickets[i].serviceType!, style: pw.TextStyle(fontSize: 9), textAlign: pw.TextAlign.left)),
+                    contain(pw.Text(tickets[i].serviceType!.length > 20 ? "${tickets[i].serviceType!.substring(0, 20).toString()}..." : tickets[i].serviceType!, style: pw.TextStyle(fontSize: 9), textAlign: pw.TextAlign.left, overflow: pw.TextOverflow.clip)),
                     pw.Spacer(),
                     contain(pw.Text(tickets[i].priorityType!)),
                     pw.Spacer(),
