@@ -1301,10 +1301,22 @@ class _AdminScreenState extends State<AdminScreen> {
                           if (i == 0) {
                             addServiceSQL();
                           } else {
-                            service!.update({
+
+                            final oldName = service!.serviceType!;
+
+                            service.update({
                               'serviceType': serviceType.text.trim(),
                               'serviceCode': serviceCode.text.trim(),
                             });
+
+                            final ticket = await getTicketSQL(1);
+
+                            await Future.wait(ticket.where((e) => e.serviceType! == oldName).map((e) async {
+                              await e.update({
+                                'serviceType': serviceType.text.trim(),
+                                'serviceCode': serviceCode.text.trim(),
+                              });
+                            }));
 
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context)
@@ -1528,10 +1540,21 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 ),
                                                 actions: [
                                                   TextButton(onPressed: () async {
+
+                                                    final oldName = user.username;
+
                                                     await user.update({
                                                       'username': userController.text,
-                                                      'pass': userController.text
+                                                      'pass': passController.text
                                                     });
+
+                                                    final ticket = await getTicketSQL(1);
+
+                                                    await Future.wait(ticket.where((e) => e.userAssigned! == oldName!).map((e) async {
+                                                      await e.update({
+                                                        'userAssigned': userController.text,
+                                                      });
+                                                    }));
 
                                                     Navigator.pop(context);
                                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
@@ -2020,10 +2043,23 @@ class _AdminScreenState extends State<AdminScreen> {
                           }
                         } else {
                           if (station != null) {
+
+                            final oldName = station.stationName;
+
                             await station.update({
                               'stationName': stationName.text.trim(),
                               'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim()),
                             });
+
+                            final ticket = await getTicketSQL(1);
+
+                            await Future.wait(ticket.where((e) => e.stationName! == oldName!).map((e) async {
+                              await e.update({
+                                'stationName': stationName.text.trim(),
+                                'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim())
+                              });
+                            }));
+
                             clearStationFields();
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Updated.")));
@@ -2189,7 +2225,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   }
 
-  Future<List<Ticket>> getTicketSQL() async {
+  Future<List<Ticket>> getTicketSQL([int? unsorted]) async {
 
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
@@ -2201,10 +2237,40 @@ class _AdminScreenState extends State<AdminScreen> {
         newTickets.add(Ticket.fromJson(response[i]));
       }
 
-      if (dates.isNotEmpty) {
-        newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(dates![0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
-      } else {
-        newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(DateTime.now())) && e.timeCreatedAsDate!.isBefore(toDateTime(DateTime.now()).add(Duration(days: 1)))).toList();
+      if (unsorted == null) {
+
+        if (dates.isNotEmpty) {
+          newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(dates![0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
+        } else {
+          newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(DateTime.now())) && e.timeCreatedAsDate!.isBefore(toDateTime(DateTime.now()).add(Duration(days: 1)))).toList();
+        }
+
+        if (users.isNotEmpty) {
+          List<Ticket> userSorted = [];
+
+          for (int i = 0; i < users.length; i++) {
+            userSorted.addAll(newTickets.where((e) => e.userAssigned! == users[i]).toList());
+          }
+          newTickets = userSorted;
+        }
+
+        if (serviceTypes.isNotEmpty) {
+          List<Ticket> serviceSorted = [];
+
+          for (int i = 0; i < serviceTypes.length; i++) {
+            serviceSorted.addAll(newTickets.where((e) => e.serviceType! == serviceTypes[i]).toList());
+          }
+          newTickets = serviceSorted;
+        }
+
+        if (priorities.isNotEmpty) {
+          List<Ticket> prioritySorted = [];
+
+          for (int i = 0; i < priorities.length; i++) {
+            prioritySorted.addAll(newTickets.where((e) => e.priorityType! == priorities[i]).toList());
+          }
+          newTickets = prioritySorted;
+        }
       }
 
       newTickets.sort((a,b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
@@ -2347,9 +2413,127 @@ class _AdminScreenState extends State<AdminScreen> {
                                 }, child: Text("Filter"))
                               ],
                             ));
+
                       }),
-                      ElevatedButton(onPressed: () {}, child: Text(serviceTypes.isNotEmpty ? "Service: $displayServiceTypes" : "Service: All")),
-                      ElevatedButton(onPressed: () {}, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
+                      ElevatedButton(
+                          child: Text(serviceTypes.isNotEmpty ? "Service: $displayServiceTypes" : "Service: All"),
+                          onPressed: () {
+
+                        final _listViewKey = GlobalKey();
+
+                        showDialog(context: context, builder: (_) => AlertDialog(
+                          title: Text("Filter Services"),
+                          content: FutureBuilder(future: getServiceSQL(),
+                              builder: (context, AsyncSnapshot<List<Service>> snapshot) {
+                                return snapshot.connectionState == ConnectionState.done ? Container(
+                                  height: 400,
+                                  width: 400,
+                                  child: StatefulBuilder(
+                                    key: _listViewKey,
+                                    builder: (context, setStateList) {
+                                      return ListView.builder(
+                                          itemCount: snapshot.data!.length,
+                                          itemBuilder: (context, i) {
+                                            final service = snapshot.data![i];
+
+                                            return CheckboxListTile(
+                                              title: Text(service.serviceType!),
+                                              value: serviceTypes.contains(service.serviceType!),
+                                              onChanged: (bool? value) {
+                                                if (serviceTypes.contains(service.serviceType!)) {
+                                                  serviceTypes.remove(service.serviceType!);
+                                                  setStateList((){});
+                                                } else {
+                                                  serviceTypes.add(service.serviceType!);
+                                                  setStateList((){});
+                                                }
+                                              },
+                                            );
+                                          });
+                                    },
+                                  ),
+                                ) : Container(
+                                    height: 400,
+                                    child: Center(
+                                      child: Container(
+                                          height: 50,
+                                          width: 50,
+                                          child: CircularProgressIndicator()),
+                                    )
+                                );
+                              }),
+                          actions: [
+                            TextButton(onPressed: () {
+                              serviceTypes.clear();
+                              _listViewKey.currentState!.setState(() {});
+                              setStateArchive((){});
+                            }, child: Text("Clear")),
+                            TextButton(onPressed: () {
+                              displayServiceTypes = serviceTypes.length > 1 ? "2 Services" : serviceTypes[0];
+                              Navigator.pop(context);
+                              setStateArchive((){});
+                            }, child: Text("Filter"))
+                          ],
+                        ));
+                      }),
+                      ElevatedButton(onPressed: () {
+                        final _listViewKey = GlobalKey();
+
+                        showDialog(context: context, builder: (_) => AlertDialog(
+                          title: Text("Filter Priorities"),
+                          content: FutureBuilder(future: getPriority(),
+                              builder: (context, AsyncSnapshot<List<Service>> snapshot) {
+                                return snapshot.connectionState == ConnectionState.done ? Container(
+                                  height: 400,
+                                  width: 400,
+                                  child: StatefulBuilder(
+                                    key: _listViewKey,
+                                    builder: (context, setStateList) {
+                                      return ListView.builder(
+                                          itemCount: snapshot.data!.length,
+                                          itemBuilder: (context, i) {
+                                            final priority = Priority.fromJson(snapshot.data![i]);
+
+                                            return CheckboxListTile(
+                                              title: Text(priority.priorityName!),
+                                              value: priorities.contains(priority.priorityName!),
+                                              onChanged: (bool? value) {
+                                                if (priorities.contains(priority.priorityName!)) {
+                                                  priorities.remove(priority.priorityName!);
+                                                  setStateList((){});
+                                                } else {
+                                                  priorities.add(priority.priorityName!);
+                                                  setStateList((){});
+                                                }
+                                              },
+                                            );
+                                          });
+                                    },
+                                  ),
+                                ) : Container(
+                                    height: 400,
+                                    child: Center(
+                                      child: Container(
+                                          height: 50,
+                                          width: 50,
+                                          child: CircularProgressIndicator()),
+                                    )
+                                );
+                              }),
+                          actions: [
+                            TextButton(onPressed: () {
+                              priorities.clear();
+                              _listViewKey.currentState!.setState(() {});
+                              setStateArchive((){});
+                            }, child: Text("Clear")),
+                            TextButton(onPressed: () {
+                              displayPriorities = priorities.length > 3 ? "4 Priorities" : priorities.sublist(0, priorities.length).join(', ');
+                              Navigator.pop(context);
+                              setStateArchive((){});
+                            }, child: Text("Filter"))
+                          ],
+                        ));
+                      }, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
                     ],
                   ),
                 ),
@@ -2367,8 +2551,11 @@ class _AdminScreenState extends State<AdminScreen> {
                             child: CircularProgressIndicator(),
                           ),
                         ),
-                      ) : snapshot.data!.isEmpty ? Center(
-                        child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
+                      ) : snapshot.data!.isEmpty ? Container(
+                        height: 400,
+                        child: Center(
+                          child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
+                        ),
                       ): Container(
                         height: MediaQuery.of(context).size.height - 200,
                         child: ListView.builder(

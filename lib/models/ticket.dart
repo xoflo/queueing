@@ -77,8 +77,10 @@ class Ticket {
       };
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final response = await http.put(uri, body: jsonEncode(body));
+      return;
     } catch(e) {
       print(e);
+      return;
     }
   }
 
