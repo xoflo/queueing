@@ -1398,7 +1398,7 @@ class _AdminScreenState extends State<AdminScreen> {
           StatefulBuilder(
             builder: (BuildContext context, void Function(void Function()) setStateView) {
               return FutureBuilder(
-                future: getUserSQL(),
+                future: getUserSQL('Staff'),
                 builder: (BuildContext context,
                     AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
                   return snapshot.connectionState == ConnectionState.done
@@ -1659,6 +1659,7 @@ class _AdminScreenState extends State<AdminScreen> {
         newResult =
             newResult.where((e) => e['serviceType'] == serviceType).toList();
       }
+
       return newResult;
     } catch (e) {
       print(e);
@@ -2286,7 +2287,58 @@ class _AdminScreenState extends State<AdminScreen> {
                               ],
                             ));
                           }),
-                      ElevatedButton(onPressed: () {}, child: Text(users.isNotEmpty ? "User: $displayUsers" : "User: All")),
+                      ElevatedButton(
+                          child: Text(users.isNotEmpty ? "User: $displayUsers" : "User: All"),
+                          onPressed: () {
+
+                            showDialog(context: context, builder: (_) => AlertDialog(
+                              title: Text("Filter User"),
+                              content: FutureBuilder(future: getUserSQL("Staff"),
+                                  builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                return snapshot.connectionState == ConnectionState.done ? StatefulBuilder(
+                                  builder: (BuildContext context, void Function(void Function()) setStateList) { 
+                                    return Container(
+                                      height: 400,
+                                      width: 400,
+                                      child: ListView.builder(
+                                          itemCount: snapshot.data!.length,
+                                          itemBuilder: (context, i) {
+                                        final user = User.fromJson(snapshot.data![i]);
+                                        
+                                        return CheckboxListTile(
+                                          title: Text(user.username!),
+                                          value: users.contains(user.username!),
+                                          onChanged: (bool? value) {
+                                            if (users.contains(user.username!)) {
+                                              users.remove(user.username!);
+                                              setStateList((){});
+                                            } else {
+                                              users.add(user.username!);
+                                              setStateList((){});
+                                            }
+                                          },
+                                        );
+                                      }),
+                                    );
+                                  }
+                                ) : Container(
+                                  height: 400,
+                                  child: Center(
+                                    child: Container(
+                                        height: 50,
+                                        width: 50,
+                                        child: CircularProgressIndicator()),
+                                  )
+                                );
+                              }),
+                                actions: [
+                                  TextButton(onPressed: () {
+                                    displayUsers = users.length > 3 ? "4 Users" : "${users.sublist(0, 3).join(', ')}";
+                                    setStateArchive((){});
+                                  }, child: Text("Filter"))
+                                ],
+                            ));
+                      }),
                       ElevatedButton(onPressed: () {}, child: Text(serviceTypes.isNotEmpty ? "Service: $displayServiceTypes" : "Service: All")),
                       ElevatedButton(onPressed: () {}, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
                     ],
