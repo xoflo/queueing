@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
@@ -18,6 +21,7 @@ import '../models/user.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart';
+import 'dart:html' as web;
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key, required this.user});
@@ -2324,7 +2328,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Container(
-                    width: 600,
+                    width: MediaQuery.of(context).size.width - 20,
                     height: 45,
                     child: ListView(
                       padding: EdgeInsets.all(5),
@@ -2788,21 +2792,190 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  createExcel(dynamic size) {
+  createExcel(dynamic size) async {
 
   }
 
-  createPDF(dynamic size) {
+  createPDF(String size) async {
     final pdf = pw.Document();
+    PdfPageFormat? pageFormat;
 
-    pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
+
+    final tickets = await getTicketSQL();
+
+    final img = await rootBundle.load('assets/images/logo.png');
+    final imageBytes = img.buffer.asUint8List();
+    pw.Image logoImage = pw.Image(pw.MemoryImage(imageBytes));
+
+    if (size == 'A4') pageFormat = PdfPageFormat.a4;
+    if (size == 'Letter') pageFormat = PdfPageFormat.letter;
+    if (size == '8.5 x 13') pageFormat = PdfPageFormat(612, 936);
+
+    String datePdf = "Today";
+    String usersPdf = "All";
+    String serviceTypesPdf = "All";
+    String prioritiesPdf = "All";
+    String statusesPdf = "All";
+
+    List<pw.Widget> widgets = [];
+
+
+    contain(pw.Widget widget) {
+      return pw.Container(
+          height: 40,
+          width: 50,
+          child: widget
+      );
+    }
+
+    center(pw.Widget widget){
+      return pw.Center(
+        child: widget
+      );
+    }
+
+    final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
+
+    if (displayDate != null) datePdf = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else serviceTypesPdf = "${DateFormat.yMMMMd().format(dates[0])}";
+    if (displayUsers != null) usersPdf = users.join(', '); else usersPdf = "All";
+    if (displayServiceTypes != null) serviceTypesPdf = serviceTypes.join(', '); else serviceTypesPdf = "All";
+    if (displayPriorities != null) prioritiesPdf = priorities.join(', '); else prioritiesPdf = "All";
+    if (displayStatus != null) statusesPdf = statuses.join(', '); else statusesPdf = "All";
+
+
+    widgets.addAll([
+        pw.Column(
+          children: [
+            pw.Container(
+                height: 50,
+                child: logoImage
+            ),
+            pw.SizedBox(height: 10),
+            pw.Text("Office of the Ombudsman", style: bold),
+            pw.Text("Davao City, Philippines", style: bold),
+            pw.Text("Queueing App Report", style: bold),
+            pw.SizedBox(height: 10),
+
+
+            pw.Column(
+                children: [
+                  pw.Row(
+                      children: [
+                        pw.Text("Summary Report", style: bold),
+                        pw.SizedBox(width: 5),
+                        pw.Expanded(
+                            child: pw.Divider()
+                        )
+                      ]
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                      children: [
+                        pw.Text(datePdf),
+                      ]
+                  ),
+                  pw.Row(
+                      children: [
+                        pw.Text("Users: "),
+                        pw.Text(usersPdf),
+                      ]
+                  ),
+                  pw.Row(
+                      children: [
+                        pw.Text("Services: "),
+                        pw.Text(serviceTypesPdf),
+                      ]
+                  ),
+                  pw.Row(
+                      children: [
+                        pw.Text("Priority: "),
+                        pw.Text(prioritiesPdf),
+                      ]
+                  ),
+                  pw.Row(
+                      children: [
+                        pw.Text("Status: "),
+                        pw.Text(statusesPdf),
+                      ]
+                  ),
+                  pw.Row(
+                      children: [
+                        pw.Text("Total Tickets: ${tickets.length}")
+                      ]
+                  )
+                ]
+            ),
+            pw.Row(
+                children: [
+                  pw.Text("Detailed Report", style: bold),
+                  pw.SizedBox(width: 5),
+                  pw.Expanded(
+                      child: pw.Divider()
+                  )
+                ]
+            ),
+            pw.SizedBox(height: 5),
+            pw.SizedBox(height: 5),
+            pw.Row(
+                children: [
+                  center(pw.Text("Date", style: bold)),
+                  pw.Spacer(),
+                  center(pw.Text("Code", style: bold)),
+                  pw.Spacer(),
+                  center(pw.Text("User Assigned", style: bold)),
+                  pw.Spacer(),
+                  center(pw.Text("Service", style: bold)),
+                  pw.Spacer(),
+                  center(pw.Text("Priority", style: bold)),
+                  pw.Spacer(),
+                  center(pw.Text("Status", style: bold)),
+                  pw.Spacer(),
+                ]
+            ),
+            pw.SizedBox(height: 5),
+          ],
+        )
+      ]);
+
+    for (int i = 0; i < tickets.length; i++) {
+      widgets.add(
+          pw.Row(
+              children: [
+                contain(pw.Text(DateFormat.yMMMMd().add_jms().format(tickets[i].timeCreatedAsDate!))),
+                pw.Spacer(),
+                contain(pw.Text(tickets[i].codeAndNumber!)),
+                pw.Spacer(),
+                contain(pw.Text(tickets[i].userAssigned!)),
+                pw.Spacer(),
+                contain(pw.Text(tickets[i].serviceType!)),
+                pw.Spacer(),
+                contain(pw.Text(tickets[i].priorityType!)),
+                pw.Spacer(),
+                contain(pw.Text(tickets[i].status!))
+              ])
+      );
+    }
+
+
+    pdf.addPage(pw.MultiPage(
+        pageFormat: pageFormat ?? PdfPageFormat.a4,
         build: (pw.Context context) {
-          return pw.Center(
-            child: pw.Text("Hello World"),
-          ); // Center
+          return widgets; // Center
         }));
+
+    if (kIsWeb) {
+      var savedFile = await pdf.save();
+      List<int> fileInts = List.from(savedFile);
+      web.AnchorElement()
+        ..href = "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(fileInts)}"
+        ..setAttribute("download", "OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}.pdf")
+        ..click();
+    } else {
+      final file = File("OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}");
+      await file.writeAsBytes(await pdf.save());
+    }
   }
+
 
   statusColorHandler(String status)  {
     Color? color;
