@@ -2822,8 +2822,8 @@ class _AdminScreenState extends State<AdminScreen> {
 
     contain(pw.Widget widget) {
       return pw.Container(
-          height: 40,
-          width: 50,
+          height: 35,
+          width: 60,
           child: widget
       );
     }
@@ -2905,6 +2905,7 @@ class _AdminScreenState extends State<AdminScreen> {
                   )
                 ]
             ),
+            pw.SizedBox(height: 5),
             pw.Row(
                 children: [
                   pw.Text("Detailed Report", style: bold),
@@ -2918,7 +2919,7 @@ class _AdminScreenState extends State<AdminScreen> {
             pw.SizedBox(height: 5),
             pw.Row(
                 children: [
-                  center(pw.Text("Date", style: bold)),
+                  center(pw.Text("#  Date", style: bold)),
                   pw.Spacer(),
                   center(pw.Text("Code", style: bold)),
                   pw.Spacer(),
@@ -2929,7 +2930,6 @@ class _AdminScreenState extends State<AdminScreen> {
                   center(pw.Text("Priority", style: bold)),
                   pw.Spacer(),
                   center(pw.Text("Status", style: bold)),
-                  pw.Spacer(),
                 ]
             ),
             pw.SizedBox(height: 5),
@@ -2939,25 +2939,37 @@ class _AdminScreenState extends State<AdminScreen> {
 
     for (int i = 0; i < tickets.length; i++) {
       widgets.add(
-          pw.Row(
-              children: [
-                contain(pw.Text(DateFormat.yMMMMd().add_jms().format(tickets[i].timeCreatedAsDate!))),
-                pw.Spacer(),
-                contain(pw.Text(tickets[i].codeAndNumber!)),
-                pw.Spacer(),
-                contain(pw.Text(tickets[i].userAssigned!)),
-                pw.Spacer(),
-                contain(pw.Text(tickets[i].serviceType!)),
-                pw.Spacer(),
-                contain(pw.Text(tickets[i].priorityType!)),
-                pw.Spacer(),
-                contain(pw.Text(tickets[i].status!))
-              ])
+          pw.Column(
+            children: [
+              pw.Row(
+                  children: [
+                    pw.Container(
+                      height: 35,
+                      child: pw.Text(i.toString(), style: pw.TextStyle(fontSize: 8))
+                    ),
+                    pw.SizedBox(width: 5),
+                    contain(pw.Text(DateFormat.yMMMMd().add_jms().format(tickets[i].timeCreatedAsDate!), style: pw.TextStyle(fontSize: 9))),
+                    pw.Spacer(),
+                    contain(pw.Text(tickets[i].codeAndNumber!)),
+                    pw.Spacer(),
+                    contain(pw.Text(tickets[i].userAssigned!)),
+                    pw.Spacer(),
+                    contain(pw.Text(tickets[i].serviceType!, style: pw.TextStyle(fontSize: 9), textAlign: pw.TextAlign.left)),
+                    pw.Spacer(),
+                    contain(pw.Text(tickets[i].priorityType!)),
+                    pw.Spacer(),
+                    contain(pw.Text(tickets[i].status!))
+                  ]),
+              pw.SizedBox(height: 1),
+            ]
+          )
       );
     }
 
 
-    pdf.addPage(pw.MultiPage(
+    pdf.addPage(
+        pw.MultiPage(
+          margin: pw.EdgeInsets.all(30),
         pageFormat: pageFormat ?? PdfPageFormat.a4,
         build: (pw.Context context) {
           return widgets; // Center
