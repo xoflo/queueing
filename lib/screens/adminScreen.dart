@@ -320,7 +320,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                       spacing: 5,
                                       children: [
                                         Text(control.controlName!),
-                                        Spacer(),
+                                      ],
+                                    ),
+                                    subtitle: Row(
+                                      children: [
                                         control.controlName! == "Video View (TV)" ? TextButton(onPressed: () async {
                                           showDialog(context: context, builder: (_) => StatefulBuilder(
                                             builder: (BuildContext context, void Function(void Function()) setStateList) {
@@ -444,12 +447,12 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                                         if (similar.isEmpty) {
                                                           if (file.size < 524288000) {
-                                                              final response = await request.send();
-                                                              addMedia(file.name, file.name);
-                                                              print(response.headers);
-                                                              setStateList((){});
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
-                                                            } else {
+                                                            final response = await request.send();
+                                                            addMedia(file.name, file.name);
+                                                            print(response.headers);
+                                                            setStateList((){});
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                          } else {
                                                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
                                                           }
                                                         } else {
@@ -469,58 +472,58 @@ class _AdminScreenState extends State<AdminScreen> {
                                         }, child: Text("Set Videos")) : SizedBox(),
                                         control.controlName! == "Sliding Text" ? TextButton(
                                             onPressed: () {
-                                          TextEditingController sliding = TextEditingController();
+                                              TextEditingController sliding = TextEditingController();
 
 
-                                          final space = "                    ";
+                                              final space = "                    ";
 
-                                          String string = control.other!;
-                                          string.trimLeft();
-                                          string = string.split(space).join('\n');
-                                          string = string.replaceFirst(RegExp(r'[\n\r]+'), '');
-                                          sliding.text = string;
+                                              String string = control.other!;
+                                              string.trimLeft();
+                                              string = string.split(space).join('\n');
+                                              string = string.replaceFirst(RegExp(r'[\n\r]+'), '');
+                                              sliding.text = string;
 
-                                          showDialog(context: context, builder: (_) => AlertDialog(
-                                            title: Text("Set Text"),
-                                            content: Container(
-                                              height: 310,
-                                              width: 350,
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Column(
-                                                  children: [
-                                                    TextField(
-                                                      controller: sliding,
-                                                      decoration: InputDecoration(
-                                                        border: OutlineInputBorder(
-                                                            borderRadius: BorderRadius.circular(15)
+                                              showDialog(context: context, builder: (_) => AlertDialog(
+                                                title: Text("Set Text"),
+                                                content: Container(
+                                                  height: 310,
+                                                  width: 350,
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Column(
+                                                      children: [
+                                                        TextField(
+                                                          controller: sliding,
+                                                          decoration: InputDecoration(
+                                                            border: OutlineInputBorder(
+                                                                borderRadius: BorderRadius.circular(15)
+                                                            ),
+                                                            hintText: 'Input Sliding Text Content Here',
+                                                          ),
+                                                          maxLines: 10,
                                                         ),
-                                                        hintText: 'Input Sliding Text Content Here',
-                                                      ),
-                                                      maxLines: 10,
+                                                        SizedBox(height: 5),
+                                                        Text("'Enter' will separate messages.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center)
+                                                      ],
                                                     ),
-                                                    SizedBox(height: 5),
-                                                    Text("'Enter' will separate messages.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center)
-                                                  ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(onPressed: () {
+                                                actions: [
+                                                  TextButton(onPressed: () {
 
-                                                List<String> lines = sliding.text.split(RegExp(r'\r?\n'));
-                                                lines = lines.where((line) => line.trim().isNotEmpty).toList();
-                                                String finalString = space + lines.join(space);
+                                                    List<String> lines = sliding.text.split(RegExp(r'\r?\n'));
+                                                    lines = lines.where((line) => line.trim().isNotEmpty).toList();
+                                                    String finalString = space + lines.join(space);
 
-                                                control.update({
-                                                  'other' : finalString
-                                                });
-                                                Navigator.pop(context);
-                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
-                                              }, child: Text("Update"))
-                                            ],
-                                          ));
-                                        }, child: Text("Set Text")) : SizedBox(),
+                                                    control.update({
+                                                      'other' : finalString
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
+                                                  }, child: Text("Update"))
+                                                ],
+                                              ));
+                                            }, child: Text("Set Text")) : SizedBox(),
                                         control.controlName! == "Kiosk Password" ? TextButton(onPressed: () {
                                           TextEditingController pass = TextEditingController();
 
@@ -534,7 +537,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                   children: [
                                                     TextField(
                                                       decoration: InputDecoration(
-                                                        labelText: 'Set Password'
+                                                          labelText: 'Set Password'
                                                       ),
                                                       controller: pass,
                                                     ),
@@ -673,14 +676,14 @@ class _AdminScreenState extends State<AdminScreen> {
 
                                                         if (similar.isEmpty) {
                                                           if (file.size < 524288000) {
-                                                          final response = await request.send();
-                                                          addMediabg(file.name, file.name);
-                                                          print(response.headers);
-                                                          setStateList((){});
-                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
-                                                        } else {
-                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
-                                                        }
+                                                            final response = await request.send();
+                                                            addMediabg(file.name, file.name);
+                                                            print(response.headers);
+                                                            setStateList((){});
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                          } else {
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
+                                                          }
                                                         } else {
                                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
                                                         }
@@ -840,92 +843,92 @@ class _AdminScreenState extends State<AdminScreen> {
                                         control.controlName! == "RGB Screen (Kiosk)" ? TextButton(
                                             onPressed: () {
 
-                                          bool alwaysOn = false;
-                                          TextEditingController visibleTime = TextEditingController();
-                                          TextEditingController invisibleTime = TextEditingController();
-                                          double opacity = 0;
+                                              bool alwaysOn = false;
+                                              TextEditingController visibleTime = TextEditingController();
+                                              TextEditingController invisibleTime = TextEditingController();
+                                              double opacity = 0;
 
 
-                                          if (control.other != null) {
-                                            visibleTime.text = control.other.toString().split(':')[0];
-                                            invisibleTime.text = control.other.toString().split(':')[1];
-                                            opacity = double.parse(control.other.toString().split(':')[2]);
-                                          }
+                                              if (control.other != null) {
+                                                visibleTime.text = control.other.toString().split(':')[0];
+                                                invisibleTime.text = control.other.toString().split(':')[1];
+                                                opacity = double.parse(control.other.toString().split(':')[2]);
+                                              }
 
-                                          showDialog(context: context, builder: (_) => AlertDialog(
-                                            title: Text("RGB (Kiosk)"),
-                                            content: Container(
-                                              height: 250,
-                                              width: 150,
-                                              child: StatefulBuilder(
-                                                builder: (context, setStateDialog) {
-                                                  return Column(
-                                                    children: [
-                                                      CheckboxListTile(
-                                                        title: Text("Always On"),
-                                                          value: alwaysOn, onChanged: (value) {
-                                                        alwaysOn = !alwaysOn;
-                                                        setStateDialog((){});
-                                                      }),
-                                                      alwaysOn == false ?
-                                                          Column(
-                                                            children: [
-                                                              TextField(
-                                                                inputFormatters: [
-                                                                  FilteringTextInputFormatter.digitsOnly
-                                                                ],
-                                                                controller: visibleTime,
-                                                                decoration: InputDecoration(
-                                                                    labelText: 'Display Length (In Seconds)'
+                                              showDialog(context: context, builder: (_) => AlertDialog(
+                                                title: Text("RGB (Kiosk)"),
+                                                content: Container(
+                                                    height: 250,
+                                                    width: 150,
+                                                    child: StatefulBuilder(
+                                                      builder: (context, setStateDialog) {
+                                                        return Column(
+                                                          children: [
+                                                            CheckboxListTile(
+                                                                title: Text("Always On"),
+                                                                value: alwaysOn, onChanged: (value) {
+                                                              alwaysOn = !alwaysOn;
+                                                              setStateDialog((){});
+                                                            }),
+                                                            alwaysOn == false ?
+                                                            Column(
+                                                              children: [
+                                                                TextField(
+                                                                  inputFormatters: [
+                                                                    FilteringTextInputFormatter.digitsOnly
+                                                                  ],
+                                                                  controller: visibleTime,
+                                                                  decoration: InputDecoration(
+                                                                      labelText: 'Display Length (In Seconds)'
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                              TextField(
-                                                                inputFormatters: [
-                                                                  FilteringTextInputFormatter.digitsOnly
-                                                                ],
-                                                                controller: invisibleTime,
-                                                                decoration: InputDecoration(
-                                                                    labelText: 'Pause Interval (In Seconds)'
+                                                                TextField(
+                                                                  inputFormatters: [
+                                                                    FilteringTextInputFormatter.digitsOnly
+                                                                  ],
+                                                                  controller: invisibleTime,
+                                                                  decoration: InputDecoration(
+                                                                      labelText: 'Pause Interval (In Seconds)'
+                                                                  ),
                                                                 ),
+                                                                SizedBox(height: 10),
+                                                                Center(child: Text("Opacity: $opacity", style: TextStyle(fontWeight: FontWeight.w700))),
+                                                                Slider(
+                                                                  value: opacity,
+                                                                  min: 0,
+                                                                  max: 1,
+                                                                  divisions: 10, // step of 0.1
+                                                                  label: opacity.toStringAsFixed(1),
+                                                                  onChanged: (v) => setStateDialog(() => opacity = v),
+                                                                ),
+                                                              ],
+                                                            ) : Container(
+                                                              height: 200,
+                                                              child: Center(
+                                                                child: Text("RGB Screen will always be on.", style: TextStyle(color: Colors.grey)),
                                                               ),
-                                                              SizedBox(height: 10),
-                                                              Center(child: Text("Opacity: $opacity", style: TextStyle(fontWeight: FontWeight.w700))),
-                                                              Slider(
-                                                                value: opacity,
-                                                                min: 0,
-                                                                max: 1,
-                                                                divisions: 10, // step of 0.1
-                                                                label: opacity.toStringAsFixed(1),
-                                                                onChanged: (v) => setStateDialog(() => opacity = v),
-                                                              ),
-                                                            ],
-                                                          ) : Container(
-                                                        height: 200,
-                                                        child: Center(
-                                                          child: Text("RGB Screen will always be on.", style: TextStyle(color: Colors.grey)),
-                                                        ),
-                                                      )
-                                                    ],
-                                                  );
-                                                },
-                                              )
-                                            ),
-                                            actions: [
-                                              TextButton(onPressed: () async {
-                                                final visibleValue = removeExtraZeros(visibleTime.text.trim());
-                                                final realVisible = visibleValue == "0" || visibleValue == "" ? "10" : visibleTime.text.trim();
-                                                final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
-                                                final realAlways = alwaysOn == true ? "1" : "0";
+                                                            )
+                                                          ],
+                                                        );
+                                                      },
+                                                    )
+                                                ),
+                                                actions: [
+                                                  TextButton(onPressed: () async {
+                                                    final visibleValue = removeExtraZeros(visibleTime.text.trim());
+                                                    final realVisible = visibleValue == "0" || visibleValue == "" ? "10" : visibleTime.text.trim();
+                                                    final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
+                                                    final realAlways = alwaysOn == true ? "1" : "0";
 
-                                                await control.update({
-                                                  'other': '$realVisible:$realInvisible:$opacity:$realAlways'
-                                                });
-                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
-                                                Navigator.pop(context);
-                                              }, child: Text("Save"))
-                                            ],
-                                          ));
-                                        }, child: Text("Customize")) : SizedBox(),
+                                                    await control.update({
+                                                      'other': '$realVisible:$realInvisible:$opacity:$realAlways'
+                                                    });
+                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
+                                                    Navigator.pop(context);
+                                                  }, child: Text("Save"))
+                                                ],
+                                              ));
+                                            }, child: Text("Customize")) : SizedBox(),
                                         control.controlName! == "RGB Screen (TV)" ? TextButton(onPressed: () {
                                           bool alwaysOn = false;
                                           TextEditingController visibleTime = TextEditingController();
@@ -1025,7 +1028,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 children: [
                                                   TextField(
                                                     decoration: InputDecoration(
-                                                      labelText: 'Inactive Time (Seconds)'
+                                                        labelText: 'Inactive Time (Seconds)'
                                                     ),
                                                     controller: time,
                                                     inputFormatters: [
@@ -1035,26 +1038,25 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 ],
                                               ),
                                             ),
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () async {
-                                                      final timeValue = removeExtraZeros(time.text.trim());
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () async {
+                                                    final timeValue = removeExtraZeros(time.text.trim());
 
-                                                      if (timeValue != "0" || timeValue != "") {
-                                                        await control.update({
-                                                          'other': time.text.trim()
-                                                        });
-                                                        Navigator.pop(context);
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Inactive Timer updated.")));
-                                                      } else {
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Value cannot be zero")));
-                                                      }
+                                                    if (timeValue != "0" || timeValue != "") {
+                                                      await control.update({
+                                                        'other': time.text.trim()
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Inactive Timer updated.")));
+                                                    } else {
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Value cannot be zero")));
+                                                    }
 
-                                                }, child: Text("Update"))
-                                              ],
+                                                  }, child: Text("Update"))
+                                            ],
                                           ));
                                         }, child: Text("Set Time")) : SizedBox()
-
                                       ],
                                     ),
                                     trailing: Switch(value: control.value! == 1, onChanged: (value) {
@@ -2307,308 +2309,341 @@ class _AdminScreenState extends State<AdminScreen> {
               children: [
                 Align(
                   alignment: Alignment.topLeft,
-                  child: Row(
-                    spacing: 10,
-                    children: [
-                      ElevatedButton(
-                          child: Text(dates.isNotEmpty ? "Date: ${displayDate}" : "Date: Today"),
-                          onPressed: () {
-                            showDialog(context: context, builder: (_) => AlertDialog(
-                              title: Text("Filter Archive"),
-                              content: Container(
-                                height: 380,
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      height: 350,
-                                      width: 350,
-                                      child: CalendarDatePicker2(
-                                          onValueChanged: (values) {
-                                            dates = values;
-                                          },
-                                          value: dates,
-                                          config: CalendarDatePicker2Config(
-                                            calendarType: CalendarDatePicker2Type.range,
-                                            firstDate: DateTime(2000, 1, 1),
-                                            lastDate: DateTime(3000, 1, 1),
-                                            currentDate: dateNow,
-                                            allowSameValueSelection: true,
-                                          )),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text("Select Date Range to Filter", style: TextStyle(color: Colors.grey)),
-                                    SizedBox(height: 5),
-                                  ],
-                                ),
-                              ),
-                              actions: [
-                                TextButton(onPressed: () {
-                                  dates = [];
-                                  setStateArchive((){});
-                                  Navigator.pop(context);
-                                }, child: Text("Today")),
-                                TextButton(onPressed: () {
-                                  if (dates.length == 1) {
-                                    dates.add(dates[0].add(Duration(days: 1)).subtract(Duration(seconds: 1)));
-                                  } else {
-                                    dates[1].add(Duration(days: 1)).subtract(Duration(seconds: 1));
-                                  }
-                                  displayDate = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}";
-                                  setStateArchive((){});
-                                  Navigator.pop(context);
-                                }, child: Text("Filter")),
-                              ],
-                            ));
-                          }),
-                      ElevatedButton(
-                          child: Text(users.isNotEmpty ? "User: $displayUsers" : "User: All"),
-                          onPressed: () {
-
-                            final _listViewKey = GlobalKey();
-
-                            showDialog(context: context, builder: (_) => AlertDialog(
-                              title: Text("Filter User"),
-                              content: FutureBuilder(future: getUserSQL("Staff"),
-                                  builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                    return snapshot.connectionState == ConnectionState.done ? Container(
-                                      height: 400,
-                                      width: 400,
-                                      child: StatefulBuilder(
-                                        key: _listViewKey,
-                                        builder: (context, setStateList) {
-                                          return ListView.builder(
-                                              itemCount: snapshot.data!.length,
-                                              itemBuilder: (context, i) {
-                                                final user = User.fromJson(snapshot.data![i]);
-
-                                                return CheckboxListTile(
-                                                  title: Text(user.username!),
-                                                  value: users.contains(user.username!),
-                                                  onChanged: (bool? value) {
-                                                    if (users.contains(user.username!)) {
-                                                      users.remove(user.username!);
-                                                      setStateList((){});
-                                                    } else {
-                                                      users.add(user.username!);
-                                                      setStateList((){});
-                                                    }
-                                                  },
-                                                );
-                                              });
-                                        },
+                  child: Container(
+                    width: 600,
+                    height: 45,
+                    child: ListView(
+                      padding: EdgeInsets.all(5),
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        ElevatedButton(
+                            child: Text(dates.isNotEmpty ? "Date: ${displayDate}" : "Date: Today"),
+                            onPressed: () {
+                              showDialog(context: context, builder: (_) => AlertDialog(
+                                title: Text("Filter Archive"),
+                                content: Container(
+                                  height: 380,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        height: 350,
+                                        width: 350,
+                                        child: CalendarDatePicker2(
+                                            onValueChanged: (values) {
+                                              dates = values;
+                                            },
+                                            value: dates,
+                                            config: CalendarDatePicker2Config(
+                                              calendarType: CalendarDatePicker2Type.range,
+                                              firstDate: DateTime(2000, 1, 1),
+                                              lastDate: DateTime(3000, 1, 1),
+                                              currentDate: dateNow,
+                                              allowSameValueSelection: true,
+                                            )),
                                       ),
-                                    ) : Container(
+                                      SizedBox(height: 5),
+                                      Text("Select Date Range to Filter", style: TextStyle(color: Colors.grey)),
+                                      SizedBox(height: 5),
+                                    ],
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(onPressed: () {
+                                    dates = [];
+                                    setStateArchive((){});
+                                    Navigator.pop(context);
+                                  }, child: Text("Today")),
+                                  TextButton(onPressed: () {
+                                    if (dates.length == 1) {
+                                      dates.add(dates[0].add(Duration(days: 1)).subtract(Duration(seconds: 1)));
+                                    } else {
+                                      dates[1].add(Duration(days: 1)).subtract(Duration(seconds: 1));
+                                    }
+                                    displayDate = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}";
+                                    setStateArchive((){});
+                                    Navigator.pop(context);
+                                  }, child: Text("Filter")),
+                                ],
+                              ));
+                            }),
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                            child: Text(users.isNotEmpty ? "User: $displayUsers" : "User: All"),
+                            onPressed: () {
+
+                              final _listViewKey = GlobalKey();
+
+                              showDialog(context: context, builder: (_) => AlertDialog(
+                                title: Text("Filter User"),
+                                content: FutureBuilder(future: getUserSQL("Staff"),
+                                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                      return snapshot.connectionState == ConnectionState.done ? Container(
                                         height: 400,
-                                        child: Center(
-                                          child: Container(
-                                              height: 50,
-                                              width: 50,
-                                              child: CircularProgressIndicator()),
-                                        )
-                                    );
-                                  }),
-                              actions: [
-                                TextButton(onPressed: () {
-                                  users.clear();
-                                  _listViewKey.currentState!.setState(() {});
-                                  setStateArchive((){});
-                                }, child: Text("Clear")),
-                                TextButton(onPressed: () {
-                                  displayUsers = users.length > 3 ? "4 Users" : users.sublist(0, users.length).join(', ');
-                                  Navigator.pop(context);
-                                  setStateArchive((){});
-                                }, child: Text("Filter"))
-                              ],
-                            ));
+                                        width: 400,
+                                        child: StatefulBuilder(
+                                          key: _listViewKey,
+                                          builder: (context, setStateList) {
+                                            return ListView.builder(
+                                                itemCount: snapshot.data!.length,
+                                                itemBuilder: (context, i) {
+                                                  final user = User.fromJson(snapshot.data![i]);
 
-                      }),
-                      ElevatedButton(
-                          child: Text(serviceTypes.isNotEmpty ? "Service: $displayServiceTypes" : "Service: All"),
-                          onPressed: () {
+                                                  return CheckboxListTile(
+                                                    title: Text(user.username!),
+                                                    value: users.contains(user.username!),
+                                                    onChanged: (bool? value) {
+                                                      if (users.contains(user.username!)) {
+                                                        users.remove(user.username!);
+                                                        setStateList((){});
+                                                      } else {
+                                                        users.add(user.username!);
+                                                        setStateList((){});
+                                                      }
+                                                    },
+                                                  );
+                                                });
+                                          },
+                                        ),
+                                      ) : Container(
+                                          height: 400,
+                                          child: Center(
+                                            child: Container(
+                                                height: 50,
+                                                width: 50,
+                                                child: CircularProgressIndicator()),
+                                          )
+                                      );
+                                    }),
+                                actions: [
+                                  TextButton(onPressed: () {
+                                    users.clear();
+                                    _listViewKey.currentState!.setState(() {});
+                                    setStateArchive((){});
+                                  }, child: Text("Clear")),
+                                  TextButton(onPressed: () {
+                                    displayUsers = users.length > 3 ? "4 Users" : users.sublist(0, users.length).join(', ');
+                                    Navigator.pop(context);
+                                    setStateArchive((){});
+                                  }, child: Text("Filter"))
+                                ],
+                              ));
 
-                        final _listViewKey = GlobalKey();
+                        }),
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                            child: Text(serviceTypes.isNotEmpty ? "Service: $displayServiceTypes" : "Service: All"),
+                            onPressed: () {
 
-                        showDialog(context: context, builder: (_) => AlertDialog(
-                          title: Text("Filter Services"),
-                          content: FutureBuilder(future: getServiceSQL(),
-                              builder: (context, AsyncSnapshot<List<Service>> snapshot) {
-                                return snapshot.connectionState == ConnectionState.done ? Container(
-                                  height: 400,
-                                  width: 400,
-                                  child: StatefulBuilder(
-                                    key: _listViewKey,
-                                    builder: (context, setStateList) {
-                                      return ListView.builder(
-                                          itemCount: snapshot.data!.length,
-                                          itemBuilder: (context, i) {
-                                            final service = snapshot.data![i];
+                          final _listViewKey = GlobalKey();
 
-                                            return CheckboxListTile(
-                                              title: Text(service.serviceType!),
-                                              value: serviceTypes.contains(service.serviceType!),
-                                              onChanged: (bool? value) {
-                                                if (serviceTypes.contains(service.serviceType!)) {
-                                                  serviceTypes.remove(service.serviceType!);
-                                                  setStateList((){});
-                                                } else {
-                                                  serviceTypes.add(service.serviceType!);
-                                                  setStateList((){});
-                                                }
-                                              },
-                                            );
-                                          });
-                                    },
-                                  ),
-                                ) : Container(
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            title: Text("Filter Services"),
+                            content: FutureBuilder(future: getServiceSQL(),
+                                builder: (context, AsyncSnapshot<List<Service>> snapshot) {
+                                  return snapshot.connectionState == ConnectionState.done ? Container(
                                     height: 400,
-                                    child: Center(
-                                      child: Container(
-                                          height: 50,
-                                          width: 50,
-                                          child: CircularProgressIndicator()),
-                                    )
-                                );
-                              }),
-                          actions: [
-                            TextButton(onPressed: () {
-                              serviceTypes.clear();
-                              _listViewKey.currentState!.setState(() {});
-                              setStateArchive((){});
-                            }, child: Text("Clear")),
-                            TextButton(onPressed: () {
-                              displayServiceTypes = serviceTypes.length > 1 ? "2 Services" : serviceTypes[0];
-                              Navigator.pop(context);
-                              setStateArchive((){});
-                            }, child: Text("Filter"))
-                          ],
-                        ));
-                      }),
-                      ElevatedButton(onPressed: () {
-                        final _listViewKey = GlobalKey();
+                                    width: 400,
+                                    child: StatefulBuilder(
+                                      key: _listViewKey,
+                                      builder: (context, setStateList) {
+                                        return ListView.builder(
+                                            itemCount: snapshot.data!.length,
+                                            itemBuilder: (context, i) {
+                                              final service = snapshot.data![i];
 
-                        showDialog(context: context, builder: (_) => AlertDialog(
-                          title: Text("Filter Priorities"),
-                          content: FutureBuilder(future: getPriority(),
-                              builder: (context, AsyncSnapshot<List<Service>> snapshot) {
-                                return snapshot.connectionState == ConnectionState.done ? Container(
-                                  height: 400,
-                                  width: 400,
-                                  child: StatefulBuilder(
-                                    key: _listViewKey,
-                                    builder: (context, setStateList) {
-                                      return ListView.builder(
-                                          itemCount: snapshot.data!.length,
-                                          itemBuilder: (context, i) {
-                                            final priority = Priority.fromJson(snapshot.data![i]);
-
-                                            return CheckboxListTile(
-                                              title: Text(priority.priorityName!),
-                                              value: priorities.contains(priority.priorityName!),
-                                              onChanged: (bool? value) {
-                                                if (priorities.contains(priority.priorityName!)) {
-                                                  priorities.remove(priority.priorityName!);
-                                                  setStateList((){});
-                                                } else {
-                                                  priorities.add(priority.priorityName!);
-                                                  setStateList((){});
-                                                }
-                                              },
-                                            );
-                                          });
-                                    },
-                                  ),
-                                ) : Container(
-                                    height: 400,
-                                    child: Center(
-                                      child: Container(
-                                          height: 50,
-                                          width: 50,
-                                          child: CircularProgressIndicator()),
-                                    )
-                                );
-                              }),
-                          actions: [
-                            TextButton(onPressed: () {
-                              priorities.clear();
-                              _listViewKey.currentState!.setState(() {});
-                              setStateArchive((){});
-                            }, child: Text("Clear")),
-                            TextButton(onPressed: () {
-                              displayPriorities = priorities.length > 3 ? "4 Priorities" : priorities.sublist(0, priorities.length).join(', ');
-                              Navigator.pop(context);
-                              setStateArchive((){});
-                            }, child: Text("Filter"))
-                          ],
-                        ));
-                      }, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
-                      Spacer(),
-                      IconButton(
-                          icon: Icon(Icons.download),
-                          onPressed: () {
-                            String fileType = '.XLSX';
-                            String paperSize = 'A4';
-
-                        showDialog(context: context, builder: (_) => AlertDialog(
-                          title: Text("Export"),
-                          content: Container(
-                            height: 200,
-                            child: StatefulBuilder(
-                              builder: (BuildContext context, setStateExport) {
-                                return Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        CheckboxListTile(
-                                            value: fileType == '.XLSX',
-                                            onChanged: (value) {
-                                              if (value == true) fileType = '.XLSX';
-                                              setStateExport((){});
-                                            }),
-                                        CheckboxListTile(
-                                            value: fileType == '.PDF',
-                                            onChanged: (value) {
-                                              if (value == true) fileType = '.PDF';
-                                              setStateExport((){});
-                                            }),
-                                      ],
+                                              return CheckboxListTile(
+                                                title: Text(service.serviceType!),
+                                                value: serviceTypes.contains(service.serviceType!),
+                                                onChanged: (bool? value) {
+                                                  if (serviceTypes.contains(service.serviceType!)) {
+                                                    serviceTypes.remove(service.serviceType!);
+                                                    setStateList((){});
+                                                  } else {
+                                                    serviceTypes.add(service.serviceType!);
+                                                    setStateList((){});
+                                                  }
+                                                },
+                                              );
+                                            });
+                                      },
                                     ),
-                                    Row(
-                                      children: [
-                                        CheckboxListTile(
-                                            value: paperSize == 'A4',
-                                            onChanged: (value) {
-                                              if (value == true) fileType = 'A4';
-                                              setStateExport((){});
-                                            }),
-                                        CheckboxListTile(
-                                            value: paperSize == 'Letter',
-                                            onChanged: (value) {
-                                              if (value == true) paperSize = 'Letter';
-                                              setStateExport((){});
-                                            }),
-                                        CheckboxListTile(
-                                            value: paperSize == '8.5 x 13',
-                                            onChanged: (value) {
-                                              if (value == true) paperSize = '8.5 x 13';
-                                              setStateExport((){});
-                                            }),
-                                      ],
-                                    )
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                                child: Text("Export"),
-                                onPressed: () {
+                                  ) : Container(
+                                      height: 400,
+                                      child: Center(
+                                        child: Container(
+                                            height: 50,
+                                            width: 50,
+                                            child: CircularProgressIndicator()),
+                                      )
+                                  );
+                                }),
+                            actions: [
+                              TextButton(onPressed: () {
+                                serviceTypes.clear();
+                                _listViewKey.currentState!.setState(() {});
+                                setStateArchive((){});
+                              }, child: Text("Clear")),
+                              TextButton(onPressed: () {
+                                displayServiceTypes = serviceTypes.length > 1 ? "2 Services" : serviceTypes[0];
+                                Navigator.pop(context);
+                                setStateArchive((){});
+                              }, child: Text("Filter"))
+                            ],
+                          ));
+                        }),
+                        SizedBox(width: 10),
+                        ElevatedButton(onPressed: () {
+                          final _listViewKey = GlobalKey();
 
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            title: Text("Filter Priorities"),
+                            content: FutureBuilder(future: getPriority(),
+                                builder: (context, AsyncSnapshot<List<Service>> snapshot) {
+                                  return snapshot.connectionState == ConnectionState.done ? Container(
+                                    height: 400,
+                                    width: 400,
+                                    child: StatefulBuilder(
+                                      key: _listViewKey,
+                                      builder: (context, setStateList) {
+                                        return ListView.builder(
+                                            itemCount: snapshot.data!.length,
+                                            itemBuilder: (context, i) {
+                                              final priority = Priority.fromJson(snapshot.data![i]);
+
+                                              return CheckboxListTile(
+                                                title: Text(priority.priorityName!),
+                                                value: priorities.contains(priority.priorityName!),
+                                                onChanged: (bool? value) {
+                                                  if (priorities.contains(priority.priorityName!)) {
+                                                    priorities.remove(priority.priorityName!);
+                                                    setStateList((){});
+                                                  } else {
+                                                    priorities.add(priority.priorityName!);
+                                                    setStateList((){});
+                                                  }
+                                                },
+                                              );
+                                            });
+                                      },
+                                    ),
+                                  ) : Container(
+                                      height: 400,
+                                      child: Center(
+                                        child: Container(
+                                            height: 50,
+                                            width: 50,
+                                            child: CircularProgressIndicator()),
+                                      )
+                                  );
+                                }),
+                            actions: [
+                              TextButton(onPressed: () {
+                                priorities.clear();
+                                _listViewKey.currentState!.setState(() {});
+                                setStateArchive((){});
+                              }, child: Text("Clear")),
+                              TextButton(onPressed: () {
+                                displayPriorities = priorities.length > 3 ? "4 Priorities" : priorities.sublist(0, priorities.length).join(', ');
+                                Navigator.pop(context);
+                                setStateArchive((){});
+                              }, child: Text("Filter"))
+                            ],
+                          ));
+                        }, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
+                        SizedBox(width: 10),
+                        TextButton(
+                            child: Row(
+                              children: [
+                                Text("Export", textAlign: TextAlign.center),
+                                SizedBox(width: 10),
+                                Icon(Icons.download),
+                              ],
+                            ),
+                            onPressed: () {
+                              String fileType = '.XLSX';
+                              String paperSize = 'A4';
+
+                              showDialog(context: context, builder: (_) => StatefulBuilder(
+                                builder: (BuildContext context, void Function(void Function()) setStateExport) {
+                                  return AlertDialog(
+                                    title: Text("Export"),
+                                    content: Container(
+                                      height: 140,
+                                      width: 200,
+                                      child: Column(
+                                        children: [
+                                          Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text("File Type", style: TextStyle(fontSize: 18))),
+                                          Row(
+                                            children: [
+                                              Checkbox(value: fileType == '.XLSX',
+                                                  onChanged: (value) {
+                                                    if (value == true) fileType = '.XLSX';
+                                                    setStateExport((){});
+                                                  }),
+                                              Text('.XLSX'),
+                                              SizedBox(width: 10),
+                                              Checkbox(value: fileType == '.PDF',
+                                                  onChanged: (value) {
+                                                    if (value == true) fileType = '.PDF';
+                                                    setStateExport((){});
+                                                  }),
+                                              Text('.PDF'),
+                                            ],
+                                          ),
+                                          SizedBox(height: 10),
+                                          Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text("Paper Size", style: TextStyle(fontSize: 18))),
+                                          SizedBox(height: 10),
+                                          Row(
+                                            children: [
+                                              Checkbox(value: paperSize == 'A4',
+                                                  onChanged: (value) {
+                                                    if (value == true) paperSize = 'A4';
+                                                    setStateExport((){});
+                                                  }),
+                                              Text('A4'),
+
+
+                                              Checkbox(value: paperSize == 'Letter',
+                                                  onChanged: (value) {
+                                                    if (value == true) paperSize = 'Letter';
+                                                    setStateExport((){});
+                                                  }),
+                                              Text('Letter'),
+
+                                              Checkbox(value: paperSize == '8.5 x 13',
+                                                  onChanged: (value) {
+                                                    if (value == true) paperSize = '8.5 x 13';
+                                                    setStateExport((){});
+                                                  }),
+                                              Text('8.5 x 13'),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                          child: Text("Export"),
+                                          onPressed: () {
+                                            if (fileType == '.XLSX') {
+
+                                            }
+
+                                            if (fileType == '.PDF') {
+
+                                            }
+                                          })
+                                    ],
+                                  );
+                                },
+                              ));
                             })
-                          ],
-                        ));
-                      })
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 Padding(
