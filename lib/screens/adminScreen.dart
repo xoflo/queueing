@@ -2311,7 +2311,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     spacing: 10,
                     children: [
                       ElevatedButton(
-                          child: Text(dates.isNotEmpty ? "Filter: ${displayDate}" : "Filter Tickets: Today"),
+                          child: Text(dates.isNotEmpty ? "Date: ${displayDate}" : "Date: Today"),
                           onPressed: () {
                             showDialog(context: context, builder: (_) => AlertDialog(
                               title: Text("Filter Archive"),
