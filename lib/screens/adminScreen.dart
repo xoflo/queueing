@@ -2344,7 +2344,6 @@ class _AdminScreenState extends State<AdminScreen> {
                               actions: [
                                 TextButton(onPressed: () {
                                   dates = [];
-
                                   setStateArchive((){});
                                   Navigator.pop(context);
                                 }, child: Text("Today")),
@@ -2354,13 +2353,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                   } else {
                                     dates[1].add(Duration(days: 1)).subtract(Duration(seconds: 1));
                                   }
-
                                   displayDate = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}";
-
                                   setStateArchive((){});
                                   Navigator.pop(context);
                                 }, child: Text("Filter")),
-
                               ],
                             ));
                           }),
@@ -2545,6 +2541,73 @@ class _AdminScreenState extends State<AdminScreen> {
                           ],
                         ));
                       }, child: Text(priorities.isNotEmpty ? "Priority: $displayPriorities" : "Priority: All")),
+                      Spacer(),
+                      IconButton(
+                          icon: Icon(Icons.download),
+                          onPressed: () {
+                            String fileType = '.XLSX';
+                            String paperSize = 'A4';
+
+                        showDialog(context: context, builder: (_) => AlertDialog(
+                          title: Text("Export"),
+                          content: Container(
+                            height: 200,
+                            child: StatefulBuilder(
+                              builder: (BuildContext context, setStateExport) {
+                                return Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        CheckboxListTile(
+                                            value: fileType == '.XLSX',
+                                            onChanged: (value) {
+                                              if (value == true) fileType = '.XLSX';
+                                              setStateExport((){});
+                                            }),
+                                        CheckboxListTile(
+                                            value: fileType == '.PDF',
+                                            onChanged: (value) {
+                                              if (value == true) fileType = '.PDF';
+                                              setStateExport((){});
+                                            }),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        CheckboxListTile(
+                                            value: paperSize == 'A4',
+                                            onChanged: (value) {
+                                              if (value == true) fileType = 'A4';
+                                              setStateExport((){});
+                                            }),
+                                        CheckboxListTile(
+                                            value: paperSize == 'Letter',
+                                            onChanged: (value) {
+                                              if (value == true) paperSize = 'Letter';
+                                              setStateExport((){});
+                                            }),
+                                        CheckboxListTile(
+                                            value: paperSize == '8.5 x 13',
+                                            onChanged: (value) {
+                                              if (value == true) paperSize = '8.5 x 13';
+                                              setStateExport((){});
+                                            }),
+                                      ],
+                                    )
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                                child: Text("Export"),
+                                onPressed: () {
+
+                            })
+                          ],
+                        ));
+                      })
                     ],
                   ),
                 ),
