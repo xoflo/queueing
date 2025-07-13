@@ -2799,7 +2799,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     final tickets = await getTicketSQL();
     var excel = Excel.createExcel();
-    Sheet sheet = excel['Report'];
+    Sheet sheet = excel['Sheet1'];
 
     sheet.appendRow([
       TextCellValue('Office of the Ombusdman')
@@ -2809,6 +2809,15 @@ class _AdminScreenState extends State<AdminScreen> {
     ]);
     sheet.appendRow([
       TextCellValue('Queueing App Report')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Queueing App Report')
+    ]);
+    sheet.appendRow([
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Report Date:')
     ]);
 
     for (int i = 0; i < tickets.length; i++) {
