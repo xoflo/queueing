@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:http/http.dart' as http;
@@ -2793,10 +2795,48 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   createExcel(dynamic size) async {
+    loadWidget();
 
+    final tickets = await getTicketSQL();
+    var excel = Excel.createExcel();
+    Sheet sheet = excel['Report'];
+
+    sheet.appendRow([
+      TextCellValue('Office of the Ombusdman')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Davao City, Philippines')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Queueing App Report')
+    ]);
+
+    for (int i = 0; i < tickets.length; i++) {
+      sheet.appendRow([
+        TextCellValue(DateFormat.yMMMMd().format(tickets[i].timeCreatedAsDate!))
+
+      ]
+      );
+    }
+
+
+    if (kIsWeb) {
+      var fileBytes = excel.save(fileName: 'OMBReport_${DateTime.now().millisecondsSinceEpoch}.xlsx');
+      Navigator.pop(context);
+    } else {
+      var fileBytes = excel.save();
+      var directory = await getApplicationDocumentsDirectory();
+
+      File(p.join('$directory/OMBReport_${DateTime.now().millisecondsSinceEpoch}.xlsx'))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(fileBytes!);
+      Navigator.pop(context);
+    }
   }
 
   createPDF(String size) async {
+   loadWidget();
+
     final pdf = pw.Document();
     PdfPageFormat? pageFormat;
 
@@ -2950,9 +2990,9 @@ class _AdminScreenState extends State<AdminScreen> {
                     pw.SizedBox(width: 5),
                     contain(pw.Text(DateFormat.yMMMMd().add_jms().format(tickets[i].timeCreatedAsDate!), style: pw.TextStyle(fontSize: 9))),
                     pw.Spacer(),
-                    contain(pw.Text(tickets[i].codeAndNumber!)),
+                    contain(pw.Text(tickets[i].codeAndNumber!.length > 20 ? "${tickets[i].codeAndNumber!.substring(0, 20).toString()}..." : tickets[i].codeAndNumber!)),
                     pw.Spacer(),
-                    contain(pw.Text(tickets[i].userAssigned!)),
+                    contain(pw.Text(tickets[i].userAssigned!.length > 20 ? "${tickets[i].userAssigned!.substring(0, 20).toString()}..." : tickets[i].userAssigned!)),
                     pw.Spacer(),
                     contain(pw.Text(tickets[i].serviceType!.length > 20 ? "${tickets[i].serviceType!.substring(0, 20).toString()}..." : tickets[i].serviceType!, style: pw.TextStyle(fontSize: 9), textAlign: pw.TextAlign.left, overflow: pw.TextOverflow.clip)),
                     pw.Spacer(),
@@ -2977,6 +3017,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     if (kIsWeb) {
       var savedFile = await pdf.save();
+      Navigator.pop(context);
       List<int> fileInts = List.from(savedFile);
       web.AnchorElement()
         ..href = "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(fileInts)}"
@@ -2985,9 +3026,26 @@ class _AdminScreenState extends State<AdminScreen> {
     } else {
       final file = File("OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}");
       await file.writeAsBytes(await pdf.save());
+      Navigator.pop(context);
     }
   }
 
+
+  loadWidget() {
+    return showDialog(context: context, builder: (_) => AlertDialog(
+        content: Container(
+          height: 100,
+          width: 100,
+          child: Center(
+            child: Container(
+                height: 50,
+                width: 50,
+                child: CircularProgressIndicator()
+            ),
+          ),
+        )
+    ));
+  }
 
   statusColorHandler(String status)  {
     Color? color;
