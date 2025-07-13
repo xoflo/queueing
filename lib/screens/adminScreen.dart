@@ -2664,7 +2664,12 @@ class _AdminScreenState extends State<AdminScreen> {
                                               alignment: Alignment.centerLeft,
                                               child: Text("Paper Size", style: TextStyle(fontSize: 18))),
                                           SizedBox(height: 10),
-                                          Row(
+                                          fileType == '.XLSX' ? Container(
+                                            height: 50,
+                                            child: Center(
+                                              child: Text("File is in sheet", style: TextStyle(color: Colors.grey)),
+                                            ),
+                                          ) : Row(
                                             children: [
                                               Checkbox(value: paperSize == 'A4',
                                                   onChanged: (value) {
