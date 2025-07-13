@@ -2665,9 +2665,9 @@ class _AdminScreenState extends State<AdminScreen> {
                                               child: Text("Paper Size", style: TextStyle(fontSize: 18))),
                                           SizedBox(height: 10),
                                           fileType == '.XLSX' ? Container(
-                                            height: 50,
+                                            height: 30,
                                             child: Center(
-                                              child: Text("File is in sheet", style: TextStyle(color: Colors.grey)),
+                                              child: Text("Size is scalable sheet", style: TextStyle(color: Colors.grey)),
                                             ),
                                           ) : Row(
                                             children: [
@@ -2812,6 +2812,12 @@ class _AdminScreenState extends State<AdminScreen> {
     String? prioritiesXlsx;
     String? statusesXlsx;
 
+    if (displayDate != null) dateXlsx = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else dateXlsx = "${DateFormat.yMMMMd().format(dates[0])}";
+    if (displayUsers != null) usersXlsx = users.join(', '); else usersXlsx = "All";
+    if (displayServiceTypes != null) serviceTypesXlsx = serviceTypes.join(', '); else serviceTypesXlsx = "All";
+    if (displayPriorities != null) prioritiesXlsx = priorities.join(', '); else prioritiesXlsx = "All";
+    if (displayStatus != null) statusesXlsx = statuses.join(', '); else statusesXlsx = "All";
+
     sheet.appendRow([
       TextCellValue('Office of the Ombusdman')
     ]);
@@ -2830,12 +2836,13 @@ class _AdminScreenState extends State<AdminScreen> {
     sheet.appendRow([
       TextCellValue('Summary Report:')
     ]);
-
-    if (displayDate != null) dateXlsx = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else dateXlsx = "${DateFormat.yMMMMd().format(dates[0])}";
-    if (displayUsers != null) usersXlsx = users.join(', '); else usersXlsx = "All";
-    if (displayServiceTypes != null) serviceTypesXlsx = serviceTypes.join(', '); else serviceTypesXlsx = "All";
-    if (displayPriorities != null) prioritiesXlsx = priorities.join(', '); else prioritiesXlsx = "All";
-    if (displayStatus != null) statusesXlsx = statuses.join(', '); else statusesXlsx = "All";
+    sheet.appendRow([
+      TextCellValue("Date: $dateXlsx"),
+      TextCellValue("Users: $usersXlsx"),
+      TextCellValue("Services: $serviceTypesXlsx"),
+      TextCellValue("Priority: $prioritiesXlsx"),
+      TextCellValue("Status: $statusesXlsx"),
+    ]);
 
     sheet.appendRow([
       TextCellValue('')
