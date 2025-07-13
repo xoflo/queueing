@@ -23,8 +23,8 @@ import '../models/user.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart';
-import '../web/web_stub.dart'
-if (dart.library.html) '..web/web_real.dart' as web;
+import '../platformHandler/web_stub.dart'
+if (dart.library.html) '../platformHandler/web_real.dart' as web;
 
 
 class AdminScreen extends StatefulWidget {

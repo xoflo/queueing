@@ -12,6 +12,7 @@ class Station {
   String? stationName;
   String? sessionPing;
 
+  Station(this.stationName);
 
   Station.fromJson(dynamic data) {
     id = int.parse(data['id']);

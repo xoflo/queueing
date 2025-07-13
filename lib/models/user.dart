@@ -12,6 +12,7 @@ class User {
   DateTime? loggedIn;
   List<dynamic>? servicesSet;
 
+  User(this.username);
 
   User.fromJson(dynamic data) {
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -285,91 +286,25 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         .data!
                         .length;
                 i++) {
-                  links.add(snapshotMedia
-                      .data![i]
-                  [
-                  'link']);
+                  links.add("videos/${snapshotMedia.data![i]['link']}");
                 }
 
-                Timer?
-                newTimer;
-                int videoCounter =
-                0;
-                VideoPlayerController?
-                controller;
-                int update =
-                0;
-
-                return StatefulBuilder(
-                  builder:
-                      (context,
-                      setStatePlayer) {
-                    newTimer = Timer.periodic(
-                        Duration(
-                            seconds: 2),
-                            (_) async {
-                          if (update ==
-                              0) {
-                            final vid =
-                            Uri.parse('http://$site/queueing_api/videos/${links[videoCounter]}');
-                            controller = await VideoPlayerController.networkUrl(
-                                vid)
-                              ..initialize().then((_) {
-                                controller!.setVolume(0);
-                                controller!.play();
-                              });
-                            newTimer!
-                                .cancel();
-                            update =
-                            1;
-                            setStatePlayer(
-                                    () {});
-                          } else {
-                            final position = controller!
-                                .value
-                                .position;
-                            final duration = controller!
-                                .value
-                                .duration;
-                            if (position.toString() == duration.toString() &&
-                                position.toString() != "0:00:00.000000") {
-
-                              if (videoCounter <
-                                  links.length - 1) {
-
-                                videoCounter = videoCounter + 1;
-                                update = 0;
-                              } else {
-
-                                videoCounter = 0;
-                                update = 0;
-                              }
-                            }
-                          }
-                        });
-
-                    return SizedBox(
-                        width: MediaQuery.of(context).size.width -
-                            600,
-                        height:
-                        MediaQuery.of(context).size.height - 300,
-                        child: controller == null
-                            ? Center(
-                          child: Container(height: 50, width: 50, child: CircularProgressIndicator()),
-                        )
-                            : ClipRRect(
-                          borderRadius: BorderRadius.circular(15),
-                          child: Container(
-                            color: Colors.black,
-                            height: MediaQuery.of(context).size.height - 300,
-                            child: AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: VideoPlayer(
-                                  controller!),
-                            ),
-                          ),
-                        ));
-                  },
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                      height: MediaQuery.of(
+                          context)
+                          .size
+                          .height -
+                          300,
+                      width: MediaQuery.of(
+                          context)
+                          .size
+                          .width -
+                          600,
+                      color: Colors
+                          .black87,
+                      child: kIsWeb == true ?  WebVideoPlayer(videoAssets: links)  : AndroidVideoPlayer(urls: links)),
                 );
               })
                   : Container(
@@ -819,10 +754,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     List<String> links = [];
 
                     for (int i = 0; i < mediabg.length; i++) {
-                      links.add(mediabg[i]['link']);
+                      links.add("bgvideos/${mediabg[i]['link']}");
                     }
 
-                    return links.isEmpty? SizedBox(): BackgroundVideoPlayer(videoAssets: links);
+                    return links.isEmpty? SizedBox(): WebVideoPlayer(videoAssets: links);
                   }
                 ) :
                     SizedBox();

@@ -5,18 +5,25 @@ import 'package:http/http.dart' as http;
 import 'package:queueing/hiveService.dart';
 import 'models/media.dart';
 import 'dart:math' as math;
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:video_player/video_player.dart';
 
 String? site;
 
+
+updateIP(String ip) {
+  site = ip;
+}
+
 getIP() async {
   final String? ip = await HiveService.getIP();
-  site = ip;
+  updateIP(ip ?? "");
   return site;
 }
 
 saveIP(String ip) async {
   await HiveService.saveIP(ip);
+  updateIP(ip);
 }
 
 stringToList(String text) {
@@ -307,19 +314,19 @@ class _RainbowOverlayState extends State<RainbowOverlay>
 
 
 
-class BackgroundVideoPlayer extends StatefulWidget {
+class WebVideoPlayer extends StatefulWidget {
   final List<String> videoAssets; // List of video asset paths
 
-  const BackgroundVideoPlayer({
+  const WebVideoPlayer({
     Key? key,
     required this.videoAssets,
   }) : super(key: key);
 
   @override
-  State<BackgroundVideoPlayer> createState() => _BackgroundVideoPlayerState();
+  State<WebVideoPlayer> createState() => _WebVideoPlayerState();
 }
 
-class _BackgroundVideoPlayerState extends State<BackgroundVideoPlayer> {
+class _WebVideoPlayerState extends State<WebVideoPlayer> {
   late VideoPlayerController _controller;
   int _currentVideoIndex = 0;
 
@@ -330,7 +337,7 @@ class _BackgroundVideoPlayerState extends State<BackgroundVideoPlayer> {
   }
 
   Future<void> _initializeAndPlay(String asset) async {
-    _controller = VideoPlayerController.networkUrl(Uri.parse('http://$site/queueing_api/bgvideos/${widget.videoAssets[_currentVideoIndex]}'))
+    _controller = VideoPlayerController.networkUrl(Uri.parse('http://$site/queueing_api/${widget.videoAssets[_currentVideoIndex]}'))
       ..initialize().then((_) {
         setState(() {}); // refresh after init
         _controller
@@ -384,5 +391,87 @@ class _BackgroundVideoPlayerState extends State<BackgroundVideoPlayer> {
         ),
       ],
     ) : const SizedBox.shrink();
+  }
+}
+
+// --------------------------------------- Android Player Below
+
+class AndroidVideoPlayer extends StatefulWidget {
+  final List<String> urls;
+
+  const AndroidVideoPlayer({Key? key, required this.urls}) : super(key: key);
+
+  @override
+  State<AndroidVideoPlayer> createState() => _AndroidVideoPlayerState();
+}
+
+class _AndroidVideoPlayerState extends State<AndroidVideoPlayer> {
+  late VlcPlayerController _vlcController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _vlcController = VlcPlayerController.network(
+      widget.urls[_currentIndex],
+      hwAcc: HwAcc.full,
+      autoPlay: true,
+      options: VlcPlayerOptions(),
+    );
+  }
+
+  void _playNext() {
+    if (_currentIndex < widget.urls.length - 1) {
+      _currentIndex++;
+      _vlcController.setMediaFromNetwork("http://$site/queueing_api/${widget.urls[_currentIndex]}");
+      _vlcController.play();
+      setState(() {});
+    }
+  }
+
+  void _playPrevious() {
+    if (_currentIndex > 0) {
+      _currentIndex--;
+      _vlcController.setMediaFromNetwork(widget.urls[_currentIndex]);
+      _vlcController.play();
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _vlcController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: VlcPlayer(
+            controller: _vlcController,
+            aspectRatio: 16 / 9,
+            placeholder: const Center(child: CircularProgressIndicator()),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: _playPrevious,
+              child: const Text('Previous'),
+            ),
+            const SizedBox(width: 16),
+            ElevatedButton(
+              onPressed: _playNext,
+              child: const Text('Next'),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

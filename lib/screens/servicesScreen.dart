@@ -90,6 +90,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 onPointerDown: (_) => _resetTimer(),
                 child: Stack(
           children: [
+            graphicBackground(context),
             getBackgroundVideoOverlay(),
             logoBackground(context, 300),
             getRainbowOverlay(),
@@ -963,7 +964,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         future: getSettings(context, 'RGB Screen (Kiosk)', 1),
         builder: (context, AsyncSnapshot<dynamic> snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
-          int.parse(snapshot.data!['value']) == 1 ?
+          int.parse(snapshot.data!['value']) != null ?
           Builder(
               builder: (context) {
                 int visible = int.parse(snapshot.data!['other'].toString().split(":")[0]);
@@ -983,7 +984,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         future: getSettings(context, 'BG Video (TV)'),
         builder: (context, snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
-          snapshot.data! == 1 ?
+          snapshot.data! != null ?
           FutureBuilder(
             future: getMediabg(context),
             builder: (context, AsyncSnapshot<List<dynamic>> snapshotMedia) {
@@ -994,10 +995,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     List<String> links = [];
 
                     for (int i = 0; i < mediabg.length; i++) {
-                      links.add(mediabg[i]['link']);
+                      links.add("bgvideos/${mediabg[i]['link']}");
                     }
 
-                    return links.isEmpty? SizedBox(): BackgroundVideoPlayer(videoAssets: links);
+                    return links.isEmpty? SizedBox(): kIsWeb ? WebVideoPlayer(videoAssets: links) : AndroidVideoPlayer(urls: links);
                   }
               ) :
               SizedBox();
