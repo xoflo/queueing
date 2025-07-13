@@ -2700,14 +2700,14 @@ class _AdminScreenState extends State<AdminScreen> {
                                     actions: [
                                       TextButton(
                                           child: Text("Export"),
-                                          onPressed: () {
-                                            if (fileType == '.XLSX') {
-                                              createExcel(paperSize);
+                                          onPressed: () async {
+                                            final tickets = await getTicketSQL();
+
+                                            if (tickets.isNotEmpty)  {
+                                              if (fileType == '.XLSX') createExcel(tickets);
+                                              if (fileType == '.PDF') createPDF(paperSize, tickets);
                                             }
 
-                                            if (fileType == '.PDF') {
-                                              createPDF(paperSize);
-                                            }
                                           })
                                     ],
                                   );
@@ -2799,10 +2799,9 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  createExcel(dynamic size) async {
+  createExcel(List<Ticket> tickets) async {
     loadWidget();
 
-    final tickets = await getTicketSQL();
     var excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
@@ -2888,14 +2887,11 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  createPDF(String size) async {
+  createPDF(String size, List<Ticket> tickets) async {
    loadWidget();
 
     final pdf = pw.Document();
     PdfPageFormat? pageFormat;
-
-
-    final tickets = await getTicketSQL();
 
     final img = await rootBundle.load('assets/images/logo.png');
     final imageBytes = img.buffer.asUint8List();
