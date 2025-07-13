@@ -2838,13 +2838,6 @@ class _AdminScreenState extends State<AdminScreen> {
     sheet.appendRow([
       TextCellValue('Detailed Report:')
     ]);
-
-    sheet.appendRow([
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Detailed Report:')
-    ]);
     sheet.appendRow([
       TextCellValue('#'),
       TextCellValue('Date'),
@@ -2857,7 +2850,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     for (int i = 0; i < tickets.length; i++) {
       sheet.appendRow([
-        IntCellValue(i),
+        IntCellValue(i+1),
         TextCellValue(DateFormat.yMMMMd().format(tickets[i].timeCreatedAsDate!)),
         TextCellValue(tickets[i].codeAndNumber!),
         TextCellValue(tickets[i].userAssigned!),
@@ -3034,7 +3027,7 @@ class _AdminScreenState extends State<AdminScreen> {
                   children: [
                     pw.Container(
                       height: 30,
-                      child: pw.Text(i.toString(), style: pw.TextStyle(fontSize: 8))
+                      child: pw.Text("${i+1}", style: pw.TextStyle(fontSize: 8))
                     ),
                     pw.SizedBox(width: 5),
                     contain(pw.Text(DateFormat.yMMMMd().add_jms().format(tickets[i].timeCreatedAsDate!), style: pw.TextStyle(fontSize: 9))),
