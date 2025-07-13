@@ -995,10 +995,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     List<String> links = [];
 
                     for (int i = 0; i < mediabg.length; i++) {
-                      links.add("bgvideos/${mediabg[i]['link']}");
+                      links.add("http://$site/queueing_api/bgvideos/${mediabg[i]['link']}");
                     }
 
-                    return links.isEmpty? SizedBox(): kIsWeb ? WebVideoPlayer(videoAssets: links) : AndroidVideoPlayer(urls: links);
+                    return links.isEmpty? SizedBox(): kIsWeb ? WebVideoPlayer(videoAssets: links, display: 0) : AndroidVideoPlayer(playlist: links, display: 0);
                   }
               ) :
               SizedBox();

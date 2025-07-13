@@ -35,7 +35,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   constraint(BuildContext context, Widget widget) {
-    return MediaQuery.of(context).size.height > 800 && MediaQuery.of(context).size.width > 800
+    return MediaQuery.of(context).size.height > 400 && MediaQuery.of(context).size.width > 400
         ? widget : Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
@@ -286,7 +286,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         .data!
                         .length;
                 i++) {
-                  links.add("videos/${snapshotMedia.data![i]['link']}");
+                  links.add("http://$site/queueing_api/videos/${snapshotMedia.data![i]['link']}");
                 }
 
                 return ClipRRect(
@@ -304,7 +304,13 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           600,
                       color: Colors
                           .black87,
-                      child: kIsWeb == true ?  WebVideoPlayer(videoAssets: links)  : AndroidVideoPlayer(urls: links)),
+                      child: kIsWeb == true ?
+                      AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: WebVideoPlayer(videoAssets: links, display: 1))  :
+                      AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: AndroidVideoPlayer(playlist: links, display: 1))),
                 );
               })
                   : Container(
@@ -754,10 +760,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     List<String> links = [];
 
                     for (int i = 0; i < mediabg.length; i++) {
-                      links.add("bgvideos/${mediabg[i]['link']}");
+                      try {
+                        links.add("http://$site/queueing_api/bgvideos/${mediabg[i]['link']}");
+                      } catch(e) {
+                        print('file not found, has record on server');
+                      }
                     }
 
-                    return links.isEmpty? SizedBox(): WebVideoPlayer(videoAssets: links);
+                    return links.isEmpty ? SizedBox() : kIsWeb ? WebVideoPlayer(videoAssets: links, display: 0) : AndroidVideoPlayer(playlist: links, display: 0);
                   }
                 ) :
                     SizedBox();

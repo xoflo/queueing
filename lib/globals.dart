@@ -315,11 +315,12 @@ class _RainbowOverlayState extends State<RainbowOverlay>
 
 
 class WebVideoPlayer extends StatefulWidget {
-  final List<String> videoAssets; // List of video asset paths
+  final List<String> videoAssets;
+  final int display;
 
   const WebVideoPlayer({
     Key? key,
-    required this.videoAssets,
+    required this.videoAssets, required this.display,
   }) : super(key: key);
 
   @override
@@ -337,7 +338,9 @@ class _WebVideoPlayerState extends State<WebVideoPlayer> {
   }
 
   Future<void> _initializeAndPlay(String asset) async {
-    _controller = VideoPlayerController.networkUrl(Uri.parse('http://$site/queueing_api/${widget.videoAssets[_currentVideoIndex]}'))
+
+
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoAssets[_currentVideoIndex]))
       ..initialize().then((_) {
         setState(() {}); // refresh after init
         _controller
@@ -382,7 +385,7 @@ class _WebVideoPlayerState extends State<WebVideoPlayer> {
       fit: StackFit.expand,
       children: [
         FittedBox(
-          fit: BoxFit.cover,
+          fit: widget.display == 1 ? BoxFit.fitHeight : BoxFit.cover,
           child: SizedBox(
             width: _controller.value.size.width,
             height: _controller.value.size.height,
@@ -397,81 +400,74 @@ class _WebVideoPlayerState extends State<WebVideoPlayer> {
 // --------------------------------------- Android Player Below
 
 class AndroidVideoPlayer extends StatefulWidget {
-  final List<String> urls;
-
-  const AndroidVideoPlayer({Key? key, required this.urls}) : super(key: key);
-
   @override
   State<AndroidVideoPlayer> createState() => _AndroidVideoPlayerState();
+
+  AndroidVideoPlayer({
+    Key? key,
+    required this.playlist, required this.display,
+  }) : super(key: key);
+
+  List<String> playlist;
+  final int display;
+
 }
 
 class _AndroidVideoPlayerState extends State<AndroidVideoPlayer> {
   late VlcPlayerController _vlcController;
-  int _currentIndex = 0;
+
+
+  int currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    _initPlayer();
+  }
+
+  void _initPlayer() {
     _vlcController = VlcPlayerController.network(
-      widget.urls[_currentIndex],
-      hwAcc: HwAcc.full,
+      widget.playlist[currentIndex],
       autoPlay: true,
       options: VlcPlayerOptions(),
     );
+
+    // Listen for when video ends
+    _vlcController.addListener(_checkVideoEnded);
+  }
+
+  void _checkVideoEnded() async {
+    if (_vlcController.value.isEnded) {
+      _playNext();
+    }
   }
 
   void _playNext() {
-    if (_currentIndex < widget.urls.length - 1) {
-      _currentIndex++;
-      _vlcController.setMediaFromNetwork("http://$site/queueing_api/${widget.urls[_currentIndex]}");
-      _vlcController.play();
-      setState(() {});
-    }
-  }
+    setState(() {
+      print("link: ${widget.playlist[currentIndex]}");
 
-  void _playPrevious() {
-    if (_currentIndex > 0) {
-      _currentIndex--;
-      _vlcController.setMediaFromNetwork(widget.urls[_currentIndex]);
+      currentIndex = (currentIndex + 1) % widget.playlist.length; // loop to start
+      _vlcController.setMediaFromNetwork(widget.playlist[currentIndex]);
       _vlcController.play();
-      setState(() {});
-    }
+    });
   }
 
   @override
   void dispose() {
+    _vlcController.removeListener(_checkVideoEnded);
     _vlcController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AspectRatio(
-          aspectRatio: 16 / 9,
-          child: VlcPlayer(
-            controller: _vlcController,
-            aspectRatio: 16 / 9,
-            placeholder: const Center(child: CircularProgressIndicator()),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: _playPrevious,
-              child: const Text('Previous'),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: _playNext,
-              child: const Text('Next'),
-            ),
-          ],
-        ),
-      ],
+    return FittedBox(
+      fit: widget.display == 1 ? BoxFit.fitHeight : BoxFit.cover,
+      child: VlcPlayer(
+        controller: _vlcController,
+        aspectRatio: 16 / 9,
+        placeholder: Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }
