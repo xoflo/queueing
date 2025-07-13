@@ -2801,6 +2801,12 @@ class _AdminScreenState extends State<AdminScreen> {
     var excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
+    String? dateXlsx;
+    String? usersXlsx;
+    String? serviceTypesXlsx;
+    String? prioritiesXlsx;
+    String? statusesXlsx;
+
     sheet.appendRow([
       TextCellValue('Office of the Ombusdman')
     ]);
@@ -2817,13 +2823,47 @@ class _AdminScreenState extends State<AdminScreen> {
       TextCellValue('')
     ]);
     sheet.appendRow([
-      TextCellValue('Report Date:')
+      TextCellValue('Summary Report:')
+    ]);
+
+    if (displayDate != null) dateXlsx = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else dateXlsx = "${DateFormat.yMMMMd().format(dates[0])}";
+    if (displayUsers != null) usersXlsx = users.join(', '); else usersXlsx = "All";
+    if (displayServiceTypes != null) serviceTypesXlsx = serviceTypes.join(', '); else serviceTypesXlsx = "All";
+    if (displayPriorities != null) prioritiesXlsx = priorities.join(', '); else prioritiesXlsx = "All";
+    if (displayStatus != null) statusesXlsx = statuses.join(', '); else statusesXlsx = "All";
+
+    sheet.appendRow([
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Detailed Report:')
+    ]);
+
+    sheet.appendRow([
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Detailed Report:')
+    ]);
+    sheet.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Date'),
+      TextCellValue('Code'),
+      TextCellValue('User'),
+      TextCellValue('Service'),
+      TextCellValue('Priority'),
+      TextCellValue('Status'),
     ]);
 
     for (int i = 0; i < tickets.length; i++) {
       sheet.appendRow([
-        TextCellValue(DateFormat.yMMMMd().format(tickets[i].timeCreatedAsDate!))
-
+        IntCellValue(i),
+        TextCellValue(DateFormat.yMMMMd().format(tickets[i].timeCreatedAsDate!)),
+        TextCellValue(tickets[i].codeAndNumber!),
+        TextCellValue(tickets[i].userAssigned!),
+        TextCellValue(tickets[i].serviceType!),
+        TextCellValue(tickets[i].priorityType!),
+        TextCellValue(tickets[i].status!)
       ]
       );
     }
@@ -2885,7 +2925,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
 
-    if (displayDate != null) datePdf = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else serviceTypesPdf = "${DateFormat.yMMMMd().format(dates[0])}";
+    if (displayDate != null) datePdf = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else datePdf = "${DateFormat.yMMMMd().format(dates[0])}";
     if (displayUsers != null) usersPdf = users.join(', '); else usersPdf = "All";
     if (displayServiceTypes != null) serviceTypesPdf = serviceTypes.join(', '); else serviceTypesPdf = "All";
     if (displayPriorities != null) prioritiesPdf = priorities.join(', '); else prioritiesPdf = "All";
