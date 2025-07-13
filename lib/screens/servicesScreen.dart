@@ -65,229 +65,242 @@ class _ServicesScreenState extends State<ServicesScreen> {
     });
   }
 
+  bool printVisible = false;
+  final printKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.print),
-          onPressed: () async {
-            await settingSecurity();
+      floatingActionButton: StatefulBuilder(
+          key: printKey,
+          builder: (context, setStateFAB) {
+        return printVisible == true ? FloatingActionButton(
+            child: Icon(Icons.print),
+            onPressed: () async {
+              await settingSecurity();
+            }) : SizedBox();
       }),
-        body: Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) => _resetTimer(),
-      child: Stack(
-        children: [
-          getBackgroundVideoOverlay(),
-          logoBackground(context, 300),
-          getRainbowOverlay(),
-          Column(
-            children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    StatefulBuilder(
-                      builder: (BuildContext context,
-                          void Function(void Function()) setStateList) {
-                        return FutureBuilder(
-                          future: getServiceGroups(assignedGroup),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<Map<String, dynamic>>>
-                                  snapshot) {
-                            return Column(
-                              children: [
-                                lastAssigned.isNotEmpty
-                                    ? IconButton(
-                                        onPressed: () {
-                                          assignedGroup = lastAssigned.last;
-                                          lastAssigned.removeLast();
-                                          setStateList(() {});
-                                        },
-                                        icon: Icon(Icons.chevron_left))
-                                    : Container(),
-                                snapshot.connectionState == ConnectionState.done
-                                    ? Container(
-                                        height:
-                                            MediaQuery.of(context).size.height -
-                                                120,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(15.0),
-                                          child: GridView.builder(
-                                              gridDelegate:
-                                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                                      childAspectRatio: 3 / 1.2,
-                                                      crossAxisCount: MediaQuery
-                                                                      .of(context)
-                                                                  .size
-                                                                  .width >
-                                                              1200
-                                                          ? 4
-                                                          : MediaQuery.of(context)
-                                                                      .size
-                                                                      .width >
-                                                                  800
-                                                              ? 2
-                                                              : 1),
-                                              itemCount: snapshot.data!.length,
-                                              itemBuilder: (context, i) {
-                                                return snapshot.data![i]
-                                                            ['serviceType'] !=
-                                                        null
-                                                    ? Builder(builder: (context) {
-                                                        final service =
-                                                            Service.fromJson(
-                                                                snapshot
-                                                                    .data![i]);
-                                                        return Padding(
-                                                          padding:
-                                                              EdgeInsets.all(3),
-                                                          child: GestureDetector(
-                                                            onTap: () async {
-                                                              final List<dynamic>
-                                                                  result =
-                                                                  await getSettings(
-                                                                      context);
-                                                              int priority = int.parse(result
-                                                                  .where((e) =>
-                                                                      e['controlName'] ==
-                                                                      'Priority Option')
-                                                                  .toList()[0]['value']);
-                                                              int ticketname = int.parse(result
-                                                                  .where((e) =>
-                                                                      e['controlName'] ==
-                                                                      'Ticket Name Option')
-                                                                  .toList()[0]['value']);
+        body: GestureDetector(
+          onLongPress: () {
+            printVisible = !printVisible;
+            printKey.currentState!.setState(() {});
+          },
+          child: Listener(
+                behavior: HitTestBehavior.translucent,
+                onPointerDown: (_) => _resetTimer(),
+                child: Stack(
+          children: [
+            getBackgroundVideoOverlay(),
+            logoBackground(context, 300),
+            getRainbowOverlay(),
+            Column(
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      StatefulBuilder(
+                        builder: (BuildContext context,
+                            void Function(void Function()) setStateList) {
+                          return FutureBuilder(
+                            future: getServiceGroups(assignedGroup),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<Map<String, dynamic>>>
+                                    snapshot) {
+                              return Column(
+                                children: [
+                                  lastAssigned.isNotEmpty
+                                      ? IconButton(
+                                          onPressed: () {
+                                            assignedGroup = lastAssigned.last;
+                                            lastAssigned.removeLast();
+                                            setStateList(() {});
+                                          },
+                                          icon: Icon(Icons.chevron_left))
+                                      : Container(),
+                                  snapshot.connectionState == ConnectionState.done
+                                      ? Container(
+                                          height:
+                                              MediaQuery.of(context).size.height -
+                                                  120,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(15.0),
+                                            child: GridView.builder(
+                                                gridDelegate:
+                                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                                        childAspectRatio: 3 / 1.2,
+                                                        crossAxisCount: MediaQuery
+                                                                        .of(context)
+                                                                    .size
+                                                                    .width >
+                                                                1200
+                                                            ? 4
+                                                            : MediaQuery.of(context)
+                                                                        .size
+                                                                        .width >
+                                                                    800
+                                                                ? 2
+                                                                : 1),
+                                                itemCount: snapshot.data!.length,
+                                                itemBuilder: (context, i) {
+                                                  return snapshot.data![i]
+                                                              ['serviceType'] !=
+                                                          null
+                                                      ? Builder(builder: (context) {
+                                                          final service =
+                                                              Service.fromJson(
+                                                                  snapshot
+                                                                      .data![i]);
+                                                          return Padding(
+                                                            padding:
+                                                                EdgeInsets.all(3),
+                                                            child: GestureDetector(
+                                                              onTap: () async {
+                                                                final List<dynamic>
+                                                                    result =
+                                                                    await getSettings(
+                                                                        context);
+                                                                int priority = int.parse(result
+                                                                    .where((e) =>
+                                                                        e['controlName'] ==
+                                                                        'Priority Option')
+                                                                    .toList()[0]['value']);
+                                                                int ticketname = int.parse(result
+                                                                    .where((e) =>
+                                                                        e['controlName'] ==
+                                                                        'Ticket Name Option')
+                                                                    .toList()[0]['value']);
 
-                                                              if (priority == 1) {
-                                                                priorityDialog(
-                                                                    service,
-                                                                    ticketname);
-                                                              } else {
-                                                                if (ticketname ==
-                                                                    1) {
-                                                                  nameDialog(
+                                                                if (priority == 1) {
+                                                                  priorityDialog(
                                                                       service,
-                                                                      "None");
+                                                                      ticketname);
                                                                 } else {
-                                                                  addTicketSQL(
-                                                                      service
-                                                                          .serviceType!,
-                                                                      service
-                                                                          .serviceCode!,
-                                                                      "None");
-                                                                  Navigator.pop(
-                                                                      context);
+                                                                  if (ticketname ==
+                                                                      1) {
+                                                                    nameDialog(
+                                                                        service,
+                                                                        "None");
+                                                                  } else {
+                                                                    addTicketSQL(
+                                                                        service
+                                                                            .serviceType!,
+                                                                        service
+                                                                            .serviceCode!,
+                                                                        "None");
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  }
                                                                 }
-                                                              }
-                                                            },
-                                                            child: Opacity(
-                                                              opacity: 0.75,
-                                                              child: Card(
-                                                                child: InkWell(
-                                                                  splashColor: Theme.of(context).splashColor,
-                                                                  highlightColor: Theme.of(context).highlightColor,
-                                                                  child: Column(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding:
-                                                                            const EdgeInsets
-                                                                                .all(
-                                                                                15.0),
-                                                                        child: Text(
-                                                                          service
-                                                                              .serviceType!,
-                                                                          style: TextStyle(
-                                                                              fontSize: service.serviceType!.length >
-                                                                                      20
-                                                                                  ? 30
-                                                                                  : 40,
-                                                                              fontWeight:
-                                                                                  FontWeight.w700),
-                                                                          textAlign:
-                                                                              TextAlign
-                                                                                  .center,
-                                                                          maxLines: 2,
-                                                                          overflow:
-                                                                              TextOverflow
-                                                                                  .ellipsis,
+                                                              },
+                                                              child: Opacity(
+                                                                opacity: 0.75,
+                                                                child: Card(
+                                                                  child: InkWell(
+                                                                    splashColor: Theme.of(context).splashColor,
+                                                                    highlightColor: Theme.of(context).highlightColor,
+                                                                    child: Column(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        Padding(
+                                                                          padding:
+                                                                              const EdgeInsets
+                                                                                  .all(
+                                                                                  15.0),
+                                                                          child: Text(
+                                                                            service
+                                                                                .serviceType!,
+                                                                            style: TextStyle(
+                                                                                fontSize: service.serviceType!.length >
+                                                                                        20
+                                                                                    ? 30
+                                                                                    : 40,
+                                                                                fontWeight:
+                                                                                    FontWeight.w700),
+                                                                            textAlign:
+                                                                                TextAlign
+                                                                                    .center,
+                                                                            maxLines: 2,
+                                                                            overflow:
+                                                                                TextOverflow
+                                                                                    .ellipsis,
+                                                                          ),
                                                                         ),
-                                                                      ),
-                                                                    ],
+                                                                      ],
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
                                                             ),
-                                                          ),
-                                                        );
-                                                      })
-                                                    : Builder(builder: (context) {
-                                                        final group =
-                                                            ServiceGroup.fromJson(
-                                                                snapshot
-                                                                    .data![i]);
-                                                        return Padding(
-                                                          padding:
-                                                              EdgeInsets.all(10),
-                                                          child: GestureDetector(
-                                                            onTap: () {
-                                                              lastAssigned.add(
-                                                                  assignedGroup);
-                                                              assignedGroup =
-                                                                  group.name!;
-                                                              setStateList(() {});
-                                                            },
-                                                            child: Card(
-                                                              child: Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Text(
-                                                                      group.name!,
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              20,
-                                                                          fontWeight:
-                                                                              FontWeight.w700)),
-                                                                ],
+                                                          );
+                                                        })
+                                                      : Builder(builder: (context) {
+                                                          final group =
+                                                              ServiceGroup.fromJson(
+                                                                  snapshot
+                                                                      .data![i]);
+                                                          return Padding(
+                                                            padding:
+                                                                EdgeInsets.all(10),
+                                                            child: GestureDetector(
+                                                              onTap: () {
+                                                                lastAssigned.add(
+                                                                    assignedGroup);
+                                                                assignedGroup =
+                                                                    group.name!;
+                                                                setStateList(() {});
+                                                              },
+                                                              child: Card(
+                                                                child: Column(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    Text(
+                                                                        group.name!,
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                20,
+                                                                            fontWeight:
+                                                                                FontWeight.w700)),
+                                                                  ],
+                                                                ),
                                                               ),
                                                             ),
-                                                          ),
-                                                        );
-                                                      });
-                                              }),
-                                        ),
-                                      )
-                                    : Container(
-                                        height:
-                                            MediaQuery.of(context).size.height - 120,
-                                        child: Center(
-                                          child: Container(
-                                            height: 50,
-                                            width: 50,
-                                            child: CircularProgressIndicator(),
+                                                          );
+                                                        });
+                                                }),
                                           ),
-                                        ),
-                                      )
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
+                                        )
+                                      : Container(
+                                          height:
+                                              MediaQuery.of(context).size.height - 120,
+                                          child: Center(
+                                            child: Container(
+                                              height: 50,
+                                              width: 50,
+                                              child: CircularProgressIndicator(),
+                                            ),
+                                          ),
+                                        )
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
-    ));
+        ));
   }
 
   nameDialog(Service service, String priorityType) {
