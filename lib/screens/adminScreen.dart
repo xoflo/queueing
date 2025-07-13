@@ -23,7 +23,9 @@ import '../models/user.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart';
-import 'dart:html' as web;
+import '../web/web_stub.dart'
+if (dart.library.html) '..web/web_real.dart' as web;
+
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key, required this.user});
@@ -3065,7 +3067,12 @@ class _AdminScreenState extends State<AdminScreen> {
           return widgets; // Center
         }));
 
-    if (kIsWeb) {
+    if (!kIsWeb) {
+      final file = File("OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}");
+      await file.writeAsBytes(await pdf.save());
+      Navigator.pop(context);
+
+    } else {
       var savedFile = await pdf.save();
       Navigator.pop(context);
       List<int> fileInts = List.from(savedFile);
@@ -3073,10 +3080,6 @@ class _AdminScreenState extends State<AdminScreen> {
         ..href = "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(fileInts)}"
         ..setAttribute("download", "OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}.pdf")
         ..click();
-    } else {
-      final file = File("OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}");
-      await file.writeAsBytes(await pdf.save());
-      Navigator.pop(context);
     }
   }
 
