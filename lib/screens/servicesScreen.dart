@@ -981,7 +981,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   getBackgroundVideoOverlay() {
     return FutureBuilder(
-        future: getSettings(context, 'BG Video (TV)'),
+        future: getSettings(context, 'Background Videos'),
         builder: (context, snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
           snapshot.data! != null ?
@@ -998,7 +998,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       links.add("http://$site/queueing_api/bgvideos/${mediabg[i]['link']}");
                     }
 
-                    return links.isEmpty? SizedBox(): kIsWeb ? WebVideoPlayer(videoAssets: links, display: 0) : AndroidVideoPlayer(playlist: links, display: 0);
+                    return links.isEmpty? SizedBox(): WebVideoPlayer(videoAssets: links, display: 0);
                   }
               ) :
               SizedBox();

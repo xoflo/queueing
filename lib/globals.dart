@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:queueing/hiveService.dart';
 import 'models/media.dart';
 import 'dart:math' as math;
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:video_player/video_player.dart';
 
 String? site;
@@ -381,93 +380,20 @@ class _WebVideoPlayerState extends State<WebVideoPlayer> {
   @override
   Widget build(BuildContext context) {
     return _controller.value.isInitialized
-        ? Stack(
-      fit: StackFit.expand,
-      children: [
-        FittedBox(
-          fit: widget.display == 1 ? BoxFit.fitHeight : BoxFit.cover,
-          child: SizedBox(
-            width: _controller.value.size.width,
-            height: _controller.value.size.height,
-            child: VideoPlayer(_controller),
+        ? Container(
+      height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: FittedBox(
+            fit: widget.display == 1 ? BoxFit.fitHeight : BoxFit.cover,
+            child: SizedBox(
+              width: _controller.value.size.width,
+              height: _controller.value.size.height,
+              child: VideoPlayer(_controller),
+            ),
           ),
-        ),
-      ],
-    ) : const SizedBox.shrink();
+        ) : const SizedBox.shrink();
   }
 }
 
 // --------------------------------------- Android Player Below
 
-class AndroidVideoPlayer extends StatefulWidget {
-  @override
-  State<AndroidVideoPlayer> createState() => _AndroidVideoPlayerState();
-
-  AndroidVideoPlayer({
-    Key? key,
-    required this.playlist, required this.display,
-  }) : super(key: key);
-
-  List<String> playlist;
-  final int display;
-
-}
-
-class _AndroidVideoPlayerState extends State<AndroidVideoPlayer> {
-  late VlcPlayerController _vlcController;
-
-
-  int currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _initPlayer();
-  }
-
-  void _initPlayer() {
-    _vlcController = VlcPlayerController.network(
-      widget.playlist[currentIndex],
-      autoPlay: true,
-      options: VlcPlayerOptions(),
-    );
-
-    // Listen for when video ends
-    _vlcController.addListener(_checkVideoEnded);
-  }
-
-  void _checkVideoEnded() async {
-    if (_vlcController.value.isEnded) {
-      _playNext();
-    }
-  }
-
-  void _playNext() {
-    setState(() {
-      print("link: ${widget.playlist[currentIndex]}");
-
-      currentIndex = (currentIndex + 1) % widget.playlist.length; // loop to start
-      _vlcController.setMediaFromNetwork(widget.playlist[currentIndex]);
-      _vlcController.play();
-    });
-  }
-
-  @override
-  void dispose() {
-    _vlcController.removeListener(_checkVideoEnded);
-    _vlcController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FittedBox(
-      fit: widget.display == 1 ? BoxFit.fitHeight : BoxFit.cover,
-      child: VlcPlayer(
-        controller: _vlcController,
-        aspectRatio: 16 / 9,
-        placeholder: Center(child: CircularProgressIndicator()),
-      ),
-    );
-  }
-}

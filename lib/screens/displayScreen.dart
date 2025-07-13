@@ -304,13 +304,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           600,
                       color: Colors
                           .black87,
-                      child: kIsWeb == true ?
-                      AspectRatio(
+                      child: AspectRatio(
                           aspectRatio: 16 / 9,
-                          child: WebVideoPlayer(videoAssets: links, display: 1))  :
-                      AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: AndroidVideoPlayer(playlist: links, display: 1))),
+                          child: WebVideoPlayer(videoAssets: links, display: 1))),
                 );
               })
                   : Container(
@@ -746,7 +742,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   getBackgroundVideoOverlay() {
     return FutureBuilder(
-        future: getSettings(context, 'BG Video (TV)'),
+        future: getSettings(context, 'Background Videos'),
         builder: (context, snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
           snapshot.data! == 1 ?
@@ -767,7 +763,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       }
                     }
 
-                    return links.isEmpty ? SizedBox() : kIsWeb ? WebVideoPlayer(videoAssets: links, display: 0) : AndroidVideoPlayer(playlist: links, display: 0);
+                    return links.isEmpty ? SizedBox() : WebVideoPlayer(videoAssets: links, display: 0);
                   }
                 ) :
                     SizedBox();
