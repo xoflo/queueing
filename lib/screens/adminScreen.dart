@@ -889,6 +889,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                         control.controlName! == "Staff Inactive Beep" ? TextButton(onPressed: () {
 
                                           TextEditingController time = TextEditingController();
+                                          time.text = control.other ?? "";
 
                                           showDialog(context: context, builder: (_) => AlertDialog(
                                             title: Text("Update Timer"),

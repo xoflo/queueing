@@ -539,7 +539,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               return TweenAnimationBuilder<Color?>(
                                 tween: ColorTween(
                                     begin: Colors.red,
-                                    end: Colors.white.withValues(alpha: 0.8)
+                                    end: Colors.transparent
                                 ),
                                 duration: Duration(seconds: 5),
                                 builder: (BuildContext context, color, Widget? child) {
