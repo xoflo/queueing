@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Image.asset('images/logo.png'),
                   ),
                   SizedBox(height: 25),
-                  Center(child: Text("Office of the Ombudsman", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
+                  Center(child: Text("Office of the Ombudsman", style: TextStyle(fontFamily: 'BebasNeue' ,fontSize: 40, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
                   Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
                   SizedBox(height: 20),
                   Container(

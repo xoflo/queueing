@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:hive/hive.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -23,11 +25,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
   late Timer timer;
   int ticketsLength = 0;
   Color? containerColor;
-  int updateSecond = 1;
-  int updateFirst = 1;
-
 
   final FlutterTts flutterTts = FlutterTts();
+
+  final firstUpdate = GlobalKey();
+  final secondUpdate = GlobalKey();
+
 
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
@@ -90,7 +93,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               ),
                             ],
                           )),
-                          slidingTextSpacer(vqd.data),
+                         //  slidingTextSpacer(vqd.data),
                           slidingTextWidget()
                         ],
                       ),
@@ -159,17 +162,17 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
               }
               if (vqd == 1) {
-                updateSecond = 0;
+                secondUpdate.currentState!.setState(() {});
               } else {
-                updateFirst = 0;
+                firstUpdate.currentState!.setState(() {});
               }
             }
 
             ticketsLength = retrieved.length;
             if (vqd == 1) {
-              updateSecond = 0;
+              secondUpdate.currentState!.setState(() {});
             } else {
-              updateFirst = 0;
+              firstUpdate.currentState!.setState(() {});
             }
           } else {
 
@@ -200,9 +203,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
               }
 
               if (vqd == 1) {
-                updateSecond = 0;
+                secondUpdate.currentState!.setState(() {});
               } else {
-                updateFirst = 0;
+                firstUpdate.currentState!.setState(() {});
               }
             }
           }
@@ -368,29 +371,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
               SizedBox(height: 5),
               Builder(
                   builder: (context) {
-                    Timer? secondTimer;
                     return StatefulBuilder(
+                      key: secondUpdate,
                       builder: (context,
                           setStateSecond) {
-                        Future<List<Ticket>>
-                        tickets =
-                        getTicketSQL();
-                        secondTimer =
-                            Timer.periodic(
-                                Duration(
-                                    seconds:
-                                    1),
-                                    (value) async {
-                                  if (updateSecond ==
-                                      0) {
-                                    secondTimer!
-                                        .cancel();
-                                    setStateSecond(
-                                            () {});
-                                    updateSecond =
-                                    1;
-                                  }
-                                });
 
                         return FutureBuilder(
                           future: getTicketSQL(),
@@ -520,133 +504,18 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   noVideoDisplayWidget() {
-    return Builder(builder: (context) {
-      Timer? firstTimer;
-      return StatefulBuilder(
-        builder:
-            (context, setStateFirst) {
-          Future<List<Ticket>> tickets =
-          getTicketSQL();
-          firstTimer = Timer.periodic(
-              Duration(seconds: 2),
-                  (value) async {
-                if (updateFirst == 0) {
-                  firstTimer!.cancel();
-                  updateFirst = 1;
-                  setStateFirst(() {});
-                }
-              });
-
-          return FutureBuilder(
-            future: tickets,
-            builder: (BuildContext
-            context,
-                AsyncSnapshot<
-                    List<Ticket>>
-                snapshot) {
-              return snapshot
-                  .connectionState ==
-                  ConnectionState
-                      .done
-                  ? snapshot.data!
-                  .length !=
-                  0
-                  ? Container(
-                    padding:
-                    EdgeInsets.all(
-                        20),
-                    height: MediaQuery.of(context)
-                        .size
-                        .height -
-                        200,
-                    width: MediaQuery.of(context)
-                        .size
-                        .width,
-                    child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4),
-                        itemCount: snapshot.data!.length > 8 ? 8 : snapshot.data!.length,
-                        itemBuilder: (context, i) {
-                          final ticket = snapshot.data![i];
-                          return ticket.blinker == 0 ?
-                          Builder(
-                              builder: (context) {
-                                updateBlinker(ticket);
-                                return TweenAnimationBuilder<Color?>(
-                                  tween: ColorTween(
-                                      begin: Colors.red,
-                                      end: Colors.white.withValues(alpha: 0.8)
-                                  ),
-                                  duration: Duration(seconds: 5),
-                                  builder: (BuildContext context, color, Widget? child) {
-                                    return Card(
-                                      elevation: 2,
-                                      color: color,
-                                      clipBehavior: Clip.antiAlias,
-                                      child: Padding(
-                                      padding: const EdgeInsets.all(20.0),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          FittedBox(child: Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700))),
-                                          Divider(thickness: 3),
-                                          FittedBox(child: Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700))),
-                                        ],
-                                      ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              }
-                          ) : Opacity(
-                            opacity: 0.8,
-                            child: Card(
-                              elevation: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    FittedBox(child: Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700))),
-                                    Divider(thickness: 3),
-                                    FittedBox(child: Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700))),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-
-
-                        }),
-                  )
-                  : Container(
-                  height: MediaQuery.of(
-                      context)
-                      .size
-                      .height -
-                      340,
-                  width: MediaQuery.of(
-                      context)
-                      .size
-                      .width *
-                      3 /
-                      4,
-                  child: Center(
-                      child: Text(
-                          "No Tickets Serving",
-                          style:
-                          TextStyle(color: Colors.grey))))
-                  : Container(
-                height: MediaQuery.of(
-                    context)
-                    .size
-                    .height -
-                    340,
-                width: MediaQuery.of(
-                    context)
-                    .size
-                    .width,
-                child: Container(
+    return StatefulBuilder(
+      key: firstUpdate,
+      builder:
+          (context, setStateFirst) {
+        return FutureBuilder(
+          future: getTicketSQL(),
+          builder: (BuildContext context, AsyncSnapshot<List<Ticket>>snapshot) {
+            return snapshot.connectionState == ConnectionState.done
+                ? snapshot.data!
+                .length !=
+                0
+                ? Container(
                   padding:
                   EdgeInsets.all(
                       20),
@@ -659,34 +528,140 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       .width,
                   child: GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4),
-                      itemCount: snapshot.data!.length > 8 ? 8 : snapshot.data!.length,
+                          crossAxisCount: snapshot.data!.length < 9 ? 5 : 5),
+                      itemCount: snapshot.data!.length < 9 ? snapshot.data!.length : 10,
                       itemBuilder: (context, i) {
-                        Opacity(
+                        final ticket = snapshot.data![i];
+                        return ticket.blinker == 0 ?
+                        Builder(
+                            builder: (context) {
+                              updateBlinker(ticket);
+                              return TweenAnimationBuilder<Color?>(
+                                tween: ColorTween(
+                                    begin: Colors.red,
+                                    end: Colors.white.withValues(alpha: 0.8)
+                                ),
+                                duration: Duration(seconds: 5),
+                                builder: (BuildContext context, color, Widget? child) {
+                                  return Card(
+                                    clipBehavior: Clip.antiAlias,
+                                    elevation: 2,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                            decoration: BoxDecoration(
+                                                color: Colors.blueGrey.withAlpha(250)
+                                            ),
+                                            child: Center(child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: AutoSizeText("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue')),
+                                            ))),
+                                        Center(child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700), maxFontSize: double.infinity))
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }
+                        ) : Opacity(
                           opacity: 0.8,
                           child: Card(
+                            clipBehavior: Clip.antiAlias,
                             elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-
-                                ],
-                              ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.blueGrey.withAlpha(250)
+                                    ),
+                                      child: Center(child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: FittedBox(child: Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'))),
+                                      ))),
+                                ),
+                                Expanded(
+                                  flex: 6,
+                                  child: Center(child: FittedBox(child: Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)))),
+                                )
+                              ],
                             ),
                           ),
                         );
 
 
                       }),
-                ),
-              );
-            },
-          );
-        },
-      );
-    });
+                )
+                : Container(
+                height: MediaQuery.of(
+                    context)
+                    .size
+                    .height -
+                    340,
+                width: MediaQuery.of(
+                    context)
+                    .size
+                    .width *
+                    3 /
+                    4,
+                child: Center(
+                    child: Text(
+                        "No Tickets Serving",
+                        style:
+                        TextStyle(color: Colors.grey))))
+                : Container(
+              height: MediaQuery.of(
+                  context)
+                  .size
+                  .height -
+                  340,
+              width: MediaQuery.of(
+                  context)
+                  .size
+                  .width,
+              child: Container(
+                padding:
+                EdgeInsets.all(
+                    20),
+                height: MediaQuery.of(context)
+                    .size
+                    .height -
+                    200,
+                width: MediaQuery.of(context)
+                    .size
+                    .width,
+                child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4),
+                    itemCount: 8,
+                    itemBuilder: (context, i) {
+                      Opacity(
+                        opacity: 0.8,
+                        child: Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+
+
+                    }),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   getRainbowOverlay() {
@@ -744,7 +719,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
 
-  Future<List<Ticket>> getTicketSQL() async {
+  getTicketSQL() async {
     final dateNow = DateTime.now();
 
     try {
@@ -760,8 +735,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
 
-      newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
 
+      newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
       newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
       return newTickets;

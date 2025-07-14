@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -320,23 +321,18 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                             const EdgeInsets
                                                                 .all(
                                                                 15.0),
-                                                            child: Text(
+                                                            child: AutoSizeText(
                                                               service
                                                                   .serviceType!,
                                                               style: TextStyle(
-                                                                  fontSize: service.serviceType!.length >
-                                                                      20
-                                                                      ? 30
-                                                                      : 40,
+                                                                  fontSize: 40,
                                                                   fontWeight:
                                                                   FontWeight.w700),
                                                               textAlign:
                                                               TextAlign
                                                                   .center,
-                                                              maxLines: 2,
-                                                              overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
+                                                              maxLines: 3,
+                                                              overflow: TextOverflow.ellipsis,
                                                             ),
                                                           ),
                                                         ],
@@ -477,9 +473,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
                               child: SizedBox(
                                 child: Column(
                                   children: [
-                                    Icon(Icons.chevron_left, size: 150),
+                                    Icon(Icons.chevron_left, size: 125),
                                     SizedBox(height: 10),
-                                    Text("Previous", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700))
+                                    Text("Previous", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700))
                                   ],
                                 ),
                               ),
@@ -488,16 +484,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 updateGrid();
                               },
                             ),
-                            SizedBox(width: 15),
+                            SizedBox(width: 10),
                             SizedBox(height: 200, child: VerticalDivider()),
-                            SizedBox(width: 15),
+                            SizedBox(width: 10),
                             GestureDetector(
                               child: SizedBox(
                                 child: Column(
                                   children: [
-                                    Icon(Icons.chevron_right, size: 150),
+                                    Icon(Icons.chevron_right, size: 125),
                                     SizedBox(height: 10),
-                                    Text("Next", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700))
+                                    Text("Next", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700))
                                   ],
                                 ),
                               ),
