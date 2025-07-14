@@ -170,7 +170,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 height: MediaQuery.of(context).size.height,
                                   child: Builder(
                                     builder: (context) {
-                                      List<Map<String, dynamic>> getSnapshot = snapshotQuery.data!.sublist(0, 12);
+                                      List<Map<String, dynamic>> getSnapshot = snapshotQuery.data!;
                                       int toAdd = getSnapshot.length ~/ 12;
                                       int excess = getSnapshot.length % 11;
                                       int toFill = getSnapshot.length < 12 ? 12 - getSnapshot.length : 12 - excess;
@@ -195,20 +195,42 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                           getSnapshot.insert(11*(i+1)+i, {
                                             'nextPage' : 2
                                           });
+                                        } else {
+                                          if (toAdd > 1) {
+                                            getSnapshot.insert(11*(i+1)+i, {
+                                              'nextPage' : 2
+                                            });
+
+                                            if (i == toAdd-1) {
+                                              for (int y = 0; y < toFill; y++) {
+                                                getSnapshot.add({
+                                                  'nextPage' : 4
+                                                });
+                                              }
+
+                                              getSnapshot.insert(11*(i+2)+(i+1), {
+                                                'nextPage' : 3
+                                              });
+                                            }
+                                          }
                                         }
                                       }
 
-                                      if (i == toAdd-1) {
-                                        for (int y = 0; y < toFill; y++) {
-                                          getSnapshot.add({
-                                            'nextPage' : 4
+                                      if (toAdd < 2) {
+                                        if (i == toAdd-1) {
+                                          for (int y = 0; y < toFill; y++) {
+                                            getSnapshot.add({
+                                              'nextPage' : 4
+                                            });
+                                          }
+
+                                          getSnapshot.insert(11*(i+2)+(i+1), {
+                                            'nextPage' : 3
                                           });
                                         }
-
-                                        getSnapshot.insert(11*(i+2)+(i+1), {
-                                          'nextPage' : 3
-                                        });
                                       }
+
+
 
                                     }
                                     List<Map<String, dynamic>> snapshot = getSnapshot.sublist(toCut, (getSnapshot.length > 12+toCut ? 12+toCut : getSnapshot.length));
