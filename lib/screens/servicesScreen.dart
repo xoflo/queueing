@@ -175,10 +175,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                       int excess = getSnapshot.length % 11;
                                       int toFill = getSnapshot.length < 12 ? 12 - getSnapshot.length : 12 - excess;
 
-                                      print("toAdd: $toAdd");
-                                      print("excess: $excess");
-                                      print("toFill: $toFill");
-
                                       if (getSnapshot.length < 12) {
                                         for (int y = 0; y < toFill; y++) {
                                           getSnapshot.add({
