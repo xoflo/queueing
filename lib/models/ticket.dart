@@ -48,7 +48,7 @@ class Ticket {
     this.codeAndNumber = "${data['serviceCode']}${data['number']}";
     this.blinker = int.parse(data['blinker']);
 
-    this.timeCreatedAsDate = DateTime.parse(data['timeCreated']);
+    this.timeCreatedAsDate = DateTime.parse(data['timeCreated'].toString());
   }
 
   update(dynamic data) async {

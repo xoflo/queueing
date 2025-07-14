@@ -65,9 +65,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
           return vqd.connectionState == ConnectionState.done
               ? Stack(
                   children: [
-                    constraint(context, graphicBackground(context)),
+                   // constraint(context, graphicBackground(context)),
                     constraint(context, getBackgroundVideoOverlay()),
-                    vqd.data == 1 ? Container(
+                    vqd.data == 1 ?
+                    Container(
                         height: MediaQuery.of(context).size.height,
                         width: MediaQuery.of(context).size.width,
                         color: Colors.white60) : logoBackground(context),
@@ -210,12 +211,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   slidingTextSpacer(int vqd) {
-    return SizedBox(height: vqd == 0 ? 120 - (MediaQuery.of(context).size.height < 850 ? 120 : 0) : 100 - (MediaQuery.of(context).size.height < 850 ? 100 : 0));
+    return SizedBox(height: vqd == 0 ? 120 : 100);
   }
 
   slidingTextWidget() {
     return Builder(builder: (context) {
-      return MediaQuery.of(context).size.width > 1500
+      return MediaQuery.of(context).size.width > 600
           ? FutureBuilder(
         future: getSettings(context, 'Sliding Text', 1),
         builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> slidingText) {
@@ -414,7 +415,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               child:
                               Stack(
                                 children: [
-
                                   ClipRRect(
                                       borderRadius: BorderRadius.circular(15),
                                       child: logoBackground(
@@ -438,7 +438,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                   return TweenAnimationBuilder<Color?>(
                                                     tween: ColorTween(
                                                         begin: Colors.red,
-                                                        end: Colors.transparent
+                                                        end: i % 2 == 0 ? Colors.blueGrey.withAlpha(50) : Colors.transparent
                                                     ),
                                                     duration: Duration(seconds: 5),
                                                     builder: (BuildContext context, color, Widget? child) {
@@ -454,7 +454,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                 children: [
                                                                   Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45)),
                                                                   Spacer(),
-                                                                  Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 50)),
+                                                                  FittedBox(child: Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45))),
                                                                 ],
                                                               ),
                                                             ),
@@ -471,9 +471,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 50)),
+                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45)),
                                                     Spacer(),
-                                                    Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontSize: 45)),
+                                                    FittedBox(child: Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45))),
                                                   ],
                                                 ),
                                               ),
@@ -488,15 +488,24 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 ],
                               ),
                             )
-                                : Center(
+                                : Container(
+                              width:
+                              500,
+                              height:
+                              600,
+                              padding:
+                              EdgeInsets.all(10),
                               child:
-                              Container(
-                                height:
-                                50,
-                                width:
-                                50,
-                                child:
-                                CircularProgressIndicator(),
+                              Stack(
+                                children: [
+                                  ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: logoBackground(
+                                          context,
+                                          250,
+                                          300)
+                                  ),
+                                ],
                               ),
                             );
                           },
@@ -543,59 +552,51 @@ class _DisplayScreenState extends State<DisplayScreen> {
                   ? snapshot.data!
                   .length !=
                   0
-                  ? Row(
-                children: [
-                  Container(
+                  ? Container(
                     padding:
                     EdgeInsets.all(
                         20),
                     height: MediaQuery.of(context)
                         .size
                         .height -
-                        340,
+                        200,
                     width: MediaQuery.of(context)
                         .size
-                        .width *
-                        3 /
-                        4,
+                        .width,
                     child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
-                        itemCount: snapshot.data!.length > 10 ? 10 : snapshot.data!.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4),
+                        itemCount: snapshot.data!.length > 8 ? 8 : snapshot.data!.length,
                         itemBuilder: (context, i) {
                           final ticket = snapshot.data![i];
                           return ticket.blinker == 0 ?
                           Builder(
                               builder: (context) {
                                 updateBlinker(ticket);
-
-                                return Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: TweenAnimationBuilder<Color?>(
-                                    tween: ColorTween(
-                                        begin: Colors.red,
-                                        end: Colors.white.withValues(alpha: 0.8)
-                                    ),
-                                    duration: Duration(seconds: 5),
-                                    builder: (BuildContext context, color, Widget? child) {
-                                      return Card(
-                                        elevation: 2,
-                                        color: color,
-                                        clipBehavior: Clip.antiAlias,
-                                        child: Padding(
-                                        padding: const EdgeInsets.all(20.0),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700)),
-                                            Divider(thickness: 3),
-                                            Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
-                                            Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
-                                          ],
-                                        ),
-                                        ),
-                                      );
-                                    },
+                                return TweenAnimationBuilder<Color?>(
+                                  tween: ColorTween(
+                                      begin: Colors.red,
+                                      end: Colors.white.withValues(alpha: 0.8)
                                   ),
+                                  duration: Duration(seconds: 5),
+                                  builder: (BuildContext context, color, Widget? child) {
+                                    return Card(
+                                      elevation: 2,
+                                      color: color,
+                                      clipBehavior: Clip.antiAlias,
+                                      child: Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          FittedBox(child: Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700))),
+                                          Divider(thickness: 3),
+                                          FittedBox(child: Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700))),
+                                        ],
+                                      ),
+                                      ),
+                                    );
+                                  },
                                 );
                               }
                           ) : Opacity(
@@ -607,10 +608,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700)),
+                                    FittedBox(child: Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 45, fontWeight: FontWeight.w700))),
                                     Divider(thickness: 3),
-                                    Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
-                                    Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
+                                    FittedBox(child: Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700))),
                                   ],
                                 ),
                               ),
@@ -619,62 +619,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
                         }),
-                  ),
-
-                  StatefulBuilder(
-                    builder: (BuildContext
-                    context,
-                        void Function(void Function())
-                        setStateCard) {
-                      return Container(
-                        height:
-                        400,
-                        width:
-                        MediaQuery.of(context).size.width * 1 / 4 - 100,
-                        child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: TweenAnimationBuilder<Color?>(
-                              tween: ColorTween(
-                                begin: snapshot.data!.first.blinker == 0 ? Colors.red : Theme.of(context).cardColor,
-                                end: Theme.of(context).cardColor,
-                              ),
-                              duration: Duration(seconds: 5),
-                              builder: (context, color, child) {
-                                updateBlinker(snapshot.data!.first);
-
-                                final ticket = snapshot.data!.first;
-
-                                return Opacity(
-                                  opacity: 0.8,
-                                  child: Card(
-                                    elevation: 2,
-                                    color: color,
-                                    clipBehavior: Clip.antiAlias,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20.0),
-                                      child: Container(
-                                        height: 350,
-                                        width: 250,
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(fontSize: 55, fontWeight: FontWeight.w700)),
-                                            Divider(thickness: 3),
-                                            Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)),
-                                            Text(ticket.serviceType!, style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            )),
-                      );
-                    },
                   )
-                ],
-              )
                   : Container(
                   height: MediaQuery.of(
                       context)
@@ -701,16 +646,42 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 width: MediaQuery.of(
                     context)
                     .size
-                    .width *
-                    3 /
-                    4,
-                child: Center(
-                    child: Container(
-                        height:
-                        50,
-                        width: 50,
-                        child:
-                        CircularProgressIndicator())),
+                    .width,
+                child: Container(
+                  padding:
+                  EdgeInsets.all(
+                      20),
+                  height: MediaQuery.of(context)
+                      .size
+                      .height -
+                      200,
+                  width: MediaQuery.of(context)
+                      .size
+                      .width,
+                  child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4),
+                      itemCount: snapshot.data!.length > 8 ? 8 : snapshot.data!.length,
+                      itemBuilder: (context, i) {
+                        Opacity(
+                          opacity: 0.8,
+                          child: Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+
+
+                      }),
+                ),
               );
             },
           );
@@ -792,9 +763,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
       newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
 
-
-      newTickets.sort((a, b) =>
-          DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
+      newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
       return newTickets;
     } catch (e) {

@@ -74,11 +74,48 @@ class _ServicesScreenState extends State<ServicesScreen> {
       floatingActionButton: StatefulBuilder(
           key: printKey,
           builder: (context, setStateFAB) {
-        return printVisible == true ? FloatingActionButton(
-            child: Icon(Icons.print),
-            onPressed: () async {
-              await settingSecurity();
-            }) : SizedBox();
+        return printVisible == true ? Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          spacing: 5,
+          children: [
+            FloatingActionButton(
+                child: Icon(Icons.wifi),
+                onPressed: () async {
+                  TextEditingController ipcont = TextEditingController();
+                  final getIp = await getIP();
+                  ipcont.text = getIp ?? "";
+                  showDialog(context: context, builder: (_) => AlertDialog(
+                    title: Text("Set IP"),
+                    content: Container(
+                      height: 50,
+                      width: 200,
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: ipcont,
+                            decoration: InputDecoration(
+                              labelText: 'IP Address'
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(onPressed: () async {
+                        await saveIP(ipcont.text);
+                        Navigator.pop(context);
+                        setState(() {});
+                      }, child: Text("Set IP"))
+                    ],
+                  ));
+                }),
+            FloatingActionButton(
+                child: Icon(Icons.print),
+                onPressed: () async {
+                  await settingSecurity();
+                }),
+          ],
+        ) : SizedBox();
       }),
         body: GestureDetector(
           onLongPress: () {
@@ -94,210 +131,204 @@ class _ServicesScreenState extends State<ServicesScreen> {
             getBackgroundVideoOverlay(),
             logoBackground(context, 300),
             getRainbowOverlay(),
-            Column(
-              children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      StatefulBuilder(
-                        builder: (BuildContext context,
-                            void Function(void Function()) setStateList) {
-                          return FutureBuilder(
-                            future: getServiceGroups(assignedGroup),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<List<Map<String, dynamic>>>
-                                    snapshot) {
-                              return Column(
-                                children: [
-                                  lastAssigned.isNotEmpty
-                                      ? IconButton(
-                                          onPressed: () {
-                                            assignedGroup = lastAssigned.last;
-                                            lastAssigned.removeLast();
-                                            setStateList(() {});
-                                          },
-                                          icon: Icon(Icons.chevron_left))
-                                      : Container(),
-                                  snapshot.connectionState == ConnectionState.done
-                                      ? Container(
-                                          height:
-                                              MediaQuery.of(context).size.height -
-                                                  120,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(15.0),
-                                            child: GridView.builder(
-                                                gridDelegate:
-                                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                                        childAspectRatio: 3 / 1.2,
-                                                        crossAxisCount: MediaQuery
-                                                                        .of(context)
-                                                                    .size
-                                                                    .width >
-                                                                1200
-                                                            ? 4
-                                                            : MediaQuery.of(context)
-                                                                        .size
-                                                                        .width >
-                                                                    800
-                                                                ? 2
-                                                                : 1),
-                                                itemCount: snapshot.data!.length,
-                                                itemBuilder: (context, i) {
-                                                  return snapshot.data![i]
-                                                              ['serviceType'] !=
-                                                          null
-                                                      ? Builder(builder: (context) {
-                                                          final service =
-                                                              Service.fromJson(
-                                                                  snapshot
-                                                                      .data![i]);
-                                                          return Padding(
-                                                            padding:
-                                                                EdgeInsets.all(3),
-                                                            child: GestureDetector(
-                                                              onTap: () async {
-                                                                final List<dynamic>
-                                                                    result =
-                                                                    await getSettings(
-                                                                        context);
-                                                                int priority = int.parse(result
-                                                                    .where((e) =>
-                                                                        e['controlName'] ==
-                                                                        'Priority Option')
-                                                                    .toList()[0]['value']);
-                                                                int ticketname = int.parse(result
-                                                                    .where((e) =>
-                                                                        e['controlName'] ==
-                                                                        'Ticket Name Option')
-                                                                    .toList()[0]['value']);
+            Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: StatefulBuilder(
+                builder: (context, setStateList) {
 
-                                                                if (priority == 1) {
-                                                                  priorityDialog(
-                                                                      service,
-                                                                      ticketname);
-                                                                } else {
-                                                                  if (ticketname ==
-                                                                      1) {
-                                                                    nameDialog(
-                                                                        service,
-                                                                        "None");
-                                                                  } else {
-                                                                    addTicketSQL(
-                                                                        service
-                                                                            .serviceType!,
-                                                                        service
-                                                                            .serviceCode!,
-                                                                        "None");
-                                                                    Navigator.pop(
-                                                                        context);
-                                                                  }
-                                                                }
-                                                              },
-                                                              child: Opacity(
-                                                                opacity: 0.75,
-                                                                child: Card(
-                                                                  child: InkWell(
-                                                                    splashColor: Theme.of(context).splashColor,
-                                                                    highlightColor: Theme.of(context).highlightColor,
-                                                                    child: Column(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .center,
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding:
-                                                                              const EdgeInsets
-                                                                                  .all(
-                                                                                  15.0),
-                                                                          child: Text(
-                                                                            service
-                                                                                .serviceType!,
-                                                                            style: TextStyle(
-                                                                                fontSize: service.serviceType!.length >
-                                                                                        20
-                                                                                    ? 30
-                                                                                    : 40,
-                                                                                fontWeight:
-                                                                                    FontWeight.w700),
-                                                                            textAlign:
-                                                                                TextAlign
-                                                                                    .center,
-                                                                            maxLines: 2,
-                                                                            overflow:
-                                                                                TextOverflow
-                                                                                    .ellipsis,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        })
-                                                      : Builder(builder: (context) {
-                                                          final group =
-                                                              ServiceGroup.fromJson(
-                                                                  snapshot
-                                                                      .data![i]);
-                                                          return Padding(
-                                                            padding:
-                                                                EdgeInsets.all(10),
-                                                            child: GestureDetector(
-                                                              onTap: () {
-                                                                lastAssigned.add(
-                                                                    assignedGroup);
-                                                                assignedGroup =
-                                                                    group.name!;
-                                                                setStateList(() {});
-                                                              },
-                                                              child: Card(
-                                                                child: Column(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Text(
-                                                                        group.name!,
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                                20,
-                                                                            fontWeight:
-                                                                                FontWeight.w700)),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        });
-                                                }),
-                                          ),
-                                        )
-                                      : Container(
-                                          height:
-                                              MediaQuery.of(context).size.height - 120,
-                                          child: Center(
-                                            child: Container(
-                                              height: 50,
-                                              width: 50,
-                                              child: CircularProgressIndicator(),
+                  final size = MediaQuery.of(context).size;
+                  final itemWidth = size.width / 4;
+                  final itemHeight = (size.height / 3) - 10;
+                  final aspectRatio = itemWidth / itemHeight;
+
+                  return FutureBuilder(
+                    future: getServiceGroups(assignedGroup),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<List<Map<String, dynamic>>>
+                        snapshot) {
+                      return Column(
+                        children: [
+                          lastAssigned.isNotEmpty
+                              ? IconButton(
+                              onPressed: () {
+                                assignedGroup = lastAssigned.last;
+                                lastAssigned.removeLast();
+                                setStateList(() {});
+                              },
+                              icon: Icon(Icons.chevron_left))
+                              : Container(),
+                          snapshot.connectionState == ConnectionState.done
+                              ? Container(
+                            height:
+                            MediaQuery.of(context).size.height,
+                            child: GridView.builder(
+                                padding: EdgeInsets.all(20),
+                                gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    childAspectRatio: aspectRatio,
+                                    crossAxisCount: MediaQuery
+                                        .of(context)
+                                        .size
+                                        .width >
+                                        1200
+                                        ? 4
+                                        : MediaQuery.of(context)
+                                        .size
+                                        .width >
+                                        800
+                                        ? 2
+                                        : 1),
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context, i) {
+                                  return snapshot.data![i]
+                                  ['serviceType'] !=
+                                      null
+                                      ? Builder(builder: (context) {
+                                    final service =
+                                    Service.fromJson(
+                                        snapshot
+                                            .data![i]);
+                                    return Padding(
+                                      padding:
+                                      EdgeInsets.all(3),
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final List<dynamic>
+                                          result =
+                                          await getSettings(
+                                              context);
+                                          int priority = int.parse(result
+                                              .where((e) =>
+                                          e['controlName'] ==
+                                              'Priority Option')
+                                              .toList()[0]['value']);
+                                          int ticketname = int.parse(result
+                                              .where((e) =>
+                                          e['controlName'] ==
+                                              'Ticket Name Option')
+                                              .toList()[0]['value']);
+
+                                          if (priority == 1) {
+                                            priorityDialog(
+                                                service,
+                                                ticketname);
+                                          } else {
+                                            if (ticketname ==
+                                                1) {
+                                              nameDialog(
+                                                  service,
+                                                  "None");
+                                            } else {
+                                              addTicketSQL(
+                                                  service
+                                                      .serviceType!,
+                                                  service
+                                                      .serviceCode!,
+                                                  "None");
+                                              Navigator.pop(
+                                                  context);
+                                            }
+                                          }
+                                        },
+                                        child: Opacity(
+                                          opacity: 0.75,
+                                          child: Card(
+                                            child: InkWell(
+                                              splashColor: Theme.of(context).splashColor,
+                                              highlightColor: Theme.of(context).highlightColor,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                    const EdgeInsets
+                                                        .all(
+                                                        15.0),
+                                                    child: Text(
+                                                      service
+                                                          .serviceType!,
+                                                      style: TextStyle(
+                                                          fontSize: service.serviceType!.length >
+                                                              20
+                                                              ? 30
+                                                              : 40,
+                                                          fontWeight:
+                                                          FontWeight.w700),
+                                                      textAlign:
+                                                      TextAlign
+                                                          .center,
+                                                      maxLines: 2,
+                                                      overflow:
+                                                      TextOverflow
+                                                          .ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        )
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                                        ),
+                                      ),
+                                    );
+                                  })
+                                      : Builder(builder: (context) {
+                                    final group =
+                                    ServiceGroup.fromJson(
+                                        snapshot
+                                            .data![i]);
+                                    return Padding(
+                                      padding:
+                                      EdgeInsets.all(10),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          lastAssigned.add(
+                                              assignedGroup);
+                                          assignedGroup =
+                                          group.name!;
+                                          setStateList(() {});
+                                        },
+                                        child: Card(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment
+                                                .center,
+                                            children: [
+                                              Text(
+                                                  group.name!,
+                                                  style: TextStyle(
+                                                      fontSize:
+                                                      20,
+                                                      fontWeight:
+                                                      FontWeight.w700)),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  });
+                                }),
+                          )
+                              : Container(
+                            height:
+                            MediaQuery.of(context).size.height - 120,
+                            child: Center(
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            )
           ],
                 ),
               ),
@@ -340,6 +371,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 future: getPriority(),
                 builder: (BuildContext context,
                     AsyncSnapshot<List<dynamic>> snapshot) {
+
                   return snapshot.connectionState == ConnectionState.done
                       ? snapshot.data!.isNotEmpty
                           ? Container(
@@ -984,7 +1016,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         future: getSettings(context, 'Background Videos'),
         builder: (context, snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
-          snapshot.data! != null ?
+          snapshot.data! == 1 ?
           FutureBuilder(
             future: getMediabg(context),
             builder: (context, AsyncSnapshot<List<dynamic>> snapshotMedia) {
@@ -995,19 +1027,24 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     List<String> links = [];
 
                     for (int i = 0; i < mediabg.length; i++) {
-                      links.add("http://$site/queueing_api/bgvideos/${mediabg[i]['link']}");
+                      try {
+                        links.add("http://$site/queueing_api/bgvideos/${mediabg[i]['link']}");
+                      } catch(e) {
+                        print('file not found, has record on server');
+                      }
                     }
 
-                    return links.isEmpty? SizedBox(): WebVideoPlayer(videoAssets: links, display: 0);
+                    return links.isEmpty ? SizedBox() : WebVideoPlayer(videoAssets: links, display: 0);
                   }
               ) :
               SizedBox();
             },
           ) :
-          SizedBox()
-              : SizedBox();
+          SizedBox() : SizedBox();
         });
   }
+
+
 }
 
 class ServicesScreenSaver extends StatefulWidget {

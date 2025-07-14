@@ -3,6 +3,7 @@
     <uses-feature android:name="android.hardware.usb.host"/>
     <uses-permission android:name="android.permission.USB_PERMISSION"/>
     <application
+        android:hardwareAccelerated="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:label="Ombusdman Queueing App"
         android:name="${applicationName}"

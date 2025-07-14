@@ -350,7 +350,6 @@ class _StaffSessionState extends State<StaffSession> {
           child: Stack(
             children: [
               imageBackground(context),
-            logoBackground(context, 350),
               Container(
                 padding: EdgeInsets.all(20),
                 child: loadDone != 0 ?  SingleChildScrollView(
@@ -397,7 +396,7 @@ class _StaffSessionState extends State<StaffSession> {
                                         padding: const EdgeInsets.all(15.0),
                                         child: Container(
                                           height: 130,
-                                          width: 200,
+                                          width: 220,
                                           child: Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
@@ -431,7 +430,7 @@ class _StaffSessionState extends State<StaffSession> {
                                     serving = null;
                                     return Container(
                                       height: 130,
-                                      width: 200,
+                                      width: 220,
                                       child: Padding(
                                         padding: const EdgeInsets.all(20.0),
                                         child: Align(
@@ -467,7 +466,7 @@ class _StaffSessionState extends State<StaffSession> {
                                 splashColor: Theme.of(context).splashColor,
                                 highlightColor: Theme.of(context).highlightColor,
                                 child: Container(
-                                  height: 100,
+                                  height: 120,
                                   width: kIsWeb == true ? 200 : 95,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -569,7 +568,7 @@ class _StaffSessionState extends State<StaffSession> {
                             child: Card(
                               child: InkWell(
                                 child: Container(
-                                  height: 100,
+                                  height: 120,
                                   width: kIsWeb == true ? 200 : 95,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -647,7 +646,7 @@ class _StaffSessionState extends State<StaffSession> {
                                   child: Card(
                                     child: InkWell(
                                       child: Container(
-                                        height: 100,
+                                        height: 120,
                                         width: kIsWeb == true ? 200 : 95,
                                         child: Column(
                                           mainAxisAlignment: MainAxisAlignment.center,
@@ -842,7 +841,7 @@ class _StaffSessionState extends State<StaffSession> {
     final List<dynamic> response = jsonDecode(result.body);
     
     final control = response.where((e) => e['controlName'] == 'Staff Inactive Beep').toList()[0];
-    return control;
+    return control ?? 0;
   }
 
   getTicketSQL() async {
