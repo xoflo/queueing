@@ -283,6 +283,7 @@ class _StaffSessionState extends State<StaffSession> {
   void initState() {
     if (ringTimer != null) {
       ringTimer!.cancel();
+      ringTimer = null;
     }
     initPing();
   }
@@ -292,6 +293,7 @@ class _StaffSessionState extends State<StaffSession> {
     pingTimer.cancel();
     if (ringTimer != null) {
       ringTimer!.cancel();
+      ringTimer = null;
     }
     super.dispose();
   }
@@ -315,7 +317,6 @@ class _StaffSessionState extends State<StaffSession> {
         tickets = retrievedTickets;
         callByUpdate = 1;
         callByUI.value = 0;
-        print("111 $tickets");
       }
 
       if (ticketLength != retrievedTickets.length) {
@@ -362,6 +363,7 @@ class _StaffSessionState extends State<StaffSession> {
                             onPressed: () {
                               if (ringTimer != null) {
                                 ringTimer!.cancel();
+                                ringTimer = null;
                               }
                               Navigator.pop(context);
                             },
@@ -998,15 +1000,14 @@ class _StaffSessionState extends State<StaffSession> {
 
   resetRinger() {
     if (ringTimer != null) {
-      print("ringerReset");
       dialogOn = false;
       ringTimer!.cancel();
+      ringTimer = null;
       initRinger();
     }
   }
 
   initRinger() {
-    print('ringerCalled');
     if (inactiveLength != null && inactiveOn == 1) {
       if (serving == null && tickets.isNotEmpty) {
         if (ringTimer == null) {
@@ -1016,17 +1017,7 @@ class _StaffSessionState extends State<StaffSession> {
               inactiveDialog();
             }
           });
-        } else {
-          print('ringerStart');
-          ringTimer!.cancel();
-          ringTimer = Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {
-            if (dialogOn == false) {
-              inactiveDialog();
-            }
-          });
         }
-      } else {
-        print('Has Serving or No Pending');
       }
     }
   }
