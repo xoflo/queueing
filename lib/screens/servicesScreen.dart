@@ -68,6 +68,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
   bool printVisible = false;
   final printKey = GlobalKey();
 
+
+  int toCut = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,212 +130,450 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 onPointerDown: (_) => _resetTimer(),
                 child: Stack(
           children: [
-            graphicBackground(context),
             getBackgroundVideoOverlay(),
             logoBackground(context, 300),
             getRainbowOverlay(),
-            Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child: StatefulBuilder(
-                builder: (context, setStateList) {
+            Builder(
+              builder: (context) {
 
-                  final size = MediaQuery.of(context).size;
-                  final itemWidth = size.width / 4;
-                  final itemHeight = (size.height / 3) - 10;
-                  final aspectRatio = itemWidth / itemHeight;
+                final gridKey = GlobalKey();
 
-                  return FutureBuilder(
-                    future: getServiceGroups(assignedGroup),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<List<Map<String, dynamic>>>
-                        snapshot) {
-                      return Column(
-                        children: [
-                          lastAssigned.isNotEmpty
-                              ? IconButton(
-                              onPressed: () {
-                                assignedGroup = lastAssigned.last;
-                                lastAssigned.removeLast();
-                                setStateList(() {});
-                              },
-                              icon: Icon(Icons.chevron_left))
-                              : Container(),
-                          snapshot.connectionState == ConnectionState.done
-                              ? Container(
-                            height:
-                            MediaQuery.of(context).size.height,
-                            child: GridView.builder(
-                                padding: EdgeInsets.all(20),
-                                gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    childAspectRatio: aspectRatio,
-                                    crossAxisCount: MediaQuery
-                                        .of(context)
-                                        .size
-                                        .width >
-                                        1200
-                                        ? 4
-                                        : MediaQuery.of(context)
-                                        .size
-                                        .width >
-                                        800
-                                        ? 2
-                                        : 1),
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (context, i) {
-                                  return snapshot.data![i]
-                                  ['serviceType'] !=
-                                      null
-                                      ? Builder(builder: (context) {
-                                    final service =
-                                    Service.fromJson(
-                                        snapshot
-                                            .data![i]);
-                                    return Padding(
-                                      padding:
-                                      EdgeInsets.all(3),
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          final List<dynamic>
-                                          result =
-                                          await getSettings(
-                                              context);
-                                          int priority = int.parse(result
-                                              .where((e) =>
-                                          e['controlName'] ==
-                                              'Priority Option')
-                                              .toList()[0]['value']);
-                                          int ticketname = int.parse(result
-                                              .where((e) =>
-                                          e['controlName'] ==
-                                              'Ticket Name Option')
-                                              .toList()[0]['value']);
+                return Container(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  child: StatefulBuilder(
+                    key: gridKey,
+                    builder: (context, setStateList) {
+                      final size = MediaQuery.of(context).size;
+                      final itemWidth = size.width / 4;
+                      final itemHeight = (size.height / 3) - 10;
+                      final aspectRatio = itemWidth / itemHeight;
 
-                                          if (priority == 1) {
-                                            priorityDialog(
-                                                service,
-                                                ticketname);
-                                          } else {
-                                            if (ticketname ==
-                                                1) {
-                                              nameDialog(
-                                                  service,
-                                                  "None");
-                                            } else {
-                                              addTicketSQL(
-                                                  service
-                                                      .serviceType!,
-                                                  service
-                                                      .serviceCode!,
-                                                  "None");
-                                              Navigator.pop(
-                                                  context);
-                                            }
-                                          }
-                                        },
-                                        child: Opacity(
-                                          opacity: 0.75,
-                                          child: Card(
-                                            child: InkWell(
-                                              splashColor: Theme.of(context).splashColor,
-                                              highlightColor: Theme.of(context).highlightColor,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment
-                                                    .center,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                    const EdgeInsets
-                                                        .all(
-                                                        15.0),
-                                                    child: Text(
-                                                      service
-                                                          .serviceType!,
-                                                      style: TextStyle(
-                                                          fontSize: service.serviceType!.length >
-                                                              20
-                                                              ? 30
-                                                              : 40,
-                                                          fontWeight:
-                                                          FontWeight.w700),
-                                                      textAlign:
-                                                      TextAlign
-                                                          .center,
-                                                      maxLines: 2,
-                                                      overflow:
-                                                      TextOverflow
-                                                          .ellipsis,
+                      return FutureBuilder(
+                        future: getServiceGroups(assignedGroup),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<Map<String, dynamic>>>
+                            snapshotQuery) {
+                          return Column(
+                            children: [
+                              lastAssigned.isNotEmpty
+                                  ? IconButton(
+                                  onPressed: () {
+                                    assignedGroup = lastAssigned.last;
+                                    lastAssigned.removeLast();
+                                    setStateList(() {});
+                                  },
+                                  icon: Icon(Icons.chevron_left))
+                                  : Container(),
+                              snapshotQuery.connectionState == ConnectionState.done
+                                  ? Container(
+                                height: MediaQuery.of(context).size.height,
+                                  child: Builder(
+                                    builder: (context) {
+                                      List<Map<String, dynamic>> getSnapshot = snapshotQuery.data!.sublist(0, 12);
+                                      int toAdd = getSnapshot.length ~/ 12;
+                                      int excess = getSnapshot.length % 11;
+                                      int toFill = getSnapshot.length < 12 ? 12 - getSnapshot.length : 12 - excess;
+
+                                      print("toAdd: $toAdd");
+                                      print("excess: $excess");
+                                      print("toFill: $toFill");
+
+                                      if (getSnapshot.length < 12) {
+                                        for (int y = 0; y < toFill; y++) {
+                                          getSnapshot.add({
+                                            'nextPage' : 4
+                                          });
+                                        }
+                                      }
+
+                                      for (int i = 0; i < toAdd; i++) {
+                                        if (i == 0) {
+                                          getSnapshot.insert(11*(i+1)+i, {
+                                            'nextPage' : 1
+                                          });
+                                        }
+
+                                      if (i > 0) {
+                                        if (i != toAdd-1) {
+                                          getSnapshot.insert(11*(i+1)+i, {
+                                            'nextPage' : 2
+                                          });
+                                        }
+                                      }
+
+                                      if (i == toAdd-1) {
+                                        for (int y = 0; y < toFill; y++) {
+                                          getSnapshot.add({
+                                            'nextPage' : 4
+                                          });
+                                        }
+
+                                        getSnapshot.insert(11*(i+2)+(i+1), {
+                                          'nextPage' : 3
+                                        });
+                                      }
+
+                                    }
+                                    List<Map<String, dynamic>> snapshot = getSnapshot.sublist(toCut, (getSnapshot.length > 12+toCut ? 12+toCut : getSnapshot.length));
+
+                                    return GridView.builder(
+                                        padding: EdgeInsets.all(20),
+                                        gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                            childAspectRatio: aspectRatio,
+                                            crossAxisCount: MediaQuery
+                                                .of(context)
+                                                .size
+                                                .width >
+                                                1200
+                                                ? 4
+                                                : MediaQuery.of(context)
+                                                .size
+                                                .width >
+                                                800
+                                                ? 2
+                                                : 1),
+                                        itemCount: snapshot.length,
+                                        itemBuilder: (context, i) {
+                                          return snapshot[i]['nextPage'] == null ?
+                                            snapshot[i]['serviceType'] !=
+                                              null
+                                              ? Builder(builder: (context) {
+                                            final service =
+                                            Service.fromJson(
+                                                snapshot
+                                                    [i]);
+                                            return Padding(
+                                              padding:
+                                              EdgeInsets.all(3),
+                                              child: GestureDetector(
+                                                onTap: () async {
+                                                  final List<dynamic>
+                                                  result =
+                                                  await getSettings(
+                                                      context);
+                                                  int priority = int.parse(result
+                                                      .where((e) =>
+                                                  e['controlName'] ==
+                                                      'Priority Option')
+                                                      .toList()[0]['value']);
+                                                  int ticketname = int.parse(result
+                                                      .where((e) =>
+                                                  e['controlName'] ==
+                                                      'Ticket Name Option')
+                                                      .toList()[0]['value']);
+
+                                                  if (priority == 1) {
+                                                    priorityDialog(
+                                                        service,
+                                                        ticketname);
+                                                  } else {
+                                                    if (ticketname ==
+                                                        1) {
+                                                      nameDialog(
+                                                          service,
+                                                          "None");
+                                                    } else {
+                                                      addTicketSQL(
+                                                          service
+                                                              .serviceType!,
+                                                          service
+                                                              .serviceCode!,
+                                                          "None");
+                                                      Navigator.pop(
+                                                          context);
+                                                    }
+                                                  }
+                                                },
+                                                child: Opacity(
+                                                  opacity: 0.75,
+                                                  child: Card(
+                                                    child: InkWell(
+                                                      splashColor: Theme.of(context).splashColor,
+                                                      highlightColor: Theme.of(context).highlightColor,
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                            const EdgeInsets
+                                                                .all(
+                                                                15.0),
+                                                            child: Text(
+                                                              service
+                                                                  .serviceType!,
+                                                              style: TextStyle(
+                                                                  fontSize: service.serviceType!.length >
+                                                                      20
+                                                                      ? 30
+                                                                      : 40,
+                                                                  fontWeight:
+                                                                  FontWeight.w700),
+                                                              textAlign:
+                                                              TextAlign
+                                                                  .center,
+                                                              maxLines: 2,
+                                                              overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
-                                                ],
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  })
-                                      : Builder(builder: (context) {
-                                    final group =
-                                    ServiceGroup.fromJson(
-                                        snapshot
-                                            .data![i]);
-                                    return Padding(
-                                      padding:
-                                      EdgeInsets.all(10),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          lastAssigned.add(
-                                              assignedGroup);
-                                          assignedGroup =
-                                          group.name!;
-                                          setStateList(() {});
-                                        },
-                                        child: Card(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment
-                                                .center,
-                                            children: [
-                                              Text(
-                                                  group.name!,
-                                                  style: TextStyle(
-                                                      fontSize:
-                                                      20,
-                                                      fontWeight:
-                                                      FontWeight.w700)),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  });
-                                }),
-                          )
-                              : Container(
-                            height:
-                            MediaQuery.of(context).size.height - 120,
-                            child: Center(
-                              child: Container(
-                                height: 50,
-                                width: 50,
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                          )
-                        ],
+                                            );
+                                          })
+                                              : Builder(builder: (context) {
+                                            final group =
+                                            ServiceGroup.fromJson(
+                                                snapshot
+                                                    [i]);
+                                            return Padding(
+                                              padding:
+                                              EdgeInsets.all(10),
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  lastAssigned.add(
+                                                      assignedGroup);
+                                                  assignedGroup =
+                                                  group.name!;
+                                                  setStateList(() {});
+                                                },
+                                                child: Card(
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .center,
+                                                    children: [
+                                                      Text(
+                                                          group.name!,
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                              20,
+                                                              fontWeight:
+                                                              FontWeight.w700)),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }) :
+                                          nextPageHandler(context, snapshot[i]['nextPage'], gridKey);
+                                        });
+                                  }
+                                ),
+                              )
+                                  : SizedBox()
+                            ],
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                );
+              }
             )
           ],
                 ),
               ),
         ));
+  }
+
+
+  nextPageHandler(BuildContext context, int i, GlobalKey gridKey) {
+    void updateGrid() {
+      gridKey.currentState!.setState((){});
+    }
+
+    if (i == 1) {
+      return Builder(
+          builder: (context) {
+            return GestureDetector(
+              child: Opacity(
+                opacity: 0.75,
+                child: Card(
+                  child: InkWell(
+                    splashColor: Theme.of(context).splashColor,
+                    highlightColor: Theme.of(context).highlightColor,
+                    child: Column(
+                      mainAxisAlignment:
+                      MainAxisAlignment
+                          .center,
+                      children: [
+                        Padding(
+                          padding:
+                          const EdgeInsets
+                              .all(
+                              15.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.chevron_right, size: 150),
+                              SizedBox(width: 10),
+                              Text("Next Page", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              onTap: () {
+                toCut += 12;
+                updateGrid();
+              },
+            );
+          }
+      );
+    }
+    if (i == 2) {
+      return Builder(
+          builder: (context) {
+            return Opacity(
+              opacity: 0.75,
+              child: Card(
+                child: InkWell(
+                  splashColor: Theme.of(context).splashColor,
+                  highlightColor: Theme.of(context).highlightColor,
+                  child: Column(
+                    mainAxisAlignment:
+                    MainAxisAlignment
+                        .center,
+                    children: [
+                      Padding(
+                        padding:
+                        const EdgeInsets
+                            .all(
+                            15.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              child: Expanded(
+                                child: SizedBox(
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.chevron_left, size: 150),
+                                      SizedBox(height: 10),
+                                      Text("Previous Page")
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                toCut -= 12;
+                                updateGrid();
+                              },
+                            ),
+                            SizedBox(width: 5),
+                            SizedBox(height: 200, child: VerticalDivider()),
+                            SizedBox(width: 5),
+                            GestureDetector(
+                              child: Expanded(
+                                child: SizedBox(
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.chevron_right, size: 150),
+                                      SizedBox(height: 10),
+                                      Text("Next Page")
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                toCut += 12;
+                                updateGrid();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+      );
+    }
+    if (i == 3) {
+      return Builder(
+        builder: (context) {
+          return GestureDetector(
+            child: Opacity(
+              opacity: 0.75,
+              child: Card(
+                child: InkWell(
+                  splashColor: Theme.of(context).splashColor,
+                  highlightColor: Theme.of(context).highlightColor,
+                  child: Column(
+                    mainAxisAlignment:
+                    MainAxisAlignment
+                        .center,
+                    children: [
+                      Padding(
+                        padding:
+                        const EdgeInsets
+                            .all(
+                            15.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.chevron_left, size: 150),
+                            SizedBox(height: 10),
+                            Text("Previous Page", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            onTap: () {
+              toCut -= 12;
+              updateGrid();
+            },
+          );
+        }
+      );
+    }
+    if (i == 4) {
+      return Builder(
+          builder: (context) {
+            return Opacity(
+              opacity: 0.75,
+              child: Card(
+                child: InkWell(
+                  splashColor: Theme.of(context).splashColor,
+                  highlightColor: Theme.of(context).highlightColor,
+                  child: Column(
+                    mainAxisAlignment:
+                    MainAxisAlignment
+                        .center,
+                    children: [
+                      Padding(
+                        padding:
+                        const EdgeInsets
+                            .all(
+                            15.0),
+                        child: SizedBox(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+      );
+    }
   }
 
   nameDialog(Service service, String priorityType) {
@@ -1040,7 +1281,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
               SizedBox();
             },
           ) :
-          SizedBox() : SizedBox();
+          graphicBackground(context) : SizedBox();
         });
   }
 
