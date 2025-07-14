@@ -65,7 +65,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
           return vqd.connectionState == ConnectionState.done
               ? Stack(
                   children: [
-                   // constraint(context, graphicBackground(context)),
                     constraint(context, getBackgroundVideoOverlay()),
                     vqd.data == 1 ?
                     Container(
@@ -740,7 +739,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     SizedBox();
               },
           ) :
-          SizedBox() : SizedBox();
+          graphicBackground(context) : SizedBox();
         });
   }
 

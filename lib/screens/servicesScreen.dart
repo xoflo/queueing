@@ -474,15 +474,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             GestureDetector(
-                              child: Expanded(
-                                child: SizedBox(
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.chevron_left, size: 150),
-                                      SizedBox(height: 10),
-                                      Text("Previous Page")
-                                    ],
-                                  ),
+                              child: SizedBox(
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.chevron_left, size: 150),
+                                    SizedBox(height: 10),
+                                    Text("Previous", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700))
+                                  ],
                                 ),
                               ),
                               onTap: () {
@@ -490,19 +488,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 updateGrid();
                               },
                             ),
-                            SizedBox(width: 5),
+                            SizedBox(width: 15),
                             SizedBox(height: 200, child: VerticalDivider()),
-                            SizedBox(width: 5),
+                            SizedBox(width: 15),
                             GestureDetector(
-                              child: Expanded(
-                                child: SizedBox(
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.chevron_right, size: 150),
-                                      SizedBox(height: 10),
-                                      Text("Next Page")
-                                    ],
-                                  ),
+                              child: SizedBox(
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.chevron_right, size: 150),
+                                    SizedBox(height: 10),
+                                    Text("Next", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700))
+                                  ],
                                 ),
                               ),
                               onTap: () {
