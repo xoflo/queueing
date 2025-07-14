@@ -657,12 +657,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Text(priority.priorityName!,
+                                              AutoSizeText(priority.priorityName!,
                                                   style: TextStyle(
-                                                      fontSize: 25,
+                                                      fontSize: 30,
                                                       fontWeight:
                                                           FontWeight.w700),
-                                                  textAlign: TextAlign.center)
+                                                  textAlign: TextAlign.center,
+                                              maxLines: 2)
                                             ],
                                           ),
                                         ),
@@ -776,7 +777,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(
