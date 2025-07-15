@@ -1935,7 +1935,6 @@ class _AdminScreenState extends State<AdminScreen> {
                         final List<dynamic> stations = await getStationSQL();
                         final exists = stations.where((e) => e['stationName'] == nameInput && e['stationNumber'] == numberInput).toList().length;
 
-
                         if (i == 0) {
                           if (stationName.text.trim() != "") {
                             if (exists == 0) {

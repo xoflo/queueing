@@ -526,6 +526,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 ? Builder(
                   builder: (context) {
 
+                    snapshot.data!.sort(((a,b) => a.stationNumber!.compareTo(b.stationNumber!)));
+
                     var size = MediaQuery.of(context).size;
                     var itemWidth = (size.width / 4);
                     var itemHeight = snapshot.data!.length <= 8 ? (((size.height - 200) / 2) - 20) : (((size.height - 100) / 2));
@@ -560,31 +562,34 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                     ),
                                     duration: Duration(seconds: 5),
                                     builder: (BuildContext context, color, Widget? child) {
-                                      return Card(
-                                        clipBehavior: Clip.antiAlias,
-                                        elevation: 2,
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              flex: 4,
-                                              child: Container(
-                                                  decoration: BoxDecoration(
-                                                      color: hexBlue.withAlpha(250)
-                                                  ),
-                                                  child: Center(child: Padding(
-                                                    padding: const EdgeInsets.all(3.0),
-                                                    child: AutoSizeText("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
-                                                  ))),
-                                            ),
-                                            Expanded(
-                                              flex: 6,
-                                              child: Center(child: Padding(
-                                                padding: const EdgeInsets.all(10.0),
-                                                child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
-                                              )),
-                                            )
-                                          ],
+                                      return Opacity(
+                                        opacity: 0.8,
+                                        child: Card(
+                                          clipBehavior: Clip.antiAlias,
+                                          elevation: 2,
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                flex: 4,
+                                                child: Container(
+                                                    decoration: BoxDecoration(
+                                                        color: hexBlue.withAlpha(250)
+                                                    ),
+                                                    child: Center(child: Padding(
+                                                      padding: const EdgeInsets.all(3.0),
+                                                      child: AutoSizeText("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                                    ))),
+                                              ),
+                                              Expanded(
+                                                flex: 6,
+                                                child: Center(child: Padding(
+                                                  padding: const EdgeInsets.all(10.0),
+                                                  child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                )),
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       );
                                     },
