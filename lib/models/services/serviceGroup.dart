@@ -10,12 +10,16 @@ class ServiceGroup {
   int? id;
   String? name;
   String? assignedGroup;
+  String? timeCreated;
+  DateTime? timeCreatedAsDate;
 
 
   ServiceGroup.fromJson(dynamic data) {
     this.id = int.parse(data['id']);
     this.name = data['name'];
     this.assignedGroup = data['assignedGroup'];
+    this.timeCreated = data['timeCreated'];
+    this.timeCreatedAsDate = data['timeCreated'] ! == null ? DateTime.parse(data['timeCreated']) : null;
   }
 
   update(dynamic data) async {

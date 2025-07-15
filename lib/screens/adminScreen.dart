@@ -2287,9 +2287,9 @@ class _AdminScreenState extends State<AdminScreen> {
 
       final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
       final resultService = await http.get(uriService);
-      List<dynamic> responseService = jsonDecode(resultService.body);
+      List<Map<String, dynamic>> responseService = jsonDecode(resultService.body);
 
-      List<dynamic> resultsToReturn = [];
+      List<Map<String, dynamic>> resultsToReturn = [];
 
       for (int i = 0; i < responseGroup.length; i++) {
         if (responseGroup[i]['assignedGroup'] == assignedGroup){
@@ -2302,6 +2302,8 @@ class _AdminScreenState extends State<AdminScreen> {
           resultsToReturn.add(responseService[i]);
         }
       }
+
+      resultsToReturn.sort((a, b) => b['timeCreated'] == null ? -1 : DateTime.parse(a['timeCreated']).compareTo(DateTime.parse(b['timeCreated'])));
 
       return resultsToReturn;
 

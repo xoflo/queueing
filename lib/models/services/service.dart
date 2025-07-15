@@ -9,6 +9,8 @@ class Service {
   String? serviceType;
   String? serviceCode;
   String? assignedGroup;
+  String? timeCreated;
+  DateTime? timeCreatedAsDate;
 
 
   Service.fromJson(dynamic data) {
@@ -16,6 +18,8 @@ class Service {
     this.serviceType = data['serviceType'];
     this.serviceCode = data['serviceCode'];
     this.assignedGroup = data['assignedGroup'] == null || data['assignedGroup'] == "" ? null : data['assignedGroup'];
+    this.timeCreated = data['timeCreated'];
+    this.timeCreatedAsDate = data['timeCreated'] != null ? DateTime.parse(data['timeCreated']) : data['timeCreated'];
 
   }
 
