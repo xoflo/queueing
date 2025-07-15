@@ -1521,7 +1521,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 showDialog(context: context, builder: (_) => AlertDialog(
                                   title: Text("Edit User"),
                                   content: Container(
-                                    height: 130,
+                                    height: 180,
                                     width: 200,
                                     child: Column(
                                       children: [
@@ -1674,6 +1674,31 @@ class _AdminScreenState extends State<AdminScreen> {
                                                     ],
                                                   );
                                                 }
+                                            ));
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: Text("Assign Station"),
+                                          onTap: () {
+                                            showDialog(context: context, builder: (_) => AlertDialog(
+                                              title: Text("Assign Station"),
+                                              content: Container(
+                                                height: 400,
+                                                width: 400,
+                                                child: FutureBuilder(
+                                                    future: getStationSQL(),
+                                                    builder: (context, snapshot) {
+                                                      return snapshot.connectionState == ConnectionState.done ? ListView.builder(itemBuilder: (context, i) {
+                                                        return ListTile();
+                                                      }) : Center(
+                                                        child: Container(
+                                                          height: 50,
+                                                          width: 50,
+                                                          child: CircularProgressIndicator(),
+                                                        ),
+                                                      );
+                                                    }),
+                                              )
                                             ));
                                           },
                                         )
