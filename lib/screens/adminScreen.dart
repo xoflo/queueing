@@ -70,6 +70,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   TextEditingController stationNumber = TextEditingController();
   TextEditingController stationName = TextEditingController();
+  TextEditingController displayIndex = TextEditingController();
 
   @override
   void dispose() {
@@ -1414,6 +1415,7 @@ class _AdminScreenState extends State<AdminScreen> {
   clearStationFields() {
     stationName.clear();
     stationNumber.clear();
+    displayIndex.clear();
   }
 
   usersView() {
@@ -1781,89 +1783,89 @@ class _AdminScreenState extends State<AdminScreen> {
                                     : Icons.remove_red_eye_outlined))
                           ],
                         )),
-                        userType == 'Staff'
-                            ? Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: ListTile(
-                                    title: Text("Service Type: $display"),
-                                    onTap: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => AlertDialog(
-                                            title: Text("Assign Services"),
-                                                content: Container(
-                                                  height: 400,
-                                                  width: 300,
-                                                  child: FutureBuilder(
-                                                    future: getServiceSQL(),
-                                                    builder: (BuildContext
-                                                            context,
-                                                        AsyncSnapshot<
-                                                                List<
-                                                                    Service>>
-                                                            snapshot) {
-                                                      return snapshot
-                                                                  .connectionState ==
-                                                              ConnectionState
-                                                                  .done
-                                                          ? StatefulBuilder(
-                                                              builder: (BuildContext
-                                                                      context,
-                                                                  void Function(
-                                                                          void
-                                                                              Function())
-                                                                      setStateList) {
-                                                                return ListView
-                                                                    .builder(
-                                                                        itemCount: snapshot
-                                                                            .data!
-                                                                            .length,
-                                                                        itemBuilder:
-                                                                            (context,
-                                                                                i) {
-                                                                          final user = snapshot.data![i];
-                                                                          return CheckboxListTile(
-                                                                              title: Text(user.serviceType!),
-                                                                              value: services.contains(user.serviceType!),
-                                                                              onChanged: (value) {
-                                                                                if (value == true) {
-                                                                                  services.add(user.serviceType!);
-                                                                                } else {
-                                                                                  services.remove(user.serviceType!);
-                                                                                }
-                                                                                setStateList(() {});
-                                                                              });
-                                                                        });
-                                                              },
-                                                            )
-                                                          : Center(
-                                                              child: Container(
-                                                                height: 50,
-                                                                width: 50,
-                                                                child:
-                                                                    CircularProgressIndicator(),
-                                                              ),
-                                                            );
-                                                    },
-                                                  ),
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                      onPressed: () {
-                                                        display =
-                                                            services.length == 1 ? services.first : "${services.length} Services";
-                                                        Navigator.pop(context);
-                                                        setStateDialog(() {});
-                                                      },
-                                                      child: Text("Confirm"))
-                                                ],
-                                              ));
-                                    }),
-                              )
-                            : Container(
-                                height: 20,
-                              ),
-
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: ListTile(
+                              title: Text("Service Type: $display"),
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text("Assign Services"),
+                                      content: Container(
+                                        height: 400,
+                                        width: 300,
+                                        child: FutureBuilder(
+                                          future: getServiceSQL(),
+                                          builder: (BuildContext
+                                          context,
+                                              AsyncSnapshot<
+                                                  List<
+                                                      Service>>
+                                              snapshot) {
+                                            return snapshot
+                                                .connectionState ==
+                                                ConnectionState
+                                                    .done
+                                                ? StatefulBuilder(
+                                              builder: (BuildContext
+                                              context,
+                                                  void Function(
+                                                      void
+                                                      Function())
+                                                  setStateList) {
+                                                return ListView
+                                                    .builder(
+                                                    itemCount: snapshot
+                                                        .data!
+                                                        .length,
+                                                    itemBuilder:
+                                                        (context,
+                                                        i) {
+                                                      final user = snapshot.data![i];
+                                                      return CheckboxListTile(
+                                                          title: Text(user.serviceType!),
+                                                          value: services.contains(user.serviceType!),
+                                                          onChanged: (value) {
+                                                            if (value == true) {
+                                                              services.add(user.serviceType!);
+                                                            } else {
+                                                              services.remove(user.serviceType!);
+                                                            }
+                                                            setStateList(() {});
+                                                          });
+                                                    });
+                                              },
+                                            )
+                                                : Center(
+                                              child: Container(
+                                                height: 50,
+                                                width: 50,
+                                                child:
+                                                CircularProgressIndicator(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              display =
+                                              services.length == 1 ? services.first : "${services.length} Services";
+                                              Navigator.pop(context);
+                                              setStateDialog(() {});
+                                            },
+                                            child: Text("Confirm"))
+                                      ],
+                                    ));
+                              }),
+                        ),
+                        Padding(padding: EdgeInsets.all(10),
+                          child: ListTile(
+                            title: Text("Assign Station"),
+                          ),
+                        )
                       ],
                     ),
                   );
@@ -1927,6 +1929,7 @@ class _AdminScreenState extends State<AdminScreen> {
                   if (stations.length >= 10) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station number limit reached. (10 Maximum)")));
                   } else {
+                    clearStationFields();
                     addStation(0);
                   }
                 },
@@ -2020,6 +2023,10 @@ class _AdminScreenState extends State<AdminScreen> {
       final response = jsonDecode(result.body);
       response.sort((a, b) => int.parse(a['id'].toString())
           .compareTo(int.parse(b['id'].toString())));
+
+      response.sort((a, b) => int.parse(a['displayIndex'].toString())
+          .compareTo(int.parse(b['displayIndex'].toString())));
+
       return response;
     } catch (e) {
       print(e);
@@ -2035,6 +2042,7 @@ class _AdminScreenState extends State<AdminScreen> {
     if (station != null) {
       stationName.text = station.stationName!;
       stationNumber.text = station.stationNumber!.toString();
+      displayIndex.text = station.displayIndex!.toString();
     }
 
     showDialog(
@@ -2045,7 +2053,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 builder: (BuildContext context,
                     void Function(void Function()) setStateDialog) {
                   return Container(
-                    height: 100,
+                    height: 160,
                     width: 250,
                     child: Column(
                       children: [
@@ -2066,8 +2074,18 @@ class _AdminScreenState extends State<AdminScreen> {
                               ],
                           controller: stationNumber,
                           decoration:
-                              InputDecoration(labelText: 'Station Number'),
+                              InputDecoration(
+                                  labelText: 'Station Number'),
                         )),
+                        Container(
+                            child: TextField(
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              controller: displayIndex,
+                              decoration:
+                              InputDecoration(labelText: 'Display Index'),
+                            )),
                       ],
                     ),
                   );
@@ -2079,28 +2097,34 @@ class _AdminScreenState extends State<AdminScreen> {
                       try {
                         final nameInput = stationName.text.trim();
                         final numberInput = stationNumber.text.trim();
+                        final indexInput = displayIndex.text.trim();
+
                         final List<dynamic> stations = await getStationSQL();
                         final exists = stations.where((e) => e['stationName'] == nameInput && e['stationNumber'] == numberInput).toList().length;
+                        final indexBool = stations.where((e) => int.parse(e['displayIndex']) == int.parse(indexInput)).toList().length;
 
                         if (i == 0) {
-                          if (stationName.text.trim() != "") {
-                            if (exists == 0) {
+                          if (nameInput != "" && numberInput != "" && indexInput != "") {
+                            if (exists <= 1 && indexBool == 0) {
+
                               await addStationSQL();
+                              clearStationFields();
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station already exists")));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Station or Display Index is unique")));
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station name cannot be empty.")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty.")));
                           }
                         } else {
                           if (station != null) {
                             if (nameInput != "") {
-                              if (exists == 0) {
+                              if (exists <= 1) {
                                 final oldName = station.stationName;
 
                                 await station.update({
-                                  'stationName': stationName.text.trim(),
-                                  'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim()),
+                                  'stationName': nameInput,
+                                  'stationNumber': numberInput == "" ? 0 : int.parse(numberInput),
+                                  'displayIndex': indexInput == "" ? 0 : int.parse(indexInput)
                                 });
 
                                 final ticket = await getTicketSQL(1);
@@ -2108,7 +2132,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 await Future.wait(ticket.where((e) => e.stationName! == oldName!).map((e) async {
                                   await e.update({
                                     'stationName': nameInput,
-                                    'stationNumber': numberInput == "" ? 0 : int.parse(numberInput)
+                                    'stationNumber': numberInput == "" ? 0 : int.parse(numberInput),
                                   });
                                 }));
 
@@ -2117,7 +2141,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Updated.")));
                                 setState(() {});
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station already exists")));
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Station Name is unique")));
                               }
 
                             } else {
@@ -2142,7 +2166,8 @@ class _AdminScreenState extends State<AdminScreen> {
       "inSession": 0,
       "userInSession": "",
       "ticketServing": "",
-      "sessionPing": ""
+      "sessionPing": "",
+      "displayIndex": displayIndex.text.trim()
     });
 
     final result = await http.post(uri, body: body);

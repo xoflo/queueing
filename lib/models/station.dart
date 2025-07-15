@@ -11,6 +11,7 @@ class Station {
   String? ticketServing;
   String? stationName;
   String? sessionPing;
+  int? displayIndex;
 
   Station(this.stationName);
 
@@ -22,6 +23,7 @@ class Station {
     ticketServing = data['ticketServing'];
     stationName = data['stationName'];
     sessionPing = data['sessionPing'];
+    displayIndex = data['displayIndex'] != null ? int.parse(data['displayIndex'].toString()) : data['displayIndex'];
   }
 
   update(dynamic data) async {
@@ -33,7 +35,8 @@ class Station {
         'userInSession': data['userInSession'] ?? userInSession,
         'ticketServing': data['ticketServing'] ?? ticketServing,
         'stationName': data['stationName'] ?? stationName,
-        'sessionPing': data['sessionPing'] ?? sessionPing
+        'sessionPing': data['sessionPing'] ?? sessionPing,
+        'displayIndex' : data['displayIndex'] ?? stationNumber,
       };
 
       stationNumber = data['stationNumber'] ?? stationNumber;
@@ -41,6 +44,7 @@ class Station {
       inSession = data['inSession'] != null ? int.parse(data['inSession'].toString()) : inSession;
       userInSession = data['userInSession'] ?? userInSession;
       sessionPing = data['sessionPing']  ?? sessionPing;
+      displayIndex = data['displayIndex'] ?? displayIndex;
 
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
       final response = await http.put(uri, body: jsonEncode(body));
