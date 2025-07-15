@@ -172,21 +172,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                   child: Builder(
                                     builder: (context) {
                                       List<Map<String, dynamic>> getSnapshot = snapshotQuery.data!;
-
-                                      List<Map<String, dynamic>> newSnap = [];
-
-                                      for (int i = 0; i < getSnapshot.length; i++) {
-                                        newSnap.add(getSnapshot[i]);
-                                      }
-
-                                      for (int i = 0; i < getSnapshot.length; i++) {
-                                        newSnap.add(getSnapshot[i]);
-                                      }
-
-                                      final realSnap = newSnap.sublist(0, 24);
-                                      print(realSnap.last);
-
-                                      final List<Map<String, dynamic>> snapshot = getSortedSnapshot(realSnap);
+                                      final List<Map<String, dynamic>> snapshot = getSortedSnapshot(getSnapshot);
 
                                     return GridView.builder(
                                         padding: EdgeInsets.all(20),

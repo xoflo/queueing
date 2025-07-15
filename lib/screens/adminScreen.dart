@@ -2003,7 +2003,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 color: Colors.green))
                                   ],
                                 ),
-                                trailing: IconButton(
+                                /*
+                                IconButton(
                                     onPressed: () {
                                       if (station.inSession != 1) {
                                         deleteStation(station.id!);
@@ -2011,7 +2012,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station must be inactive to delete.")));
                                       }
                                     },
-                                    icon: Icon(Icons.delete)),
+                                    icon: Icon(Icons.delete))
+                                 */
                                 onTap: () {
                                   addStation(1, station);
                                 },
