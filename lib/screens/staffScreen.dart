@@ -823,8 +823,8 @@ class _StaffSessionState extends State<StaffSession> {
                                     Builder(
                                         builder: (context) {
                                           List<String> callByList = [];
-                                          if (widget.user.servicesSet!.isNotEmpty) {
-                                            stringToList(widget.user.servicesSet!.toString());
+                                          if (widget.user.serviceType!.isNotEmpty) {
+                                            callByList = stringToList(widget.user.serviceType!.toString());
                                           }
 
                                           callByList.insert(0, "Time Order");
@@ -836,6 +836,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                 child: Text("Sort By: $callBy", textAlign: TextAlign.center, style: TextStyle(fontSize: 15)),
                                                 onPressed: () {
                                                   showDialog(context: context, builder: (_) => AlertDialog(
+                                                    title: Text("Sort Ticket Calls"),
                                                     content: Container(
                                                       height: 300,
                                                       width: 300,
@@ -874,7 +875,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                 return ListTile(
                                                   dense: true,
                                                   title: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                                                  subtitle: Text("${tickets[i].priorityType == "Regular" ? "" : "(${smartAbbreviate(tickets[i].priorityType!)})"}", style: TextStyle(fontWeight: FontWeight.bold)),
+                                                  subtitle: Text("${tickets[i].priorityType == "Regular" ? "" : tickets[i].priorityType!.length > 20 ? "(${smartAbbreviate(tickets[i].priorityType!)})" : tickets[i].priorityType!}" , style: TextStyle(fontWeight: FontWeight.bold)),
                                                   trailing: tickets[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
                                                 );
 
