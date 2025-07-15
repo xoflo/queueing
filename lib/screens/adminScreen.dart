@@ -1780,8 +1780,15 @@ class _AdminScreenState extends State<AdminScreen> {
         Align(
             alignment: Alignment.centerLeft,
             child: ElevatedButton(
-                onPressed: () {
-                  addStation(0);
+                onPressed: () async {
+
+                  final List<dynamic> stations = await getStationSQL();
+
+                  if (stations.length >= 10) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station number limit reached. (10 Maximum)")));
+                  } else {
+                    addStation(0);
+                  }
                 },
                 child: Text("+ Add Station"))),
         FutureBuilder(

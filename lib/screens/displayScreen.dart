@@ -525,7 +525,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 .length != 0
                 ? Builder(
                   builder: (context) {
-
                     snapshot.data!.sort(((a,b) => a.stationNumber!.compareTo(b.stationNumber!)));
 
                     var size = MediaQuery.of(context).size;
