@@ -321,11 +321,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                             const EdgeInsets
                                                                 .all(
                                                                 15.0),
-                                                            child: AutoSizeText(
+                                                            child: Text(
                                                               service
                                                                   .serviceType!,
                                                               style: TextStyle(
-                                                                  fontSize: 40,
+                                                                  fontSize: 30,
                                                                   fontWeight:
                                                                   FontWeight.w700),
                                                               textAlign:

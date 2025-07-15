@@ -1459,6 +1459,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                                     services = stringToList(user.serviceType.toString());
                                                   }
 
+                                                  final dialogKey = GlobalKey();
+
                                                   return AlertDialog(
                                                     title: Text("Assign Service Types"),
                                                     content: Container(
@@ -1468,6 +1470,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                           future: getServiceSQL(),
                                                           builder: (context, AsyncSnapshot<List<Service>> snapshot) {
                                                             return StatefulBuilder(
+                                                              key: dialogKey,
                                                               builder: (context, setStateList) {
                                                                 return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
                                                                     itemCount: snapshot.data!.length,
@@ -1500,7 +1503,21 @@ class _AdminScreenState extends State<AdminScreen> {
                                                     ),
                                                     actions: [
                                                       TextButton(onPressed: () async {
+                                                        services.clear();
+                                                        dialogKey.currentState!.setState(() {});
+                                                      }, child: Text("Clear")),
+                                                      TextButton(onPressed: () async {
+                                                        final List<Service> servicesSQL = await getServiceSQL();
+                                                        services.clear();
+
+                                                        for (int i = 0; i < servicesSQL.length; i++) {
+                                                          services.add(servicesSQL[i].serviceType!);
+                                                        }
+                                                        dialogKey.currentState!.setState(() {});
+                                                      }, child: Text("Select All")),
+                                                      TextButton(onPressed: () async {
                                                         final servicesSetToAdd = services.length > 3 ? services.sublist(0, 3).toString() : services.isNotEmpty ? services.toString() : null;
+
                                                         await user.update({
                                                           'serviceType': services.isEmpty ? null : services.toString(),
                                                           'servicesSet': services.isEmpty ? null : servicesSetToAdd
@@ -1913,39 +1930,50 @@ class _AdminScreenState extends State<AdminScreen> {
                 TextButton(
                     onPressed: () async {
                       try {
+                        final nameInput = stationName.text.trim();
+                        final numberInput = stationNumber.text.trim();
+                        final List<dynamic> stations = await getStationSQL();
+                        final exists = stations.where((e) => e['stationName'] == nameInput && e['stationNumber'] == numberInput).toList().length;
 
-                        print(stationName.text);
-                        print(stationNumber.text);
 
                         if (i == 0) {
                           if (stationName.text.trim() != "") {
-                            await addStationSQL();
+                            if (exists == 0) {
+                              await addStationSQL();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station already exists")));
+                            }
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station name cannot be empty.")));
                           }
                         } else {
                           if (station != null) {
-                            if (stationName.text.trim() != "") {
-                              final oldName = station.stationName;
+                            if (nameInput != "") {
+                              if (exists == 0) {
+                                final oldName = station.stationName;
 
-                              await station.update({
-                                'stationName': stationName.text.trim(),
-                                'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim()),
-                              });
-
-                              final ticket = await getTicketSQL(1);
-
-                              await Future.wait(ticket.where((e) => e.stationName! == oldName!).map((e) async {
-                                await e.update({
+                                await station.update({
                                   'stationName': stationName.text.trim(),
-                                  'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim())
+                                  'stationNumber': stationNumber.text.trim() == "" ? 0 : int.parse(stationNumber.text.trim()),
                                 });
-                              }));
 
-                              clearStationFields();
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Updated.")));
-                              setState(() {});
+                                final ticket = await getTicketSQL(1);
+
+                                await Future.wait(ticket.where((e) => e.stationName! == oldName!).map((e) async {
+                                  await e.update({
+                                    'stationName': nameInput,
+                                    'stationNumber': numberInput == "" ? 0 : int.parse(numberInput)
+                                  });
+                                }));
+
+                                clearStationFields();
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Updated.")));
+                                setState(() {});
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station already exists")));
+                              }
+
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Station Name cannot be empty")));
                             }

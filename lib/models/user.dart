@@ -15,7 +15,6 @@ class User {
   User(this.username);
 
   User.fromJson(dynamic data) {
-
     id = int.parse(data['id']);
     pass = data['pass'];
     userType = data['userType'];
@@ -23,7 +22,6 @@ class User {
     username = data['username'];
     loggedIn = data['loggedIn'] == null ? null : DateTime.parse(data['loggedIn']);
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" || data['serviceType'] != "[]" ? stringToList(data['servicesSet'].toString()) : null;
-
   }
 
   update(dynamic data) async {

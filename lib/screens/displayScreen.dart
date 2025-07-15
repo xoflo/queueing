@@ -94,7 +94,16 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             ],
                           )),
                          //  slidingTextSpacer(vqd.data),
-                          slidingTextWidget()
+
+                          Container(
+                            height: 200,
+                            decoration: BoxDecoration(
+                          color: hexBlue.withAlpha(150)),
+                          child: Padding(
+                              padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                              child: slidingTextWidget(),
+                          )
+                          ),
                         ],
                       ),
                     ),
@@ -225,7 +234,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
           return slidingText.connectionState == ConnectionState.done
               ? int.parse(slidingText.data!['value']) == 1 ? Container(
-            height: 80,
+            height: MediaQuery.of(context).size.height,
             child: Marquee(
               text:
               slidingText.data!['other'].toString(),
@@ -513,87 +522,107 @@ class _DisplayScreenState extends State<DisplayScreen> {
           builder: (BuildContext context, AsyncSnapshot<List<Ticket>>snapshot) {
             return snapshot.connectionState == ConnectionState.done
                 ? snapshot.data!
-                .length !=
-                0
-                ? Container(
-                  padding:
-                  EdgeInsets.all(
-                      20),
-                  height: MediaQuery.of(context)
-                      .size
-                      .height -
-                      200,
-                  width: MediaQuery.of(context)
-                      .size
-                      .width,
-                  child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: snapshot.data!.length < 9 ? 5 : 5),
-                      itemCount: snapshot.data!.length < 9 ? snapshot.data!.length : 10,
-                      itemBuilder: (context, i) {
-                        final ticket = snapshot.data![i];
-                        return ticket.blinker == 0 ?
-                        Builder(
-                            builder: (context) {
-                              updateBlinker(ticket);
-                              return TweenAnimationBuilder<Color?>(
-                                tween: ColorTween(
-                                    begin: Colors.red,
-                                    end: Colors.transparent
-                                ),
-                                duration: Duration(seconds: 5),
-                                builder: (BuildContext context, color, Widget? child) {
-                                  return Card(
-                                    clipBehavior: Clip.antiAlias,
-                                    elevation: 2,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                            decoration: BoxDecoration(
-                                                color: Colors.blueGrey.withAlpha(250)
+                .length != 0
+                ? Builder(
+                  builder: (context) {
+
+                    var size = MediaQuery.of(context).size;
+                    var itemWidth = (size.width / 4);
+                    var itemHeight = snapshot.data!.length <= 8 ? (((size.height - 200) / 2) - 20) : (((size.height - 100) / 2));
+                    var aspectRatio = itemWidth / itemHeight;
+
+                    return Container(
+                      padding:
+                      EdgeInsets.all(
+                          20),
+                      height: MediaQuery.of(context)
+                          .size
+                          .height -
+                          200,
+                      width: MediaQuery.of(context)
+                          .size
+                          .width,
+                      child: GridView.builder(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            childAspectRatio: aspectRatio,
+                              crossAxisCount: snapshot.data!.length <= 8 ? 4 : 5),
+                          itemCount: snapshot.data!.length <= 9 ? snapshot.data!.length : 10,
+                          itemBuilder: (context, i) {
+                            final ticket = snapshot.data![i];
+                            return ticket.blinker == 0 ?
+                            Builder(
+                                builder: (context) {
+                                  updateBlinker(ticket);
+                                  return TweenAnimationBuilder<Color?>(
+                                    tween: ColorTween(
+                                        begin: Colors.red,
+                                        end: Colors.transparent
+                                    ),
+                                    duration: Duration(seconds: 5),
+                                    builder: (BuildContext context, color, Widget? child) {
+                                      return Card(
+                                        clipBehavior: Clip.antiAlias,
+                                        elevation: 2,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              flex: 4,
+                                              child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: hexBlue.withAlpha(250)
+                                                  ),
+                                                  child: Center(child: Padding(
+                                                    padding: const EdgeInsets.all(3.0),
+                                                    child: AutoSizeText("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                                  ))),
                                             ),
-                                            child: Center(child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: AutoSizeText("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue')),
-                                            ))),
-                                        Center(child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700), maxFontSize: double.infinity))
-                                      ],
-                                    ),
+                                            Expanded(
+                                              flex: 6,
+                                              child: Center(child: Padding(
+                                                padding: const EdgeInsets.all(10.0),
+                                                child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                              )),
+                                            )
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   );
-                                },
-                              );
-                            }
-                        ) : Opacity(
-                          opacity: 0.8,
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            elevation: 2,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.blueGrey.withAlpha(250)
+                                }
+                            ) : Opacity(
+                              opacity: 0.8,
+                              child: Card(
+                                clipBehavior: Clip.antiAlias,
+                                elevation: 2,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 4,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: hexBlue.withAlpha(250)
+                                        ),
+                                          child: Center(child: Padding(
+                                            padding: const EdgeInsets.all(3.0),
+                                            child: AutoSizeText("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                          ))),
                                     ),
+                                    Expanded(
+                                      flex: 6,
                                       child: Center(child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: FittedBox(child: Text("${ticket.stationName!}${ticket.stationNumber! == 0 || ticket.stationNumber! == null ? "" : " ${ticket.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'))),
-                                      ))),
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                      )),
+                                    )
+                                  ],
                                 ),
-                                Expanded(
-                                  flex: 6,
-                                  child: Center(child: FittedBox(child: Text(ticket.codeAndNumber!, style: TextStyle(fontSize: 60, fontWeight: FontWeight.w700)))),
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-
-
-                      }),
+                              ),
+                            );
+                          }),
+                    );
+                  }
                 )
                 : Container(
                 height: MediaQuery.of(

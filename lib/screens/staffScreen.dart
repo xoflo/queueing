@@ -36,8 +36,10 @@ class _StaffScreenState extends State<StaffScreen> {
       final List<dynamic> result = await getStationSQL();
       List<dynamic> pingSorted = result.where((e) => e['sessionPing'] != "").toList();
 
+      User user = await thisUser();
+
       final DateTime newTime = DateTime.now();
-      await widget.user.update({
+      await user.update({
         'loggedIn': DateTime.now().toString()
       });
 
@@ -69,6 +71,10 @@ class _StaffScreenState extends State<StaffScreen> {
     super.dispose();
   }
 
+  List<String> servicesSet = [];
+  final dialogKey = GlobalKey();
+
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -80,156 +86,243 @@ class _StaffScreenState extends State<StaffScreen> {
           children: [
             imageBackground(context),
             logoBackground(context, 350),
-            Container(
-              padding: EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: [
-                    Align(
-                        alignment: Alignment.centerLeft,
-                        child: Row(
+            FutureBuilder(
+              future: thisUser(),
+              builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+                return snapshot.connectionState == ConnectionState.done ?
+                Builder(
+                  builder: (context) {
+
+                    print("serviceSET: ${snapshot.data!.servicesSet}");
+
+                    List<String> serviceSetToNull = [];
+
+                    if (snapshot.data!.servicesSet!.isEmpty || snapshot.data!.servicesSet! == null || snapshot.data!.servicesSet! == "") {
+                      if (snapshot.data!.serviceType!.length > 3) {
+                        snapshot.data!.serviceType!.sublist(0, 3).map((e) => serviceSetToNull.add(e));
+                      } else {
+                        serviceSetToNull = stringToList(snapshot.data!.serviceType!.toString());
+                      }
+                    }
+
+                    servicesSet = snapshot.data!.servicesSet != null ? stringToList(snapshot.data!.servicesSet.toString()) : serviceSetToNull;
+
+                    return Container(
+                      padding: EdgeInsets.all(20),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
                           children: [
-                            IconButton(onPressed: () {
-                              Navigator.pop(context);
-                            }, icon: Icon(Icons.chevron_left)),
-                            Text("Welcome, ${widget.user.username}",
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.w700)),
-                            Spacer(),
-                            IconButton(onPressed: () {
-                              List<String> serviceSetToNull = [];
+                            Align(
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                  children: [
+                                    IconButton(onPressed: () {
+                                      Navigator.pop(context);
+                                    }, icon: Icon(Icons.chevron_left)),
+                                    Text("Welcome, ${widget.user.username}",
+                                        style: TextStyle(
+                                            fontSize: 20, fontWeight: FontWeight.w700)),
+                                    Spacer(),
+                                    IconButton(onPressed: () {
+                                      showDialog(context: context, builder: (_) => StatefulBuilder(
+                                        key: dialogKey,
+                                        builder: (BuildContext context, setStateDialog) {
+                                          return AlertDialog(
+                                            title: Text("Select Services (3 Max)"),
+                                            content: Container(
+                                              height: 400,
+                                              width: 400,
+                                              child: FutureBuilder(
+                                                future: thisUser(),
+                                                builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+                                                  return StatefulBuilder(
+                                                    builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                      return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                                                          itemCount: snapshot.data!.serviceType!.length,
+                                                          itemBuilder: (context, i) {
+                                                            return CheckboxListTile(
+                                                                title: Text(snapshot.data!.serviceType![i]),
+                                                                value: servicesSet.contains(snapshot.data!.serviceType![i].toString()), onChanged: (value) {
+                                                              if (value == true) {
+                                                                if (servicesSet.length == 3) {
+                                                                  servicesSet.removeAt(0);
+                                                                }
+                                                                servicesSet.add(snapshot.data!.serviceType![i].toString());
+                                                                setStateList((){});
+                                                              } else {
+                                                                servicesSet.remove(snapshot.data!.serviceType![i].toString());
+                                                                setStateList((){});
+                                                              }
 
-                              if (widget.user.serviceType!.length > 3) {
-                                serviceSetToNull = [widget.user.serviceType![0].toString(), widget.user.serviceType![1].toString(), widget.user.serviceType![2].toString()];
-                              } else {
-                               serviceSetToNull = stringToList(widget.user.serviceType!.toString());
-                              }
+                                                              print(servicesSet);
+                                                            });
+                                                          }) : Center(
+                                                        child: Container(
+                                                          height: 50,
+                                                          width: 50,
+                                                          child: CircularProgressIndicator(),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(onPressed: () {
 
-                              List<String> servicesSet = widget.user.servicesSet != null ? stringToList(widget.user.servicesSet.toString()) : serviceSetToNull;
+                                                try {
+                                                  snapshot.data!.update({
+                                                    "servicesSet": servicesSet.toString()
+                                                  });
 
-                              showDialog(context: context, builder: (_) => AlertDialog(
-                                title: Text("Select Services (3 Max)"),
-                                content: Container(
-                                  height: 400,
-                                  width: 400,
-                                  child: StatefulBuilder(
-                                    builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                      return ListView.builder(
-                                          itemCount: widget.user.serviceType!.length,
-                                          itemBuilder: (context, i) {
-                                            return CheckboxListTile(
-                                                title: Text(widget.user.serviceType![i]),
-                                                value: servicesSet.contains(widget.user.serviceType![i].toString()), onChanged: (value) {
-                                              if (value == true) {
-                                                if (servicesSet.length == 3) {
-                                                  servicesSet.removeAt(0);
+                                                  Navigator.pop(context);
+                                                  setState((){});
+
+                                                } catch(e) {
+                                                  print(e);
                                                 }
-                                                servicesSet.add(widget.user.serviceType![i].toString());
-                                                setStateList((){});
-                                              } else {
-                                                servicesSet.remove(widget.user.serviceType![i].toString());
-                                                setStateList((){});
-                                              }
-                                            });
-                                          });
-                                    },
+
+                                              }, child: Text("Confirm"))
+                                            ],
+                                          );
+                                        },
+                                      )
+                                      );
+                                    }, icon: Icon(Icons.settings))
+                                  ],
+                                )),
+                            Divider(),
+                            SizedBox(height: 10),
+                            FutureBuilder(
+                              future: getStationSQL(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                                return snapshot.connectionState == ConnectionState.done
+                                    ? Container(
+                                  height: MediaQuery.of(context).size.height - 120,
+                                  child: GridView.builder(
+                                      gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                          childAspectRatio: 3 / 1.2,
+                                          crossAxisCount: MediaQuery.of(context).size.width < 800 ? MediaQuery.of(context).size.width < 700 ? 2 : 3 : 5),
+                                      itemCount: snapshot.data!.length,
+                                      itemBuilder: (context, i) {
+                                        final station =
+                                        Station.fromJson(snapshot.data![i]);
+                                        return InkWell(
+                                          child: Card(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text("${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                  station.inSession == 0
+                                                      ? Text("Available",
+                                                      style:
+                                                      TextStyle(color: Colors.green))
+                                                      : Text("${station.userInSession}",
+                                                      style: TextStyle(
+                                                          color: Colors.redAccent))
+                                                ],
+                                              )),
+                                          onTap: () async {
+                                            final timestamp = DateTime.now().toString();
+
+                                            if (station.inSession == 1) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                      content: Text(
+                                                          "Station is currently in session.")));
+                                            } else {
+                                              station.update({
+                                                "inSession": 1,
+                                                "userInSession": widget.user.username,
+                                                "sessionPing": timestamp
+                                              });
+
+                                              final User user = await thisUser();
+
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (_) => StaffSession(
+                                                          user: user,
+                                                          station: station)));
+                                            }
+                                          },
+                                        );
+                                      }),
+                                )
+                                    : Container(
+                                  height: 300,
+                                  child: Center(
+                                    child: Container(
+                                      height: 50,
+                                      width: 50,
+                                      child: CircularProgressIndicator(),
+                                    ),
                                   ),
-                                ),
-                                actions: [
-                                  TextButton(onPressed: () async {
-                                    await widget.user.update({
-                                      "servicesSet": servicesSet.toString()
-                                    });
-
-                                    await widget.user.updateAssignedServices(widget.user.id!);
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("The selected services will queue to your selected station.")));
-                                  }, child: Text("Confirm"))
-                                ],
-                              ));
-                            }, icon: Icon(Icons.settings))
-                          ],
-                        )),
-                    Divider(),
-                    SizedBox(height: 10),
-                    FutureBuilder(
-                      future: getStationSQL(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                        return snapshot.connectionState == ConnectionState.done
-                            ? Container(
-                          height: MediaQuery.of(context).size.height - 120,
-                          child: GridView.builder(
-                              gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                childAspectRatio: 3 / 1.2,
-                                  crossAxisCount: MediaQuery.of(context).size.width < 800 ? MediaQuery.of(context).size.width < 700 ? 2 : 3 : 5),
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, i) {
-                                final station =
-                                Station.fromJson(snapshot.data![i]);
-                                return InkWell(
-                                  child: Card(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text("${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                                          station.inSession == 0
-                                              ? Text("Available",
-                                              style:
-                                              TextStyle(color: Colors.green))
-                                              : Text("${station.userInSession}",
-                                              style: TextStyle(
-                                                  color: Colors.redAccent))
-                                        ],
-                                      )),
-                                  onTap: () async {
-                                    final timestamp = DateTime.now().toString();
-
-                                    if (station.inSession == 1) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                              content: Text(
-                                                  "Station is currently in session.")));
-                                    } else {
-                                      station.update({
-                                        "inSession": 1,
-                                        "userInSession": widget.user.username,
-                                        "sessionPing": timestamp
-                                      });
-
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) => StaffSession(
-                                                  user: widget.user,
-                                                  station: station)));
-                                    }
-                                  },
                                 );
-                              }),
-                        )
-                            : Container(
-                          height: 300,
-                              child: Center(
-                                  child: Container(
-                                    height: 50,
-                                    width: 50,
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                ),
-                            );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                ) :
+                Center(
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              },
             ),
           ],
         ),
       ),
     );
+  }
+
+
+  thisUser() async {
+    try {
+      final List<User> users = await getUserSQL();
+
+      print(users.length);
+      final thisUser = users.where((e) => e.username == widget.user.username).toList()[0];
+
+      print(thisUser.servicesSet);
+
+      return thisUser;
+    } catch(e) {
+      print(e);
+    }
+  }
+
+  getUserSQL() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_user.php');
+      final result = await http.get(uri);
+      final List<dynamic> response = jsonDecode(result.body);
+      List<User> users = [];
+
+      for (int i = 0; i < response.length; i++) {
+        users.add(User.fromJson(response[i]));
+      }
+
+      return users;
+    } catch (e) {
+      print(e);
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
   }
 
   getStationSQL() async {

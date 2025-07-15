@@ -9,6 +9,8 @@ import 'package:video_player/video_player.dart';
 
 String? site;
 
+Color hexBlue = Color(0xFF216cb8);
+
 
 updateIP(String ip) {
   site = ip;
