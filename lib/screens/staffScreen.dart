@@ -93,19 +93,6 @@ class _StaffScreenState extends State<StaffScreen> {
                 Builder(
                   builder: (context) {
 
-                    print("serviceSET: ${snapshot.data!.servicesSet}");
-
-                    List<String> serviceSetToNull = [];
-
-                    if (snapshot.data!.servicesSet!.isEmpty || snapshot.data!.servicesSet! == null || snapshot.data!.servicesSet! == "") {
-                      if (snapshot.data!.serviceType!.length > 3) {
-                        snapshot.data!.serviceType!.sublist(0, 3).map((e) => serviceSetToNull.add(e));
-                      } else {
-                        serviceSetToNull = stringToList(snapshot.data!.serviceType!.toString());
-                      }
-                    }
-
-                    servicesSet = snapshot.data!.servicesSet != null ? stringToList(snapshot.data!.servicesSet.toString()) : serviceSetToNull;
 
                     return Container(
                       padding: EdgeInsets.all(20),
@@ -124,6 +111,8 @@ class _StaffScreenState extends State<StaffScreen> {
                                         style: TextStyle(
                                             fontSize: 20, fontWeight: FontWeight.w700)),
                                     Spacer(),
+                                    /*
+
                                     IconButton(onPressed: () {
                                       showDialog(context: context, builder: (_) => StatefulBuilder(
                                         key: dialogKey,
@@ -191,6 +180,7 @@ class _StaffScreenState extends State<StaffScreen> {
                                       )
                                       );
                                     }, icon: Icon(Icons.settings))
+                                     */
                                   ],
                                 )),
                             Divider(),
@@ -291,11 +281,7 @@ class _StaffScreenState extends State<StaffScreen> {
   thisUser() async {
     try {
       final List<User> users = await getUserSQL();
-
-      print(users.length);
       final thisUser = users.where((e) => e.username == widget.user.username).toList()[0];
-
-      print(thisUser.servicesSet);
 
       return thisUser;
     } catch(e) {
@@ -776,22 +762,22 @@ class _StaffSessionState extends State<StaffSession> {
                                               });
                                             } else {
                                               showDialog(context: context, builder: (_) => AlertDialog(
-                                                title: Text("Dismiss Ticket?"),
+                                                title: Text("Release Ticket?"),
                                                 content: Container(
                                                   child: Text("Ticket has been called a few times."),
                                                   height: 40,
                                                 ),
                                                 actions: [
                                                   TextButton(
-                                                      child: Text("Dismiss"),
+                                                      child: Text("Release"),
                                                       onPressed: () {
                                                         serving!.update({
-                                                          "status": 'Dismissed',
-                                                          'log': "${serving!.log!}, ${DateTime.now()}: Ticket Dismissed"
+                                                          "status": 'Released',
+                                                          'log': "${serving!.log!}, ${DateTime.now()}: Ticket Released"
                                                         });
 
                                                         Navigator.pop(context);
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Dismissed")));
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));
                                                         resetRinger();
                                                         sessionKey.currentState!.setState(() {});
                                                       })
@@ -962,10 +948,10 @@ class _StaffSessionState extends State<StaffSession> {
 
       List<dynamic> sorted = [];
 
-      for (int i = 0; i < widget.user.servicesSet!.length; i++) {
+      for (int i = 0; i < widget.user.serviceType!.length; i++) {
         sorted.addAll(response
             .where((e) =>
-        e['serviceType'].toString() == widget.user.servicesSet![i].toString() &&
+        e['serviceType'].toString() == widget.user.serviceType![i].toString() &&
             e['status'] == "Pending")
             .toList());
       }

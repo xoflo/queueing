@@ -172,69 +172,21 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                   child: Builder(
                                     builder: (context) {
                                       List<Map<String, dynamic>> getSnapshot = snapshotQuery.data!;
-                                      int toAdd = getSnapshot.length ~/ 12;
-                                      int excess = getSnapshot.length % 11;
-                                      int toFill = getSnapshot.length < 12 ? 12 - getSnapshot.length : 12 - excess;
 
-                                      if (getSnapshot.length < 12) {
-                                        for (int y = 0; y < toFill; y++) {
-                                          getSnapshot.add({
-                                            'nextPage' : 4
-                                          });
-                                        }
+                                      List<Map<String, dynamic>> newSnap = [];
+
+                                      for (int i = 0; i < getSnapshot.length; i++) {
+                                        newSnap.add(getSnapshot[i]);
                                       }
 
-                                      for (int i = 0; i < toAdd; i++) {
-                                        if (i == 0) {
-                                          getSnapshot.insert(11*(i+1)+i, {
-                                            'nextPage' : 1
-                                          });
-                                        }
-
-                                      if (i > 0) {
-                                        if (i != toAdd-1) {
-                                          getSnapshot.insert(11*(i+1)+i, {
-                                            'nextPage' : 2
-                                          });
-                                        } else {
-                                          if (toAdd > 1) {
-                                            getSnapshot.insert(11*(i+1)+i, {
-                                              'nextPage' : 2
-                                            });
-
-                                            if (i == toAdd-1) {
-                                              for (int y = 0; y < toFill; y++) {
-                                                getSnapshot.add({
-                                                  'nextPage' : 4
-                                                });
-                                              }
-
-                                              getSnapshot.insert(11*(i+2)+(i+1), {
-                                                'nextPage' : 3
-                                              });
-                                            }
-                                          }
-                                        }
+                                      for (int i = 0; i < getSnapshot.length; i++) {
+                                        newSnap.add(getSnapshot[i]);
                                       }
 
-                                      if (toAdd < 2) {
-                                        if (i == toAdd-1) {
-                                          for (int y = 0; y < toFill; y++) {
-                                            getSnapshot.add({
-                                              'nextPage' : 4
-                                            });
-                                          }
+                                      final realSnap = newSnap.sublist(0, 24);
+                                      print(realSnap.last);
 
-                                          getSnapshot.insert(11*(i+2)+(i+1), {
-                                            'nextPage' : 3
-                                          });
-                                        }
-                                      }
-
-
-
-                                    }
-                                    List<Map<String, dynamic>> snapshot = getSnapshot.sublist(toCut, (getSnapshot.length > 12+toCut ? 12+toCut : getSnapshot.length));
+                                      final List<Map<String, dynamic>> snapshot = getSortedSnapshot(realSnap);
 
                                     return GridView.builder(
                                         padding: EdgeInsets.all(20),
@@ -397,6 +349,76 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 ),
               ),
         ));
+  }
+
+
+  List<Map<String, dynamic>> getSortedSnapshot(List<Map<String, dynamic>> snapshot) {
+    int toAdd = snapshot.length ~/ 12;
+    int excess = snapshot.length % 12;
+    int toFill = snapshot.length < 12 ? 12 - snapshot.length : 12 - excess;
+
+    print(toAdd);
+    print(excess);
+    print(toFill);
+
+    List<Map<String, dynamic>> getSnapshot = snapshot;
+
+    if (snapshot.length < 12) {
+      for (int y = 0; y < toFill; y++) {
+        getSnapshot.add({
+          'nextPage' : 4
+        });
+      }
+    }
+
+    for (int i = 0; i < toAdd; i++) {
+
+        if (i == 0) {
+          getSnapshot.insert(11*(i+1)+i, {
+            'nextPage' : 1
+          });
+        }
+
+
+      if (i > 0) {
+        if (i != toAdd-1) {
+          getSnapshot.insert(11*(i+1)+(1*i), {
+            'nextPage' : 2
+          });
+
+        } else {
+          getSnapshot.insert(11*(i+1)+(1*i), {
+            'nextPage' : 2
+          });
+
+          for (int y = 0; y < toFill; y++) {
+            getSnapshot.add({
+              'nextPage' : 4
+            });
+          }
+
+          getSnapshot.insert(11*(i+2)+(i+1), {
+            'nextPage' : 3
+          });
+        }
+      } else {
+        if (i == toAdd - 1) {
+          for (int y = 0; y < toFill; y++) {
+            getSnapshot.add({
+              'nextPage' : 4
+            });
+          }
+          getSnapshot.insert(11*(i+2)+(i+1), {
+            'nextPage' : 3
+          });
+        }
+      }
+
+    }
+
+    getSnapshot = getSnapshot.sublist(toCut, (getSnapshot.length > 12+toCut ? 12+toCut : getSnapshot.length));
+
+    return getSnapshot;
   }
 
 
@@ -1265,7 +1287,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   getBackgroundVideoOverlay() {
     return FutureBuilder(
-        future: getSettings(context, 'Background Videos'),
+        future: getSettings(context, 'BG Video (Kiosk)'),
         builder: (context, snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
           snapshot.data! == 1 ?

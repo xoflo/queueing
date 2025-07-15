@@ -268,7 +268,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
   videoDisplayWidget() {
     return Padding(
       padding:
-      const EdgeInsets.all(15.0),
+      const EdgeInsets.fromLTRB(30.0, 10, 20, 0),
       child: Row(
         children: [
           FutureBuilder(
@@ -301,24 +301,38 @@ class _DisplayScreenState extends State<DisplayScreen> {
                   links.add("http://$site/queueing_api/videos/${snapshotMedia.data![i]['link']}");
                 }
 
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                      height: MediaQuery.of(
-                          context)
-                          .size
-                          .height -
-                          300,
-                      width: MediaQuery.of(
-                          context)
-                          .size
-                          .width -
-                          600,
-                      color: Colors
-                          .black87,
-                      child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: WebVideoPlayer(videoAssets: links, display: 1))),
+                return Column(
+                  children: [
+                    Container(
+                        height: 50,
+                        child: Text(
+                            "NOW SERVING",
+                            style: TextStyle(
+                                fontSize: 40,
+                                fontWeight:
+                                FontWeight
+                                    .w700))),
+                    SizedBox(height: 20),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                          height: MediaQuery.of(
+                              context)
+                              .size
+                              .height -
+                              300,
+                          width: MediaQuery.of(
+                              context)
+                              .size
+                              .width -
+                              600,
+                          color: Colors
+                              .black87,
+                          child: AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: WebVideoPlayer(videoAssets: links, display: 1))),
+                    ),
+                  ],
                 );
               })
                   : Container(
@@ -366,147 +380,124 @@ class _DisplayScreenState extends State<DisplayScreen> {
             },
           ),
           SizedBox(width: 30),
-          Column(
-            children: [
-              Container(
-                  height: 50,
-                  child: Text(
-                      "NOW SERVING",
-                      style: TextStyle(
-                          fontSize: 40,
-                          fontWeight:
-                          FontWeight
-                              .w700))),
-              SizedBox(height: 5),
-              Builder(
-                  builder: (context) {
-                    return StatefulBuilder(
-                      key: secondUpdate,
-                      builder: (context,
-                          setStateSecond) {
+          Builder(
+              builder: (context) {
+                return StatefulBuilder(
+                  key: secondUpdate,
+                  builder: (context,
+                      setStateSecond) {
 
-                        return FutureBuilder(
-                          future: getTicketSQL(),
-                          builder: (BuildContext
-                          context,
-                              AsyncSnapshot<
-                                  List<
-                                      Ticket>>
-                              snapshot) {
-                            return snapshot
-                                .connectionState ==
-                                ConnectionState
-                                    .done
-                                ? Container(
-                              width:
-                              500,
-                              height:
-                              600,
-                              padding:
-                              EdgeInsets.all(10),
-                              child:
-                              Stack(
+                    return FutureBuilder(
+                      future: getTicketSQL(),
+                      builder: (BuildContext
+                      context,
+                          AsyncSnapshot<
+                              List<
+                                  Ticket>>
+                          snapshot) {
+                        return snapshot
+                            .connectionState ==
+                            ConnectionState
+                                .done
+                            ? Builder(
+                              builder: (context) {
+
+                                final size = MediaQuery.of(context).size;
+                                final itemWidth = size.width / 2;
+                                final itemHeight = (size.height / 5) + 160;
+                                final aspectRatio = itemWidth / itemHeight;
+
+
+                                return Container(
+                                  width: 500,
+                                  height: 620,
+                                  padding: EdgeInsets.all(10),
+                                  child: Stack(
                                 children: [
                                   ClipRRect(
                                       borderRadius: BorderRadius.circular(15),
-                                      child: logoBackground(
-                                          context,
-                                          250,
-                                          300)
-                                  ),
-                                  snapshot.data!.length != 0
-                                      ? ListView.builder(
-                                      itemCount: snapshot.data!.length > 10 ? 10 : snapshot.data!.length,
-                                      itemBuilder: (context, i) {
-                                        final ticket = snapshot.data![i];
-                                        return Column(
-                                          children: [
-                                            ticket.blinker == 0 ? Builder(
-                                                builder: (context) {
-                                                  ticket.update({
-                                                    'blinker': 1
-                                                  });
+                                      child: Stack(
+                                        children: [logoBackground(
+                                            context,
+                                            250,
+                                            300),
 
-                                                  return TweenAnimationBuilder<Color?>(
-                                                    tween: ColorTween(
-                                                        begin: Colors.red,
-                                                        end: Colors.transparent
-                                                    ),
-                                                    duration: Duration(seconds: 5),
-                                                    builder: (BuildContext context, color, Widget? child) {
-                                                      return Column(
+                                          snapshot.data!.length != 0
+                                              ? GridView.builder(
+                                              gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+                                                  childAspectRatio: aspectRatio,
+                                                  crossAxisCount: 2),
+
+                                              //snapshot.data!.length > 10 ? 10 : snapshot.data!.length
+                                              itemCount: 10,
+                                              itemBuilder: (context, i) {
+                                                // final ticket = snapshot.data![i];
+                                                return Padding(
+                                                  padding: const EdgeInsets.all(2.0),
+                                                  child: Opacity(
+                                                    opacity: 0.8,
+                                                    child: Card(
+                                                      clipBehavior: Clip.antiAlias,
+                                                      child: Column(
                                                         children: [
-                                                          Container(
-                                                            color: color,
-                                                            height: 80,
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                              child: Row(
-                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                children: [
-                                                                  Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45)),
-                                                                  Spacer(),
-                                                                  FittedBox(child: Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45))),
-                                                                ],
-                                                              ),
+                                                          Expanded(
+                                                            flex: 3,
+                                                            child: Container(
+                                                                color: hexBlue.withAlpha(200),
+                                                                child: Center(child: AutoSizeText("Window 1" ,style: TextStyle(color: Colors.white ,fontFamily: 'BebasNeue', fontSize: 80)))
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            flex: 7,
+                                                            child: Center(
+                                                                child: AutoSizeText("S001", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40), maxFontSize: double.infinity)
                                                             ),
                                                           ),
                                                         ],
-                                                      );
-                                                    },
-                                                  );
-                                                }
-                                            ) : Container(
-                                              height: 80,
-                                              child: Padding(
-                                                padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-                                                child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(ticket.codeAndNumber!, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45)),
-                                                    Spacer(),
-                                                    FittedBox(child: Text("${ticket.stationName!.toUpperCase()} ${ticket.stationNumber!} ", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 45))),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Divider()
-                                          ],
-                                        );
-                                      })
-                                      : Center(
-                                    child: Text("No Tickets Pending", style: TextStyle(color: Colors.grey)),
-                                  )
-                                ],
-                              ),
-                            )
-                                : Container(
-                              width:
-                              500,
-                              height:
-                              600,
-                              padding:
-                              EdgeInsets.all(10),
-                              child:
-                              Stack(
-                                children: [
-                                  ClipRRect(
-                                      borderRadius: BorderRadius.circular(15),
-                                      child: logoBackground(
-                                          context,
-                                          250,
-                                          300)
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              })
+                                              : Center(
+                                            child: Text("No Tickets Pending", style: TextStyle(color: Colors.grey)),
+                                          )
+                                        ],
+                                      )
+
+
                                   ),
+
                                 ],
+                                                          ),
+                                                        );
+                              }
+                            )
+                            : Container(
+                          width:
+                          500,
+                          height:
+                          600,
+                          padding:
+                          EdgeInsets.all(10),
+                          child:
+                          Stack(
+                            children: [
+                              ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: logoBackground(
+                                      context,
+                                      250,
+                                      300)
                               ),
-                            );
-                          },
+                            ],
+                          ),
                         );
                       },
                     );
-                  }),
-            ],
-          )
+                  },
+                );
+              })
         ],
       ),
     );
@@ -720,7 +711,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   getBackgroundVideoOverlay() {
     return FutureBuilder(
-        future: getSettings(context, 'Background Videos'),
+        future: getSettings(context, 'BG Video (TV)'),
         builder: (context, snapshot) {
           return snapshot.connectionState == ConnectionState.done ?
           snapshot.data! == 1 ?
