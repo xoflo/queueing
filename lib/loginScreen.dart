@@ -191,6 +191,21 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
       } else {
         User user = User.fromJson(sorted[0]);
+        final List<dynamic> stations = await _getStationSQL();
+        final userStation = stations.where((e) => int.parse(e['id']) == user.assignedStationId).toList();
+        Station? thisStation;
+
+        if (userStation.isNotEmpty) {
+          final Station station = Station.fromJson(userStation[0]);
+          thisStation = station;
+          user.update({
+            'assignedStation': "${station.nameAndNumber}_${station.id}"
+          });
+        } else {
+          user.update({
+            'assignedStation': "All_999"
+          });
+        }
 
 
         if (user.loggedIn == null || user.loggedIn!.difference(DateTime.now()).inSeconds < -3) {
@@ -198,7 +213,11 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen(user: user)));
           }
           if (user.userType == 'Staff') {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+            if (user.assignedStationId != 999) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+            }
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("This user is currently logged-in")));
@@ -208,6 +227,24 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch(e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong. (${site == null ? "No IP" : site})")));
       print(e);
+    }
+  }
+
+  Future<List<dynamic>> _getStationSQL() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_station.php');
+      final result = await http.get(uri);
+      final List<dynamic> response = jsonDecode(result.body);
+      response.sort((a, b) => int.parse(a['id'].toString())
+          .compareTo(int.parse(b['id'].toString())));
+
+      response.sort((a, b) => int.parse(a['displayIndex'].toString())
+          .compareTo(int.parse(b['displayIndex'].toString())));
+
+      return response;
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 

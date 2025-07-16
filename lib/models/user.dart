@@ -11,6 +11,8 @@ class User {
   String? username;
   DateTime? loggedIn;
   List<dynamic>? servicesSet;
+  String? assignedStation;
+  int? assignedStationId;
 
   User(this.username);
 
@@ -22,6 +24,8 @@ class User {
     username = data['username'];
     loggedIn = data['loggedIn'] == null ? null : DateTime.parse(data['loggedIn']);
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" || data['serviceType'] != "[]" ? stringToList(data['servicesSet'].toString()) : null;
+    assignedStation = data['assignedStation'] != null ? data['assignedStation'].toString().split("_")[0] : "All";
+    assignedStationId = data['assignedStation'] != null ? int.parse(data['assignedStation'].toString().split("_")[1]) : 999;
   }
 
   update(dynamic data) async {
@@ -34,7 +38,12 @@ class User {
         'username': data['username'] ?? username,
         'loggedIn': data['loggedIn'] == null ? loggedIn == null ? null : loggedIn.toString() : data['loggedIn'].toString(),
         'servicesSet': data['servicesSet'] == null ? servicesSet!.isEmpty ? null : servicesSet.toString() : data['servicesSet'].toString(),
+        'assignedStation': data['assignedStation'] ?? "${assignedStation}_$assignedStationId".toString()
       };
+
+      assignedStation = data['assignedStation'] != null ? data['assignedStation'].toString().split("_")[0] : assignedStation;
+      assignedStationId = data['assignedStation'] != null ? int.parse(data['assignedStation'].toString().split("_")[1]) : assignedStationId;
+
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final response = await http.put(uri, body: jsonEncode(body));
     } catch(e) {
@@ -93,4 +102,6 @@ class User {
       print(e);
     }
   }
+
+
 }
