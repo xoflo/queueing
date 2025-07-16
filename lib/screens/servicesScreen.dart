@@ -350,10 +350,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
     int excess = snapshot.length % 12;
     int toFill = snapshot.length < 12 ? 12 - snapshot.length : 12 - excess;
 
-    print(toAdd);
-    print(excess);
-    print(toFill);
-
     List<Map<String, dynamic>> getSnapshot = snapshot;
 
     if (snapshot.length < 12) {
