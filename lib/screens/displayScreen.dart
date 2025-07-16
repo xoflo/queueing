@@ -93,9 +93,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               ),
                             ],
                           )),
-                         //  slidingTextSpacer(vqd.data),
 
-                          Container(
+
+                          vqd.data != 1
+                              ? Container(
                             height: 200,
                             decoration: BoxDecoration(
                           color: hexBlue.withAlpha(150)),
@@ -103,7 +104,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                               child: slidingTextWidget(),
                           )
-                          ),
+                          ) : SizedBox(),
                         ],
                       ),
                     ),
@@ -265,10 +266,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
     });
   }
 
+  // ZZZ
+
   videoDisplayWidget() {
     return Padding(
       padding:
-      const EdgeInsets.fromLTRB(30.0, 10, 20, 0),
+      const EdgeInsets.fromLTRB(30.0, 5, 20, 0),
       child: Row(
         children: [
           FutureBuilder(
@@ -302,6 +305,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 }
 
                 return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Container(
                         height: 50,
@@ -320,7 +324,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               context)
                               .size
                               .height -
-                              300,
+                              320,
                           width: MediaQuery.of(
                               context)
                               .size
@@ -332,6 +336,24 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               aspectRatio: 16 / 9,
                               child: WebVideoPlayer(videoAssets: links, display: 1))),
                     ),
+                    SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                          height: 130,
+                          width: MediaQuery.of(
+                    context)
+                        .size
+                        .width -
+                    600,
+                          decoration: BoxDecoration(
+                              color: hexBlue.withAlpha(150)),
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                            child: slidingTextWidget(),
+                          )
+                      ),
+                    )
                   ],
                 );
               })
@@ -347,7 +369,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     context)
                     .size
                     .height -
-                    300,
+                    320,
                 child: Center(
                   child: Text(
                       "No videos uploaded",
@@ -366,7 +388,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     context)
                     .size
                     .height -
-                    300,
+                    320,
                 child: Center(
                   child:
                   Container(
@@ -403,21 +425,21 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               builder: (context) {
 
                                 final size = MediaQuery.of(context).size;
-                                final itemWidth = size.width / 2;
-                                final itemHeight = (size.height / 5) + 160;
+                                final itemWidth = (size.width / 2);
+                                final itemHeight = (size.height / 5) + 190;
                                 final aspectRatio = itemWidth / itemHeight;
 
 
                                 return Container(
                                   width: 500,
-                                  height: 620,
-                                  padding: EdgeInsets.all(10),
+                                  height: MediaQuery.of(context).size.height - 60,
                                   child: Stack(
                                 children: [
                                   ClipRRect(
                                       borderRadius: BorderRadius.circular(15),
                                       child: Stack(
-                                        children: [logoBackground(
+                                        children: [
+                                          logoBackground(
                                             context,
                                             250,
                                             300),
@@ -433,7 +455,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                               itemBuilder: (context, i) {
                                                 // final ticket = snapshot.data![i];
                                                 return Padding(
-                                                  padding: const EdgeInsets.all(2.0),
+                                                  padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
                                                   child: Opacity(
                                                     opacity: 0.8,
                                                     child: Card(
@@ -441,17 +463,16 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                       child: Column(
                                                         children: [
                                                           Expanded(
-                                                            flex: 3,
+                                                            flex: 45,
                                                             child: Container(
+                                                              padding: EdgeInsets.only(top: 10),
                                                                 color: hexBlue.withAlpha(200),
-                                                                child: Center(child: AutoSizeText("Window 1" ,style: TextStyle(color: Colors.white ,fontFamily: 'BebasNeue', fontSize: 80)))
+                                                                child: Center(child: AutoSizeText("Window 1" ,style: TextStyle(height: 1 ,color: Colors.white ,fontFamily: 'BebasNeue', fontSize: 85)))
                                                             ),
                                                           ),
                                                           Expanded(
-                                                            flex: 7,
-                                                            child: Center(
-                                                                child: AutoSizeText("S001", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40), maxFontSize: double.infinity)
-                                                            ),
+                                                            flex: 55,
+                                                            child: Center(child: AutoSizeText("S001", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
                                                           ),
                                                         ],
                                                       ),
@@ -477,7 +498,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           width:
                           500,
                           height:
-                          600,
+                          550,
                           padding:
                           EdgeInsets.all(10),
                           child:
