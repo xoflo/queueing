@@ -220,28 +220,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                   e['controlName'] ==
                                                       'Ticket Name Option')
                                                       .toList()[0]['value']);
+                                                  int genderOption = int.parse(result
+                                                      .where((e) =>
+                                                  e['controlName'] ==
+                                                      'Gender Option')
+                                                      .toList()[0]['value']);
 
-                                                  if (priority == 1) {
-                                                    priorityDialog(
-                                                        service,
-                                                        ticketname);
-                                                  } else {
-                                                    if (ticketname ==
-                                                        1) {
-                                                      nameDialog(
-                                                          service,
-                                                          "None");
-                                                    } else {
-                                                      addTicketSQL(
-                                                          service
-                                                              .serviceType!,
-                                                          service
-                                                              .serviceCode!,
-                                                          "None");
-                                                      Navigator.pop(
-                                                          context);
-                                                    }
-                                                  }
+                                                  addTicketDialog();
+
                                                 },
                                                 child: Opacity(
                                                   opacity: 0.75,
@@ -342,6 +328,25 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 ),
               ),
         ));
+  }
+
+  addTicketDialog(int priorityOption, int nameOption, int genderOption, Service service) {
+    String? priority;
+    String? name;
+    String? gender;
+
+    if (priorityOption == 1) priorityDialog();
+    if (nameOption == 1) nameDialog();
+    if (genderOption == 1) genderDialog();
+
+    addTicketSQL(
+        service
+            .serviceType!,
+        service
+            .serviceCode!,
+        "None");
+    Navigator.pop(
+        context);
   }
 
 
@@ -597,10 +602,51 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-  nameDialog(Service service, String priorityType) {
+  genderDialog() async {
+    final result = await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Name (Optional)"),
+        content: Container(
+            height: 400,
+            width: 400,
+            child: GridView(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context, "Male");
+                    },
+                    child: Card(
+                      child: Center(child: Text("Male")),
+                    )),
+                  GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context, "Female");
+                      },
+                      child: Card(
+                        child: Center(child: Text("Female")),
+                      )),
+                  GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context, "Other");
+                      },
+                      child: Card(
+                        child: Center(child: Text("Other")),
+                      ))
+              ],
+            )),
+
+      ),
+    );
+
+    return result;
+  }
+
+  nameDialog() {
     TextEditingController name = TextEditingController();
 
-    showDialog(
+    final result = showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text("Name (Optional)"),
@@ -613,19 +659,19 @@ class _ServicesScreenState extends State<ServicesScreen> {
         actions: [
           TextButton(
               onPressed: () {
-                addTicketSQL(service.serviceType!, service.serviceCode!,
-                    priorityType, name.text);
-                Navigator.pop(context);
+                Navigator.pop(context, name.text);
               },
               child: Text(""
                   "Submit"))
         ],
       ),
     );
+
+    return result;
   }
 
-  priorityDialog(Service service, [int? ticketname]) {
-    showDialog(
+  priorityDialog() async {
+   final result = await showDialog(
         context: context,
         builder: (_) => AlertDialog(
               title: Text("Select Priorities (If Applicable)"),
@@ -651,17 +697,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                       padding: EdgeInsets.all(10),
                                       child: GestureDetector(
                                         onTap: () {
-                                          if (ticketname == 1) {
-                                            Navigator.pop(context);
-                                            nameDialog(service,
-                                                priority.priorityName!);
-                                          } else {
-                                            addTicketSQL(
-                                                service.serviceType!,
-                                                service.serviceCode!,
-                                                priority.priorityName!);
-                                            Navigator.pop(context);
-                                          }
+                                          Navigator.pop(context, priority.priorityName!);
                                         },
                                         child: Card(
                                           child: Column(
@@ -700,6 +736,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 },
               ),
             ));
+
+   return result;
   }
 
   getTicketSQL(String serviceType) async {
@@ -733,8 +771,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-  addTicketSQL(String serviceType, String serviceCode, String priorityType,
-      [String? ticketName]) async {
+  addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender]) async {
     final String timestamp = DateTime.now().toString();
 
     final List<Ticket> tickets = await getTicketSQL(serviceType);
@@ -763,13 +800,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "timeDone": "",
         "status": "Pending",
         "log": "$timestamp: ticketGenerated",
-        "priority": priorityType != "Regular" ? 1 : 0,
-        "priorityType": "$priorityType",
+        "priority": priorityType == null ? "Regular" : priorityType != "Regular " ? 1 : 0,
+        "priorityType": priorityType ?? "Regular",
         "printStatus": 1,
         "callCheck": 0,
         "ticketName": ticketName ?? "",
         "blinker": 0,
-        "gender": ""
+        "gender": gender
       };
 
       int value = 0;
