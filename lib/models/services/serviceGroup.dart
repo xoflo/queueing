@@ -19,7 +19,7 @@ class ServiceGroup {
     this.name = data['name'];
     this.assignedGroup = data['assignedGroup'];
     this.timeCreated = data['timeCreated'];
-    this.timeCreatedAsDate = data['timeCreated'] ! == null ? DateTime.parse(data['timeCreated']) : null;
+    this.timeCreatedAsDate = data['timeCreated'] != null ? DateTime.parse(data['timeCreated']) : null;
   }
 
   update(dynamic data) async {

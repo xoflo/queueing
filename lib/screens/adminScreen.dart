@@ -2132,7 +2132,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                         if (i == 0) {
                           if (nameInput != "" && numberInput != "" && indexInput != "") {
-                            if (exists <= 1 && indexBool == 0) {
+                            if (exists == 0 && indexBool == 0) {
 
                               await addStationSQL();
                               clearStationFields();
@@ -2145,7 +2145,7 @@ class _AdminScreenState extends State<AdminScreen> {
                         } else {
                           if (station != null) {
                             if (nameInput != "") {
-                              if (exists <= 1) {
+                              if (exists <= 1 && indexBool == 0) {
                                 final oldName = station.stationName;
 
                                 await station.update({
@@ -2287,9 +2287,9 @@ class _AdminScreenState extends State<AdminScreen> {
 
       final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
       final resultService = await http.get(uriService);
-      List<Map<String, dynamic>> responseService = jsonDecode(resultService.body);
+      List<dynamic> responseService = jsonDecode(resultService.body);
 
-      List<Map<String, dynamic>> resultsToReturn = [];
+      List<dynamic> resultsToReturn = [];
 
       for (int i = 0; i < responseGroup.length; i++) {
         if (responseGroup[i]['assignedGroup'] == assignedGroup){
@@ -2303,7 +2303,19 @@ class _AdminScreenState extends State<AdminScreen> {
         }
       }
 
-      resultsToReturn.sort((a, b) => b['timeCreated'] == null ? -1 : DateTime.parse(a['timeCreated']).compareTo(DateTime.parse(b['timeCreated'])));
+      resultsToReturn.sort((a, b) => int.parse(a['id']).compareTo(int.parse(b['id'])));
+
+      resultsToReturn.sort((a, b) {
+        final at = b['timeCreated'];
+        final bt = a['timeCreated'];
+
+        if (at == null && bt != null) return 1;  // b before a
+        if (bt == null && at != null) return -1; // a before b
+        if (at != null && bt != null) {
+          return at.compareTo(bt);
+        }
+        return 0;
+      });
 
       return resultsToReturn;
 

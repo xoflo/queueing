@@ -22,6 +22,7 @@ class Ticket {
   int? printStatus;
   int? callCheck;
   String? ticketName;
+  String? gender;
 
   DateTime? timeCreatedAsDate;
   String? codeAndNumber;
@@ -47,6 +48,7 @@ class Ticket {
     this.ticketName = data['ticketName'];
     this.codeAndNumber = "${data['serviceCode']}${data['number']}";
     this.blinker = int.parse(data['blinker']);
+    this.gender = data['gender'];
 
     this.timeCreatedAsDate = DateTime.parse(data['timeCreated'].toString());
   }
@@ -74,6 +76,7 @@ class Ticket {
         'callCheck': data['callCheck'] ?? this.callCheck,
         'ticketName': data['ticketName'] ?? this.ticketName,
         'blinker': data['blinker'] ?? this.blinker,
+        'gender': data['gender'] ?? this.gender,
       };
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final response = await http.put(uri, body: jsonEncode(body));
