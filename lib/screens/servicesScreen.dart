@@ -215,18 +215,18 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                   e['controlName'] ==
                                                       'Priority Option')
                                                       .toList()[0]['value']);
-                                                  int ticketname = int.parse(result
+                                                  int name = int.parse(result
                                                       .where((e) =>
                                                   e['controlName'] ==
                                                       'Ticket Name Option')
                                                       .toList()[0]['value']);
-                                                  int genderOption = int.parse(result
+                                                  int gender = int.parse(result
                                                       .where((e) =>
                                                   e['controlName'] ==
                                                       'Gender Option')
                                                       .toList()[0]['value']);
 
-                                                  addTicketDialog();
+                                                  await addTicketDialog(priority, name, gender, service);
 
                                                 },
                                                 child: Opacity(
@@ -330,23 +330,22 @@ class _ServicesScreenState extends State<ServicesScreen> {
         ));
   }
 
-  addTicketDialog(int priorityOption, int nameOption, int genderOption, Service service) {
-    String? priority;
-    String? name;
-    String? gender;
+  addTicketDialog(int priorityOption, int nameOption, int genderOption, Service service) async {
+    String? priority = "";
+    String? name = "";
+    String? gender = "";
 
-    if (priorityOption == 1) priorityDialog();
-    if (nameOption == 1) nameDialog();
-    if (genderOption == 1) genderDialog();
+    if (priorityOption == 1) priority = await priorityDialog();
+    if (nameOption == 1 && priority != null) name = await nameDialog();
+    if (genderOption == 1 && priority != null && name != null) gender = await genderDialog();
 
-    addTicketSQL(
-        service
-            .serviceType!,
-        service
-            .serviceCode!,
-        "None");
-    Navigator.pop(
-        context);
+    if (priority != null && name != null && gender != null) {
+      await addTicketSQL(
+          service.serviceType!,
+          service.serviceCode!,
+          priority, name, gender
+      );
+    }
   }
 
 
@@ -606,7 +605,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     final result = await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Name (Optional)"),
+        title: Text("Gender"),
         content: Container(
             height: 400,
             width: 400,
@@ -649,7 +648,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     final result = showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Name (Optional)"),
+        title: Text("Enter Name"),
         content: Container(
             height: 60,
             width: 200,
@@ -736,7 +735,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 },
               ),
             ));
-
    return result;
   }
 
@@ -800,8 +798,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "timeDone": "",
         "status": "Pending",
         "log": "$timestamp: ticketGenerated",
-        "priority": priorityType == null ? "Regular" : priorityType != "Regular " ? 1 : 0,
-        "priorityType": priorityType ?? "Regular",
+        "priority": priorityType == "" ? "Regular" : priorityType != "Regular " ? 1 : 0,
+        "priorityType": priorityType == "" ? "Regular" : priorityType,
         "printStatus": 1,
         "callCheck": 0,
         "ticketName": ticketName ?? "",

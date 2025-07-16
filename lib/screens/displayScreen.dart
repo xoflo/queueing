@@ -651,10 +651,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           future: getTicketSQL(station.ticketServing),
                           builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
                             return snapshot.connectionState == ConnectionState.done ?
+                            snapshot.data!.isNotEmpty ?
                             Builder(builder: (context){
                               final ticket = snapshot.data![0];
                               return ticket.blinker == 0 ?
-
                               //region
                               Builder(
                                   builder: (context) {
@@ -729,6 +729,44 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                   ),
                                 ),
                               ); }) :
+                            Builder(
+                              builder: (context) {
+                                station.update({
+                                  'ticketServing': ""
+                                });
+
+                                return Opacity(
+                                  opacity: 0.8,
+                                  child: Card(
+                                    clipBehavior: Clip.antiAlias,
+                                    elevation: 2,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex: 4,
+                                          child: Container(
+                                              decoration: BoxDecoration(
+                                                  color: hexBlue.withAlpha(250)
+                                              ),
+                                              child: Center(child: Padding(
+                                                padding: const EdgeInsets.all(3.0),
+                                                child: AutoSizeText("${station.stationName!}${station.stationNumber! == 0 || station.stationNumber! == null ? "" : " ${station.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                              ))),
+                                        ),
+                                        Expanded(
+                                          flex: 6,
+                                          child: Center(child: Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: AutoSizeText("", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                          )),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+                            ) :
                               Opacity(
                                 opacity: 0.8,
                                 child: Card(
