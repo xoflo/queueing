@@ -286,31 +286,38 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                             ServiceGroup.fromJson(
                                                 snapshot
                                                     [i]);
-                                            return Padding(
-                                              padding:
-                                              EdgeInsets.all(10),
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  lastAssigned.add(
-                                                      assignedGroup);
-                                                  assignedGroup =
-                                                  group.name!;
-                                                  setStateList(() {});
-                                                },
-                                                child: Card(
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .center,
-                                                    children: [
-                                                      Text(
-                                                          group.name!,
-                                                          style: TextStyle(
-                                                              fontSize:
-                                                              20,
-                                                              fontWeight:
-                                                              FontWeight.w700)),
-                                                    ],
+                                            return Opacity(
+                                              opacity: 0.75,
+                                              child: Card(
+                                                child: Padding(
+                                                  padding:
+                                                  EdgeInsets.all(15),
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      lastAssigned.add(
+                                                          assignedGroup);
+                                                      assignedGroup =
+                                                      group.name!;
+                                                      setStateList(() {});
+                                                    },
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .center,
+                                                      children: [
+                                                        Text(
+                                                            group.name!,
+                                                            style: TextStyle(
+                                                                fontSize: 30,
+                                                                fontWeight:
+                                                                FontWeight.w700),  textAlign:
+                                                        TextAlign
+                                                            .center,
+                                                          maxLines: 3,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -804,36 +811,52 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   getServiceGroups(String assignedGroup) async {
     try {
-      final uriGroup =
-          Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
+      final uriGroup = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
       final resultGroup = await http.get(uriGroup);
       List<dynamic> responseGroup = jsonDecode(resultGroup.body);
 
       final uriService = Uri.parse('http://$site/queueing_api/api_service.php');
       final resultService = await http.get(uriService);
       List<dynamic> responseService = jsonDecode(resultService.body);
+
       List<dynamic> resultsToReturn = [];
 
       for (int i = 0; i < responseGroup.length; i++) {
-        if (responseGroup[i]['assignedGroup'] == assignedGroup) {
+        if (responseGroup[i]['assignedGroup'] == assignedGroup){
           resultsToReturn.add(responseGroup[i]);
         }
       }
 
       for (int i = 0; i < responseService.length; i++) {
-        if (responseService[i]['assignedGroup'] == assignedGroup) {
+        if (responseService[i]['assignedGroup'] == assignedGroup){
           resultsToReturn.add(responseService[i]);
         }
       }
 
+      resultsToReturn.sort((a, b) => int.parse(a['id']).compareTo(int.parse(b['id'])));
+
+      resultsToReturn.sort((a, b) {
+        final at = b['timeCreated'];
+        final bt = a['timeCreated'];
+
+        if (at == null && bt != null) return 1;  // b before a
+        if (bt == null && at != null) return -1; // a before b
+        if (at != null && bt != null) {
+          return at.compareTo(bt);
+        }
+        return 0;
+      });
+
       return resultsToReturn;
-    } catch (e) {
+
+
+    } catch(e) {
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Cannot connect to the server. Please try again.")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot connect to the server. Please try again.")));
       print(e);
       return [];
     }
+
   }
 
   getPriority() async {
