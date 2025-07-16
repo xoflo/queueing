@@ -654,6 +654,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             Builder(builder: (context){
                               final ticket = snapshot.data![0];
                               return ticket.blinker == 0 ?
+
+                              //region
                               Builder(
                                   builder: (context) {
                                     return TweenAnimationBuilder<Color?>(
@@ -787,6 +789,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           ),
                         ),
                       );
+                      //endregion
+
                     }),
               );
             }
