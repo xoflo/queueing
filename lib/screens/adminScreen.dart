@@ -170,6 +170,8 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
+  //region
+
   titleHandler() {
     if (screenIndex == 0) {
       return "Services";
@@ -3237,5 +3239,7 @@ class _AdminScreenState extends State<AdminScreen> {
     return Text(status,style: TextStyle(color: color));
 
   }
+
+  //endregion
 
 }
