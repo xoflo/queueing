@@ -13,8 +13,6 @@ class Station {
   String? sessionPing;
   int? displayIndex;
 
-  Station(this.stationName);
-
   Station.fromJson(dynamic data) {
     id = int.parse(data['id']);
     stationNumber = data['stationNumber'] != null ? int.parse(data['stationNumber'].toString()) : data['stationNumber'];
@@ -45,9 +43,12 @@ class Station {
       userInSession = data['userInSession'] ?? userInSession;
       sessionPing = data['sessionPing']  ?? sessionPing;
       displayIndex = data['displayIndex'] ?? displayIndex;
+      ticketServing = data['ticketServing'] ?? ticketServing;
 
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
       final response = await http.put(uri, body: jsonEncode(body));
+      print(response.body);
+
     } catch(e) {
       print(e);
     }

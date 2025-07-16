@@ -175,7 +175,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                       final List<Map<String, dynamic>> snapshot = getSortedSnapshot(getSnapshot);
 
                                     return GridView.builder(
-                                        padding: EdgeInsets.all(20),
+                                        padding: EdgeInsets.all(10),
                                         gridDelegate:
                                         SliverGridDelegateWithFixedCrossAxisCount(
                                             childAspectRatio: aspectRatio,
@@ -269,7 +269,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                               textAlign:
                                                               TextAlign
                                                                   .center,
-                                                              maxLines: 3,
+                                                              maxLines: 4,
                                                               overflow: TextOverflow.ellipsis,
                                                             ),
                                                           ),
@@ -768,7 +768,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "printStatus": 1,
         "callCheck": 0,
         "ticketName": ticketName ?? "",
-        "blinker": 0
+        "blinker": 0,
+        "gender": ""
       };
 
       int value = 0;
@@ -788,7 +789,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(

@@ -188,7 +188,7 @@ class _StaffScreenState extends State<StaffScreen> {
                             FutureBuilder(
                               future: getStationSQL(),
                               builder: (BuildContext context,
-                                  AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                                  AsyncSnapshot<List<dynamic>> snapshot) {
                                 return snapshot.connectionState == ConnectionState.done
                                     ? Container(
                                   height: MediaQuery.of(context).size.height - 120,
@@ -199,8 +199,10 @@ class _StaffScreenState extends State<StaffScreen> {
                                           crossAxisCount: MediaQuery.of(context).size.width < 800 ? MediaQuery.of(context).size.width < 700 ? 2 : 3 : 5),
                                       itemCount: snapshot.data!.length,
                                       itemBuilder: (context, i) {
-                                        final station =
-                                        Station.fromJson(snapshot.data![i]);
+                                        final Station station = Station.fromJson(snapshot.data![i]);
+
+                                        print("ThisStation: ${station.stationName}${station.stationNumber}");
+
                                         return InkWell(
                                           child: Card(
                                               child: Column(
@@ -225,7 +227,7 @@ class _StaffScreenState extends State<StaffScreen> {
                                                       content: Text(
                                                           "Station is currently in session.")));
                                             } else {
-                                              station.update({
+                                              await station.update({
                                                 "inSession": 1,
                                                 "userInSession": widget.user.username,
                                                 "sessionPing": timestamp
@@ -564,7 +566,10 @@ class _StaffSessionState extends State<StaffSession> {
                                       ],
                                     ),
                                   ),
-                                  onTap: () {
+                                  onTap: () async {
+                                    final Ticket ticketToServe = tickets[0];
+                                    final timestamp = DateTime.now().toString();
+
                                     if (serving != null) {
                                       showDialog(context: context, builder: (_) => AlertDialog(
                                         title: Text("Confirm Done?"),
@@ -572,14 +577,16 @@ class _StaffSessionState extends State<StaffSession> {
                                             child: Text("'Done' to complete and 'Call Next' to serve next ticket."),
                                             height: 40),
                                         actions: [
+                                          TextButton(onPressed: () async {
 
-                                          TextButton(onPressed: () {
-                                            final timestamp = DateTime.now().toString();
-
-                                            serving!.update({
+                                            await serving!.update({
                                               "status": "Done",
                                               "timeDone": timestamp,
                                               "log": "${serving!.log}, $timestamp: Ticket Session Finished"
+                                            });
+
+                                            await widget.station.update({
+                                              'ticketServing': ""
                                             });
 
                                             serving = null;
@@ -589,10 +596,10 @@ class _StaffSessionState extends State<StaffSession> {
                                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket complete.")));
 
                                           }, child: Text("Done")),
-                                          TextButton(onPressed: () {
+                                          TextButton(onPressed: () async {
                                             final timestamp = DateTime.now().toString();
 
-                                            serving!.update({
+                                            await serving!.update({
                                               "status": "Done",
                                               "timeDone": timestamp,
                                               "log": "${serving!.log}, $timestamp: Ticket Session Finished"
@@ -600,51 +607,71 @@ class _StaffSessionState extends State<StaffSession> {
 
 
                                             if (tickets.isNotEmpty) {
-                                              if (tickets[0].serviceType! == callBy || callBy == 'Time Order') {
-                                                tickets[0].update({
+                                              if (ticketToServe.serviceType! == callBy || callBy == 'Time Order') {
+                                                await ticketToServe.update({
                                                   "userAssigned": widget.user.username,
                                                   "status": "Serving",
                                                   "stationName": widget.station.stationName,
                                                   "stationNumber": widget.station.stationNumber,
                                                   "log":
-                                                  "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                  "timeTaken": timestamp
+                                                  "${ticketToServe.log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                  "timeTaken": timestamp,
+                                                });
+
+                                                await widget.station.update({
+                                                  'ticketServing': ticketToServe.codeAndNumber
                                                 });
 
 
                                                 servingKey.currentState!.setState(() {});
                                                 Navigator.pop(context);
                                               } else {
+                                                await widget.station.update({
+                                                  'ticketServing': ""
+                                                });
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
                                               }
                                             } else {
+                                              await widget.station.update({
+                                                'ticketServing': ""
+                                              });
                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                             }
 
                                           }, child: Text("Call Next"))
                                         ],
                                       ));
-                                    }
-                                    else {
+                                    } else {
                                       if (tickets.isNotEmpty) {
-                                        if (tickets[0].serviceType! == callBy || callBy == 'Time Order') {
+                                        if (ticketToServe.serviceType! == callBy || callBy == 'Time Order') {
                                           final timestamp = DateTime.now().toString();
-                                          tickets[0].update({
+                                          ticketToServe.update({
                                             "userAssigned": widget.user.username,
                                             "status": "Serving",
                                             "stationName": widget.station.stationName,
                                             "stationNumber": widget.station.stationNumber,
                                             "log":
-                                            "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                            "${ticketToServe.log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                             "timeTaken": timestamp
                                           });
+
+                                          await widget.station.update({
+                                            'ticketServing': ticketToServe.codeAndNumber!
+                                          });
+
 
                                           callByUI.value = 0;
                                         } else {
                                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
+                                          await widget.station.update({
+                                            'ticketServing': ""
+                                          });
                                         }
 
                                       } else {
+                                        await widget.station.update({
+                                          'ticketServing': ""
+                                        });
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                       }
                                     }
@@ -668,7 +695,12 @@ class _StaffSessionState extends State<StaffSession> {
                                       ],
                                     ),
                                   ),
-                                  onTap: () {
+                                  onTap: () async {
+                                    final Ticket ticketToServe = tickets[0];
+                                    final timestamp = DateTime.now().toString();
+                                    final List<dynamic> stations = await getStationSQL("${widget.station.stationName}${widget.station.stationNumber}".trim());
+                                    final Station station = Station.fromJson(stations.first);
+
                                     if (serving != null) {
                                       showDialog(context: context, builder: (_) => AlertDialog(
                                         title: Text("Select Station to Transfer"),
@@ -685,7 +717,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                       return ListTile(
                                                         title: Text(service.serviceType!),
-                                                        onTap: () {
+                                                        onTap: () async {
                                                           final timestamp = DateTime.now().toString();
 
                                                           serving!.update({
@@ -700,6 +732,10 @@ class _StaffSessionState extends State<StaffSession> {
                                                           });
 
                                                           serving = null;
+
+                                                          await station.update({
+                                                            'ticketServing': ""
+                                                          });
 
                                                           Navigator.pop(context);
 
@@ -750,9 +786,13 @@ class _StaffSessionState extends State<StaffSession> {
                                             ],
                                           ),
                                         ),
-                                        onTap: () {
-                                          if (serving != null) {
+                                        onTap: () async {
+                                          final Ticket ticketToServe = tickets[0];
+                                          final timestamp = DateTime.now().toString();
+                                          final List<dynamic> stations = await getStationSQL("${widget.station.stationName}${widget.station.stationNumber}".trim());
+                                          final Station station = Station.fromJson(stations.first);
 
+                                          if (serving != null) {
                                             if (callAgainCounter < 3) {
                                               callAgainCounter += 1;
                                               serving!.update({
@@ -770,10 +810,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                 actions: [
                                                   TextButton(
                                                       child: Text("Release"),
-                                                      onPressed: () {
+                                                      onPressed: () async {
                                                         serving!.update({
                                                           "status": 'Released',
                                                           'log': "${serving!.log!}, ${DateTime.now()}: Ticket Released"
+                                                        });
+
+                                                        await station.update({
+                                                          'ticketServing': ""
                                                         });
 
                                                         Navigator.pop(context);
@@ -1039,12 +1083,25 @@ class _StaffSessionState extends State<StaffSession> {
       return [];
     }
   }
-  getStationSQL() async {
+
+  Future<List<dynamic>> getStationSQL([String? stationNameNumber]) async {
+    print("call $stationNameNumber");
+
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
       final result = await http.get(uri);
-      final response = jsonDecode(result.body);
-      return response;
+      final List<dynamic> response = jsonDecode(result.body);
+
+      List<dynamic> toReturn = [];
+
+      if (stationNameNumber != null) {
+        response.where((e) => "${e['stationName']}${e['stationNumber']}".trim() == stationNameNumber).toList();
+        toReturn = response;
+      } else {
+        toReturn = response;
+      }
+
+      return toReturn;
     } catch (e) {
       print(e);
 

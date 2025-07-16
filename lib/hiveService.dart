@@ -13,4 +13,8 @@ class HiveService {
     var box = await Hive.openBox(_boxName);
     return box.get(_ipKey);
   }
+
+
+
+
 }

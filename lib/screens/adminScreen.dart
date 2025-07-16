@@ -1105,13 +1105,15 @@ class _AdminScreenState extends State<AdminScreen> {
                     AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
                   return Column(
                     children: [
-                      lastAssigned.isNotEmpty ? Container(
-                        height: 30,
-                        child: IconButton(onPressed: () {
-                          assignedGroups = lastAssigned.last;
-                          lastAssigned.removeLast();
-                          setStateList((){});
-                        }, icon: Icon(Icons.chevron_left)),
+                      lastAssigned.isNotEmpty ? Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                          height: 30,
+                          child: IconButton(onPressed: () {
+                            assignedGroups = lastAssigned.last;                            lastAssigned.removeLast();
+                            setStateList((){});
+                          }, icon: Icon(Icons.chevron_left)),
+                        ),
                       ) : Container(),
                       snapshot.connectionState == ConnectionState.done
                           ? snapshot.data!.isNotEmpty
@@ -1687,9 +1689,16 @@ class _AdminScreenState extends State<AdminScreen> {
                                                 width: 400,
                                                 child: FutureBuilder(
                                                     future: getStationSQL(),
-                                                    builder: (context, snapshot) {
+                                                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
                                                       return snapshot.connectionState == ConnectionState.done ? ListView.builder(itemBuilder: (context, i) {
-                                                        return ListTile();
+                                                        final station = Station.fromJson(snapshot.data![i]);
+
+                                                        return ListTile(
+                                                            title: Text("${station.stationName!} ${station.stationNumber!}"),
+                                                          onTap: () {
+
+                                                          },
+                                                        );
                                                       }) : Center(
                                                         child: Container(
                                                           height: 50,
@@ -1766,6 +1775,7 @@ class _AdminScreenState extends State<AdminScreen> {
     List<String> services = [];
     String userType = "Staff";
     String display = "Select";
+    int? assignedWindow;
 
     showDialog(
         context: context,
@@ -1889,6 +1899,13 @@ class _AdminScreenState extends State<AdminScreen> {
                         Padding(padding: EdgeInsets.all(10),
                           child: ListTile(
                             title: Text("Assign Station"),
+                            onTap: () {
+                              showDialog(context: context, builder: (_) => AlertDialog(
+                                content: Container(
+
+                                )
+                              ));
+                            },
                           ),
                         )
                       ],
@@ -2686,7 +2703,7 @@ class _AdminScreenState extends State<AdminScreen> {
                         SizedBox(width: 10),
                         ElevatedButton(onPressed: () {
                           final _listViewKey = GlobalKey();
-                          List<String> statusList = ['Pending', 'Serving', 'Done', 'Dismissed'];
+                          List<String> statusList = ['Pending', 'Serving', 'Done', 'Released'];
 
                           showDialog(context: context, builder: (_) => AlertDialog(
                             title: Text("Filter Status"),
@@ -3216,7 +3233,7 @@ class _AdminScreenState extends State<AdminScreen> {
     if (status == 'Done') color = Colors.blueGrey;
     if (status == 'Pending') color = Colors.orangeAccent;
     if (status == 'Serving') color = Colors.green;
-    if (status == 'Dismissed') color = Colors.red;
+    if (status == 'Released') color = Colors.red;
     return Text(status,style: TextStyle(color: color));
 
   }
