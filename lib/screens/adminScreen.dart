@@ -2125,10 +2125,21 @@ class _AdminScreenState extends State<AdminScreen> {
                         final nameInput = stationName.text.trim();
                         final numberInput = stationNumber.text.trim();
                         final indexInput = displayIndex.text.trim();
+                        int? id;
+                        int? exists;
+                        int? indexBool;
 
                         final List<dynamic> stations = await getStationSQL();
-                        final exists = stations.where((e) => e['stationName'] == nameInput && e['stationNumber'] == numberInput).toList().length;
-                        final indexBool = stations.where((e) => int.parse(e['displayIndex']) == int.parse(indexInput)).toList().length;
+
+                        if (station != null) {
+                          id = station.id!;
+                          exists = stations.where((e) => e['stationName'] == nameInput && e['stationNumber'] == numberInput).toList().where((e) => int.parse(e['id']) != id).toList().length;
+                          indexBool = stations.where((e) => int.parse(e['displayIndex']) == int.parse(indexInput)).where((e) => int.parse(e['id']) != id).toList().length;
+                        } else {
+                          exists = stations.where((e) => e['stationName'] == nameInput && e['stationNumber'] == numberInput).toList().length;
+                          indexBool = stations.where((e) => int.parse(e['displayIndex']) == int.parse(indexInput)).toList().length;
+                        }
+
 
                         if (i == 0) {
                           if (nameInput != "" && numberInput != "" && indexInput != "") {
@@ -2144,9 +2155,10 @@ class _AdminScreenState extends State<AdminScreen> {
                           }
                         } else {
                           if (station != null) {
+                            final oldName = station.stationName;
+
                             if (nameInput != "") {
-                              if (exists <= 1 && indexBool == 0) {
-                                final oldName = station.stationName;
+                              if (exists == 0 && indexBool == 0) {
 
                                 await station.update({
                                   'stationName': nameInput,
