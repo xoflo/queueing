@@ -47,12 +47,14 @@ class _AdminScreenState extends State<AdminScreen> {
   List<String> serviceTypes = [];
   List<String> priorities = [];
   List<String> statuses = [];
+  List<String> genders = [];
 
   String? displayDate;
   String? displayUsers;
   String? displayServiceTypes;
   String? displayPriorities;
   String? displayStatus;
+  String? displayGender;
 
   // Service
 
@@ -2813,18 +2815,65 @@ class _AdminScreenState extends State<AdminScreen> {
                             ),
                             actions: [
                               TextButton(onPressed: () {
-                                priorities.clear();
+                                statuses.clear();
                                 _listViewKey.currentState!.setState(() {});
                                 setStateArchive((){});
                               }, child: Text("Clear")),
                               TextButton(onPressed: () {
-                                displayPriorities = priorities.length > 3 ? "4 Priorities" : priorities.sublist(0, priorities.length).join(', ');
+                                displayStatus = statuses.length > 3 ? "4 Priorities" : statuses.sublist(0, statuses.length).join(', ');
                                 Navigator.pop(context);
                                 setStateArchive((){});
                               }, child: Text("Filter"))
                             ],
                           ));
                         }, child: Text(statuses.isNotEmpty ? "Status: $displayPriorities" : "Status: All")),
+                        SizedBox(width: 10),
+                        ElevatedButton(onPressed: () {
+                          final _listViewKey = GlobalKey();
+                          List<String> genderList = ['Male', 'Female', 'Others'];
+
+                          showDialog(context: context, builder: (_) => AlertDialog(
+                            title: Text("Filter Gender"),
+                            content: Container(
+                              height: 300,
+                              width: 400,
+                              child: StatefulBuilder(
+                                key: _listViewKey,
+                                builder: (context, setStateList) {
+                                  return ListView.builder(
+                                      itemCount: genderList.length,
+                                      itemBuilder: (context, i) {
+                                        return CheckboxListTile(
+                                          title: Text(genderList[i]),
+                                          value: genders.contains(genderList[i]),
+                                          onChanged: (bool? value) {
+                                            if (genders.contains(genderList[i])) {
+                                              genders.remove(genderList[i]);
+                                              setStateList((){});
+                                            } else {
+                                              genders.add(genderList[i]);
+                                              setStateList((){});
+                                            }
+                                          },
+                                        );
+                                      });
+                                },
+                              ),
+                            ),
+                            actions: [
+                              TextButton(onPressed: () {
+                                genders.clear();
+                                _listViewKey.currentState!.setState(() {});
+                                setStateArchive((){});
+                              }, child: Text("Clear")),
+                              TextButton(onPressed: () {
+                                displayGender = genders.length > 3 ? "4 Genders" : genders.sublist(0, genders.length).join(', ');
+                                Navigator.pop(context);
+                                setStateArchive((){});
+                              }, child: Text("Filter"))
+                            ],
+                          ));
+                        }, child: Text(genders.isNotEmpty ? "Status: $displayGender" : "Gender: All")),
                         SizedBox(width: 10),
                         TextButton(
                             child: Row(
@@ -3018,12 +3067,14 @@ class _AdminScreenState extends State<AdminScreen> {
     String? serviceTypesXlsx;
     String? prioritiesXlsx;
     String? statusesXlsx;
+    String? gendersXlsx;
 
     if (displayDate != null) dateXlsx = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else dateXlsx = "${DateFormat.yMMMMd().format(dates[0])}";
     if (displayUsers != null) usersXlsx = users.join(', '); else usersXlsx = "All";
     if (displayServiceTypes != null) serviceTypesXlsx = serviceTypes.join(', '); else serviceTypesXlsx = "All";
     if (displayPriorities != null) prioritiesXlsx = priorities.join(', '); else prioritiesXlsx = "All";
     if (displayStatus != null) statusesXlsx = statuses.join(', '); else statusesXlsx = "All";
+    if (displayGender != null) gendersXlsx = genders.join(', '); else gendersXlsx = "All";
 
     sheet.appendRow([
       TextCellValue('Office of the Ombusdman')
@@ -3049,6 +3100,7 @@ class _AdminScreenState extends State<AdminScreen> {
       TextCellValue("Services: $serviceTypesXlsx"),
       TextCellValue("Priority: $prioritiesXlsx"),
       TextCellValue("Status: $statusesXlsx"),
+      TextCellValue("Status: $gendersXlsx"),
     ]);
 
     sheet.appendRow([
@@ -3065,6 +3117,7 @@ class _AdminScreenState extends State<AdminScreen> {
       TextCellValue('Service'),
       TextCellValue('Priority'),
       TextCellValue('Status'),
+      TextCellValue('Gender'),
     ]);
 
     for (int i = 0; i < tickets.length; i++) {
@@ -3075,7 +3128,8 @@ class _AdminScreenState extends State<AdminScreen> {
         TextCellValue(tickets[i].userAssigned!),
         TextCellValue(tickets[i].serviceType!),
         TextCellValue(tickets[i].priorityType!),
-        TextCellValue(tickets[i].status!)
+        TextCellValue(tickets[i].status!),
+        TextCellValue(tickets[i].gender!)
       ]
       );
     }
@@ -3114,6 +3168,7 @@ class _AdminScreenState extends State<AdminScreen> {
     String serviceTypesPdf = "All";
     String prioritiesPdf = "All";
     String statusesPdf = "All";
+   String gendersPdf = "All";
 
     List<pw.Widget> widgets = [];
 
@@ -3139,6 +3194,7 @@ class _AdminScreenState extends State<AdminScreen> {
     if (displayServiceTypes != null) serviceTypesPdf = serviceTypes.join(', '); else serviceTypesPdf = "All";
     if (displayPriorities != null) prioritiesPdf = priorities.join(', '); else prioritiesPdf = "All";
     if (displayStatus != null) statusesPdf = statuses.join(', '); else statusesPdf = "All";
+   if (displayGender != null) gendersPdf = genders.join(', '); else gendersPdf = "All";
 
 
     widgets.addAll([
@@ -3198,6 +3254,12 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                   pw.Row(
                       children: [
+                        pw.Text("Gender: "),
+                        pw.Text(gendersPdf),
+                      ]
+                  ),
+                  pw.Row(
+                      children: [
                         pw.Text("Total Tickets: ${tickets.length}")
                       ]
                   )
@@ -3228,6 +3290,8 @@ class _AdminScreenState extends State<AdminScreen> {
                   center(pw.Text("Priority", style: bold)),
                   pw.Spacer(),
                   center(pw.Text("Status", style: bold)),
+                  pw.Spacer(),
+                  center(pw.Text("Gender", style: bold)),
                 ]
             ),
             pw.SizedBox(height: 5),
@@ -3256,7 +3320,9 @@ class _AdminScreenState extends State<AdminScreen> {
                     pw.Spacer(),
                     contain(pw.Text(tickets[i].priorityType!)),
                     pw.Spacer(),
-                    contain(pw.Text(tickets[i].status!))
+                    contain(pw.Text(tickets[i].status!)),
+                    pw.Spacer(),
+                    contain(pw.Text(tickets[i].gender!))
                   ]),
               pw.SizedBox(height: 1),
             ]
