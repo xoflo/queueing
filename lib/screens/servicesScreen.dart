@@ -601,7 +601,19 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
+  dialogText(String text) {
+    return AutoSizeText(text,
+        style: TextStyle(
+            fontSize: 30,
+            fontWeight:
+            FontWeight.w700),
+        textAlign: TextAlign.center,
+        maxLines: 2);
+  }
+
   genderDialog() async {
+
+
     final result = await showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -617,21 +629,21 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       Navigator.pop(context, "Male");
                     },
                     child: Card(
-                      child: Center(child: Text("Male")),
+                      child: Center(child: dialogText("Male")),
                     )),
                   GestureDetector(
                       onTap: () {
                         Navigator.pop(context, "Female");
                       },
                       child: Card(
-                        child: Center(child: Text("Female")),
+                        child: Center(child: dialogText("Female")),
                       )),
                   GestureDetector(
                       onTap: () {
                         Navigator.pop(context, "Other");
                       },
                       child: Card(
-                        child: Center(child: Text("Other")),
+                        child: Center(child: dialogText("Other")),
                       ))
               ],
             )),

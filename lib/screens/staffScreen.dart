@@ -567,7 +567,12 @@ class _StaffSessionState extends State<StaffSession> {
                                     ),
                                   ),
                                   onTap: () async {
-                                    final Ticket ticketToServe = tickets[0];
+                                    Ticket? ticketToServe;
+
+                                    if (tickets.isNotEmpty) {
+                                      ticketToServe = tickets[0];
+                                    }
+
                                     final timestamp = DateTime.now().toString();
 
                                     if (serving != null) {
@@ -607,7 +612,7 @@ class _StaffSessionState extends State<StaffSession> {
 
 
                                             if (tickets.isNotEmpty) {
-                                              if (ticketToServe.serviceType! == callBy || callBy == 'Time Order') {
+                                              if (ticketToServe!.serviceType! == callBy || callBy == 'Time Order') {
                                                 await ticketToServe.update({
                                                   "userAssigned": widget.user.username,
                                                   "status": "Serving",
@@ -643,7 +648,7 @@ class _StaffSessionState extends State<StaffSession> {
                                       ));
                                     } else {
                                       if (tickets.isNotEmpty) {
-                                        if (ticketToServe.serviceType! == callBy || callBy == 'Time Order') {
+                                        if (ticketToServe!.serviceType! == callBy || callBy == 'Time Order') {
                                           final timestamp = DateTime.now().toString();
                                           ticketToServe.update({
                                             "userAssigned": widget.user.username,
@@ -696,10 +701,7 @@ class _StaffSessionState extends State<StaffSession> {
                                     ),
                                   ),
                                   onTap: () async {
-                                    final Ticket ticketToServe = tickets[0];
                                     final timestamp = DateTime.now().toString();
-                                    final List<dynamic> stations = await getStationSQL("${widget.station.stationName}${widget.station.stationNumber}".trim());
-                                    final Station station = Station.fromJson(stations.first);
 
                                     if (serving != null) {
                                       showDialog(context: context, builder: (_) => AlertDialog(
@@ -720,7 +722,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                         onTap: () async {
                                                           final timestamp = DateTime.now().toString();
 
-                                                          serving!.update({
+                                                          await serving!.update({
                                                             'log': "${serving!.log}, $timestamp: ticket transferred to ${service.serviceType}",
                                                             'status': "Pending",
                                                             'userAssigned': "",
@@ -733,7 +735,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                           serving = null;
 
-                                                          await station.update({
+                                                          await widget.station.update({
                                                             'ticketServing': ""
                                                           });
 
@@ -760,7 +762,7 @@ class _StaffSessionState extends State<StaffSession> {
                                         ),
                                       ));
                                     } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served\nat the moment.")));
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No ticket being served at the moment.")));
                                     }
                                   },
                                 ),
@@ -787,10 +789,7 @@ class _StaffSessionState extends State<StaffSession> {
                                           ),
                                         ),
                                         onTap: () async {
-                                          final Ticket ticketToServe = tickets[0];
                                           final timestamp = DateTime.now().toString();
-                                          final List<dynamic> stations = await getStationSQL("${widget.station.stationName}${widget.station.stationNumber}".trim());
-                                          final Station station = Station.fromJson(stations.first);
 
                                           if (serving != null) {
                                             if (callAgainCounter < 3) {
@@ -816,7 +815,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                           'log': "${serving!.log!}, ${DateTime.now()}: Ticket Released"
                                                         });
 
-                                                        await station.update({
+                                                        await widget.station.update({
                                                           'ticketServing': ""
                                                         });
 
