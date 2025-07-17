@@ -456,7 +456,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                     FutureBuilder(
                                                       future: getTicketSQL(station.ticketServing),
                                                       builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
-                                                        return snapshot.connectionState == ConnectionState.done ?
+                                                        return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ?
                                                             Builder(builder: (context) {
                                                               final Ticket ticket = snapshot.data![0];
 
@@ -523,6 +523,30 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                               );
                                                             }) :
                                                         Padding(
+                                                          padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
+                                                          child: Opacity(
+                                                            opacity: 0.8,
+                                                            child: Card(
+                                                              clipBehavior: Clip.antiAlias,
+                                                              child: Column(
+                                                                children: [
+                                                                  Expanded(
+                                                                    flex: 45,
+                                                                    child: Container(
+                                                                        padding: EdgeInsets.only(top: 10),
+                                                                        color: hexBlue.withAlpha(200),
+                                                                        child: Center(child: AutoSizeText("${station.stationName}${station.stationNumber != 0 ? " ${station.stationNumber}" : ""}" ,style: TextStyle(height: 1 ,color: Colors.white ,fontFamily: 'BebasNeue', fontSize: 85)))
+                                                                    ),
+                                                                  ),
+                                                                  Expanded(
+                                                                    flex: 55,
+                                                                    child: Center(child: AutoSizeText("", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ) : Padding(
                                                           padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
                                                           child: Opacity(
                                                             opacity: 0.8,
