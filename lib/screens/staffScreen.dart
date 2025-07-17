@@ -837,7 +837,15 @@ class _StaffSessionState extends State<StaffSession> {
                                   );
                                 }
                             ),
-                            SizedBox(height: 30),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Checkbox(value: true, onChanged: (value) {}),
+                            SizedBox(width: 5),
+                            Text("Alternate Priority & Regular", style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
                           ],
                         ),
                         ValueListenableBuilder<int>(
