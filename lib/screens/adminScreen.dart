@@ -98,9 +98,10 @@ class _AdminScreenState extends State<AdminScreen> {
           logoBackground(context, 350),
           Align(
           alignment: Alignment.topLeft,
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
+          child: Container(
+            padding: EdgeInsets.all(10.0),
             child: Column(
+
               children: [
                 Row(
                   spacing: 10,
