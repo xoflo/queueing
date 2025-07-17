@@ -352,6 +352,7 @@ class _StaffSessionState extends State<StaffSession> {
   int callByUpdate = 1;
   final callByUI = ValueNotifier(1);
   String callBy = "Time Order";
+  bool alternate = false;
 
   AudioPlayer player = AudioPlayer();
   bool dialogOn = false;
@@ -843,7 +844,16 @@ class _StaffSessionState extends State<StaffSession> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Checkbox(value: true, onChanged: (value) {}),
+                            StatefulBuilder(
+                              builder: (context, setState) {
+                                return Checkbox(value: alternate,
+                                    onChanged: (value) {
+                                  alternate = !alternate;
+                                  callByUI.value = 0;
+                                  setState((){});
+                                });
+                              },
+                            ),
                             SizedBox(width: 5),
                             Text("Alternate Priority & Regular", style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
                           ],
@@ -922,7 +932,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                     children: [
                                                       Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                                                       SizedBox(width: 5),
-                                                      Text("${tickets[i].priorityType == "Regular" ? "" : "(${smartAbbreviate(tickets[i].priorityType!)})"}", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                                      Text("${tickets[i].priorityType == "Regular" ? "" : "(${tickets[i].priorityType!.length > 15 ? smartAbbreviate(tickets[i].priorityType!) : tickets[i].priorityType!})"}", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                                                       tickets[i].priorityType == "Regular" ? SizedBox() : Row(
                                                         children: [
                                                           SizedBox(width: 5),
@@ -1029,6 +1039,10 @@ class _StaffSessionState extends State<StaffSession> {
 
       newTickets.sort((a, b) => b.priority!.compareTo(a.priority!));
 
+      if (alternate == true) {
+        newTickets = alternateTicket(newTickets);
+      }
+
       return newTickets;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -1036,6 +1050,35 @@ class _StaffSessionState extends State<StaffSession> {
       print(e);
       return [];
     }
+  }
+
+  List<Ticket> alternateTicket(List<Ticket> tickets) {
+
+    tickets.sort((a, b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
+
+
+    List<Ticket> priority1 = tickets.where((t) => t.priority == 1).toList();
+    List<Ticket> priority0 = tickets.where((t) => t.priority == 0).toList();
+
+    List<Ticket> result = [];
+
+    bool takeFrom1 = true;
+
+    while (priority1.isNotEmpty || priority0.isNotEmpty) {
+      if (takeFrom1 && priority1.isNotEmpty) {
+        result.add(priority1.removeAt(0));
+      } else if (!takeFrom1 && priority0.isNotEmpty) {
+        result.add(priority0.removeAt(0));
+      } else if (priority1.isNotEmpty) {
+        result.add(priority1.removeAt(0));
+      } else if (priority0.isNotEmpty) {
+        result.add(priority0.removeAt(0));
+      }
+
+      takeFrom1 = !takeFrom1;
+    }
+
+    return result;
   }
 
   getServingTicketSQL() async {
