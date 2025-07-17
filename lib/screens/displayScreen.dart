@@ -387,6 +387,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
           SizedBox(width: 30),
           StatefulBuilder(
             builder: (context, setState) {
+              updateStations();
               return FutureBuilder(
                 future: updateStations(),
                 builder: (BuildContext
@@ -626,6 +627,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 return snapshot.connectionState == ConnectionState.done ?
                 Builder(
                     builder: (context) {
+                      updateStations();
+
                       var size = MediaQuery.of(context).size;
                       var itemWidth = (size.width / 4);
                       var itemHeight = snapshot.data!.length <= 8 ? (((size.height - 200) / 2) - 20) : (((size.height - 100) / 2));
@@ -648,59 +651,122 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             return GridView.builder(
                                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                     childAspectRatio: aspectRatio,
-                                    crossAxisCount: snapshot.data!.length <= 8 ? 4 : 5),
-                                itemCount: 10,
+                                    crossAxisCount: value.length <= 8 ? 4 : 5),
+                                itemCount: value.length,
                                 itemBuilder: (context, i) {
-                                  Station station = value[i];
 
-                                  return station.ticketServing != "" ?
-                                  FutureBuilder(
-                                      future: getTicketSQL(station.ticketServing),
-                                      builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
-                                        return snapshot.connectionState == ConnectionState.done ?
-                                        snapshot.data!.isNotEmpty ?
-                                        Builder(
-                                            builder: (context) {
-                                              Ticket ticket = snapshot.data![0];
-                                              return ticket.blinker == 0 ? TweenAnimationBuilder<Color?>(
-                                                tween: ColorTween(
-                                                    begin: Colors.red,
-                                                    end: Theme.of(context).cardColor
-                                                ),
-                                                duration: Duration(seconds: 5),
-                                                builder: (BuildContext context, color, Widget? child) {
-                                                  updateBlinker(ticket);
-                                                  return Opacity(
-                                                    opacity: 0.8,
-                                                    child: Card(
-                                                      clipBehavior: Clip.antiAlias,
-                                                      elevation: 2,
-                                                      child: Column(
-                                                        mainAxisAlignment: MainAxisAlignment.start,
-                                                        children: [
-                                                          Expanded(
-                                                            flex: 4,
-                                                            child: Container(
-                                                                decoration: BoxDecoration(
-                                                                    color: hexBlue.withAlpha(250)
-                                                                ),
-                                                                child: Center(child: Padding(
-                                                                  padding: const EdgeInsets.all(3.0),
-                                                                  child: AutoSizeText("${station.stationName!}${station.stationNumber! == 0 || station.stationNumber! == null ? "" : " ${station.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
-                                                                ))),
-                                                          ),
-                                                          Expanded(
-                                                            flex: 6,
-                                                            child: Center(child: Padding(
-                                                              padding: const EdgeInsets.all(10.0),
-                                                              child: AutoSizeText(station.ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
-                                                            )),
-                                                          )
-                                                        ],
+                                  return value.isNotEmpty ?
+                                  Builder(
+                                      builder: (context) {
+                                        Station station = value[i];
+                                        return station.ticketServing != "" ? FutureBuilder(
+                                            future: getTicketSQL(station.ticketServing),
+                                            builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
+
+                                              return snapshot.connectionState == ConnectionState.done ?
+                                              snapshot.data!.isNotEmpty ?
+                                              Builder(
+                                                  builder: (context) {
+                                                    Ticket ticket = snapshot.data![0];
+                                                    return ticket.blinker == 0 ? TweenAnimationBuilder<Color?>(
+                                                      tween: ColorTween(
+                                                          begin: Colors.red,
+                                                          end: Theme.of(context).cardColor
                                                       ),
-                                                    ),
-                                                  );
-                                                },
+                                                      duration: Duration(seconds: 5),
+                                                      builder: (BuildContext context, color, Widget? child) {
+                                                        updateBlinker(ticket);
+                                                        return Opacity(
+                                                          opacity: 0.8,
+                                                          child: Card(
+                                                            clipBehavior: Clip.antiAlias,
+                                                            elevation: 2,
+                                                            child: Column(
+                                                              mainAxisAlignment: MainAxisAlignment.start,
+                                                              children: [
+                                                                Expanded(
+                                                                  flex: 4,
+                                                                  child: Container(
+                                                                      decoration: BoxDecoration(
+                                                                          color: hexBlue.withAlpha(250)
+                                                                      ),
+                                                                      child: Center(child: Padding(
+                                                                        padding: const EdgeInsets.all(3.0),
+                                                                        child: AutoSizeText("${station.stationName!}${station.stationNumber! == 0 || station.stationNumber! == null ? "" : " ${station.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                                                      ))),
+                                                                ),
+                                                                Expanded(
+                                                                  flex: 6,
+                                                                  child: Center(child: Padding(
+                                                                    padding: const EdgeInsets.all(10.0),
+                                                                    child: AutoSizeText(station.ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                                  )),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ) :
+                                                    Opacity(
+                                                      opacity: 0.8,
+                                                      child: Card(
+                                                        clipBehavior: Clip.antiAlias,
+                                                        elevation: 2,
+                                                        child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.start,
+                                                          children: [
+                                                            Expanded(
+                                                              flex: 4,
+                                                              child: Container(
+                                                                  decoration: BoxDecoration(
+                                                                      color: hexBlue.withAlpha(250)
+                                                                  ),
+                                                                  child: Center(child: Padding(
+                                                                    padding: const EdgeInsets.all(3.0),
+                                                                    child: AutoSizeText("${station.stationName!}${station.stationNumber! == 0 || station.stationNumber! == null ? "" : " ${station.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                                                  ))),
+                                                            ),
+                                                            Expanded(
+                                                              flex: 6,
+                                                              child: Center(child: Padding(
+                                                                padding: const EdgeInsets.all(10.0),
+                                                                child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                              )),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ); }) :
+                                              Opacity(
+                                                opacity: 0.8,
+                                                child: Card(
+                                                  clipBehavior: Clip.antiAlias,
+                                                  elevation: 2,
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    children: [
+                                                      Expanded(
+                                                        flex: 4,
+                                                        child: Container(
+                                                            decoration: BoxDecoration(
+                                                                color: hexBlue.withAlpha(250)
+                                                            ),
+                                                            child: Center(child: Padding(
+                                                              padding: const EdgeInsets.all(3.0),
+                                                              child: AutoSizeText("", style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                                            ))),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 6,
+                                                        child: Center(child: Padding(
+                                                          padding: const EdgeInsets.all(10.0),
+                                                          child: AutoSizeText("", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                        )),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
                                               ) :
                                               Opacity(
                                                 opacity: 0.8,
@@ -725,44 +791,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                         flex: 6,
                                                         child: Center(child: Padding(
                                                           padding: const EdgeInsets.all(10.0),
-                                                          child: AutoSizeText(ticket.codeAndNumber!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                          child: AutoSizeText("", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
                                                         )),
                                                       )
                                                     ],
                                                   ),
                                                 ),
-                                              ); }) :
-                                        Opacity(
-                                          opacity: 0.8,
-                                          child: Card(
-                                            clipBehavior: Clip.antiAlias,
-                                            elevation: 2,
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              children: [
-                                                Expanded(
-                                                  flex: 4,
-                                                  child: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: hexBlue.withAlpha(250)
-                                                      ),
-                                                      child: Center(child: Padding(
-                                                        padding: const EdgeInsets.all(3.0),
-                                                        child: AutoSizeText("", style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
-                                                      ))),
-                                                ),
-                                                Expanded(
-                                                  flex: 6,
-                                                  child: Center(child: Padding(
-                                                    padding: const EdgeInsets.all(10.0),
-                                                    child: AutoSizeText("", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
-                                                  )),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ) :
-                                        Opacity(
+                                              );
+                                            }): Opacity(
                                           opacity: 0.8,
                                           child: Card(
                                             clipBehavior: Clip.antiAlias,
@@ -792,7 +828,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             ),
                                           ),
                                         );
-                                      }) :
+                                      }
+                                  ) :
                                   Opacity(
                                     opacity: 0.8,
                                     child: Card(
@@ -809,7 +846,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 ),
                                                 child: Center(child: Padding(
                                                   padding: const EdgeInsets.all(3.0),
-                                                  child: AutoSizeText("${station.stationName!}${station.stationNumber! == 0 || station.stationNumber! == null ? "" : " ${station.stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
+                                                  child: AutoSizeText("${snapshot.data![i].stationName!}${snapshot.data![i].stationNumber! == 0 || snapshot.data![i].stationNumber! == null ? "" : " ${snapshot.data![i].stationNumber!}"}".toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 90, fontWeight: FontWeight.w700, fontFamily: 'BebasNeue'), maxFontSize: double.infinity),
                                                 ))),
                                           ),
                                           Expanded(
@@ -951,7 +988,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
         });
   }
 
-  getStationSQL() async {
+  Future<List<Station>> getStationSQL() async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
       final result = await http.get(uri);
@@ -964,7 +1001,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
       }
 
       stations.sort((a, b) => a.displayIndex!.compareTo(b.displayIndex!));
-
       return stations;
     } catch (e) {
       print(e);
