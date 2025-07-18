@@ -810,7 +810,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "timeDone": "",
         "status": "Pending",
         "log": "$timestamp: ticketGenerated",
-        "priority": priorityType == "" ? "Regular" : priorityType != "Regular " ? 1 : 0,
+        "priority": priorityType == "" || priorityType == "Regular" ? 0 : 1,
         "priorityType": priorityType == "" ? "Regular" : priorityType,
         "printStatus": 1,
         "callCheck": 0,

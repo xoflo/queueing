@@ -419,8 +419,10 @@ class _StaffSessionState extends State<StaffSession> {
   ValueNotifier<List<Ticket>> ticketStream = ValueNotifier([]);
   List<Ticket> savedTicketState = [];
 
+  bool swap = false;
+
   updateTicketStream() async {
-    final List<Ticket> getTickets = await getTicketSQL();
+    final getTickets = await getTicketSQL();
     savedTicketState = getTickets;
     ticketStream.value = getTickets;
     tickets = getTickets;
@@ -1065,9 +1067,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                 value: alternate,
                                                 onChanged: (value) async {
                                                   alternate = !alternate;
-                                                  callByUI.value = 0;
+                                                  await updateTicketStream();
                                                   setStateCheck((){});
-                                                  updateTicketStream();
                                                 });
                                           },
                                         ),
@@ -1076,13 +1077,17 @@ class _StaffSessionState extends State<StaffSession> {
                                             style: TextStyle(
                                                 fontFamily: 'Inter',
                                                 fontSize: 14)),
+
+                                        SizedBox(width: 5),
+                                        IconButton(onPressed: () async {
+                                          swap = !swap;
+                                          await updateTicketStream();
+                                        }, icon: Icon(Icons.change_circle_outlined))
                                       ],
                                     ),
                                     ValueListenableBuilder<int>(
                                       valueListenable: callByUI,
-                                      builder: (BuildContext context, int value,
-                                          Widget? child) {
-                                        callByUI.value = 1;
+                                      builder: (BuildContext context, int value, Widget? child) {
 
                                         return StatefulBuilder(
                                           builder: (BuildContext context,
@@ -1126,15 +1131,13 @@ class _StaffSessionState extends State<StaffSession> {
                                                                       width:
                                                                           300,
                                                                       child: ListView.builder(
-                                                                        key: listKey,
                                                                           itemCount: callByList.length,
                                                                           itemBuilder: (context, i) {
                                                                             return ListTile(
                                                                               title: Text(callByList[i]),
                                                                               onTap: () {
                                                                                 callBy = callByList[i];
-                                                                                callByUpdate = 0;
-
+                                                                                updateTicketStream();
                                                                                 setStateTickets(() {});
                                                                                 Navigator.pop(context);
                                                                               },
@@ -1173,65 +1176,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                                 builder: (BuildContext context, List<Ticket> value, Widget? child) {
                                                                   return ListView.builder(
                                                                       key: listKey,
-                                                                      scrollDirection:
-                                                                      Axis.vertical,
-                                                                      itemCount: tickets
-                                                                          .length,
-                                                                      itemBuilder:
-                                                                          (context, i) {
+                                                                      scrollDirection: Axis.vertical,
+                                                                      itemCount: tickets.length,
+                                                                      itemBuilder: (context, i) {
                                                                         return ListTile(
                                                                           dense: true,
-                                                                          title: Text(
-                                                                              "${i + 1}. ${tickets[i].codeAndNumber}",
-                                                                              style: TextStyle(
-                                                                                  fontWeight: FontWeight
-                                                                                      .bold,
-                                                                                  fontSize:
-                                                                                  20)),
-                                                                          subtitle: Text(
-                                                                              tickets[i].priorityType == "Regular" ? "" : tickets[i].priorityType!.length > 20 ? "(${smartAbbreviate(tickets[i].priorityType!)})" : tickets[i].priorityType!,
-                                                                              style: TextStyle(fontWeight: FontWeight.bold)),
-                                                                          trailing: tickets[i]
-                                                                              .priorityType ==
-                                                                              "Regular"
-                                                                              ? null
-                                                                              : Icon(
-                                                                              Icons
-                                                                                  .star,
-                                                                              color:
-                                                                              Colors.blueGrey),
-                                                                        );
-
-                                                                        return Padding(
-                                                                          padding:
-                                                                          const EdgeInsets
-                                                                              .all(
-                                                                              2.0),
-                                                                          child: Row(
-                                                                            children: [
-                                                                              Text(
-                                                                                  "${i + 1}. ${tickets[i].codeAndNumber}",
-                                                                                  style: TextStyle(
-                                                                                      fontSize: 15,
-                                                                                      fontWeight: FontWeight.bold)),
-                                                                              SizedBox(
-                                                                                  width:
-                                                                                  5),
-                                                                              Text(
-                                                                                  "${tickets[i].priorityType == "Regular" ? "" : "(${tickets[i].priorityType!.length > 15 ? smartAbbreviate(tickets[i].priorityType!) : tickets[i].priorityType!})"}",
-                                                                                  style: TextStyle(
-                                                                                      fontSize: 10,
-                                                                                      fontWeight: FontWeight.bold)),
-                                                                              tickets[i].priorityType ==
-                                                                                  "Regular"
-                                                                                  ? SizedBox()
-                                                                                  : Row(
-                                                                                children: [
-                                                                                  SizedBox(width: 5),
-                                                                                ],
-                                                                              )
-                                                                            ],
-                                                                          ),
+                                                                          title: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                                                                          subtitle: Text(tickets[i].priorityType == "Regular" ? "" : tickets[i].priorityType!.length > 20 ? "(${smartAbbreviate(tickets[i].priorityType!)})" : tickets[i].priorityType!, style: TextStyle(fontWeight: FontWeight.bold)),
+                                                                          trailing: tickets[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
                                                                         );
                                                                       });
                                                                 },
@@ -1343,8 +1295,8 @@ class _StaffSessionState extends State<StaffSession> {
         });
       }
 
-      newTickets.sort((a, b) => a.priority!
-          .compareTo(b.priority!));
+      newTickets.sort((a, b) => b.priority!
+          .compareTo(a.priority!));
 
       if (alternate == true) {
         newTickets = alternateTickets(newTickets);
@@ -1362,23 +1314,31 @@ class _StaffSessionState extends State<StaffSession> {
 
 
   List<Ticket> alternateTickets(List<Ticket> tickets) {
-
-    final List<Ticket> priorities = tickets.where((e) => e.priority == 1).toList();
-    final List<Ticket> regulars = tickets.where((e) => e.priority == 0).toList();
+    List<Ticket> priorities = tickets.where((e) => e.priority! == 1).toList();
+    List<Ticket> regulars = tickets.where((e) => e.priority! == 0).toList();
 
     final totalLength = priorities.length + regulars.length;
-
     List<Ticket> alternatedList = [];
 
     for (int i = 0; i < totalLength; i++) {
-      if (i.isOdd) {
-        alternatedList.add(priorities.first);
-        priorities.remove(priorities.first);
-      }
-
-      if (i.isEven) {
-        alternatedList.add(regulars.first);
-        regulars.remove(regulars.first);
+      if (swap == false) {
+        if (priorities.isNotEmpty) {
+          alternatedList.add(priorities.first);
+          priorities.remove(priorities.first);
+        }
+        if (regulars.isNotEmpty) {
+          alternatedList.add(regulars.first);
+          regulars.remove(regulars.first);
+        }
+      } else {
+        if (regulars.isNotEmpty) {
+          alternatedList.add(regulars.first);
+          regulars.remove(regulars.first);
+        }
+        if (priorities.isNotEmpty) {
+          alternatedList.add(priorities.first);
+          priorities.remove(priorities.first);
+        }
       }
     }
 
