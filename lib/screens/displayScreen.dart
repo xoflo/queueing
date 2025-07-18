@@ -428,17 +428,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
                                               Ticket ticket = snapshot.data![0];
 
-                                              bool show = true;
-
                                               return ticket.blinker == 0 ?
                                               TweenAnimationBuilder<Color?>(
                                                   tween: ColorTween(
                                                       begin: Colors.red,
                                                       end: Theme.of(context).cardColor
                                                   ),
-                                                  duration: Duration(seconds: 180),
+                                                  duration: Duration(seconds: 5),
                                                   builder: (BuildContext context, color, Widget? child) {
-
                                                     updateBlinker(ticket);
                                                     return Padding(
                                                       padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
@@ -454,29 +451,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                 child: Container(
                                                                     padding: EdgeInsets.only(top: 10),
                                                                     color: hexBlue.withAlpha(200),
-                                                                    child: Center(
-                                                                        child: AutoSizeText("${station.nameAndNumber}".toUpperCase(), style: TextStyle(height: 1 ,color: Colors.white ,fontFamily: 'BebasNeue', fontSize: 85))
-                                                                    )
+                                                                    child: Center(child: AutoSizeText("${station.stationName}${station.stationNumber != 0 ? " ${station.stationNumber}" : ""}" ,style: TextStyle(height: 1 ,color: Colors.white ,fontFamily: 'BebasNeue', fontSize: 85)))
                                                                 ),
                                                               ),
                                                               Expanded(
                                                                 flex: 55,
-                                                                child: Center(child: StatefulBuilder(
-                                                                  builder: (BuildContext context, setStateText) {
-
-                                                                    final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
-                                                                    final noBlink = AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85));
-
-                                                                    if (show == true) {
-                                                                      Timer.periodic(Duration(seconds: 10), (value) {
-                                                                        show = false;
-                                                                        setStateText((){});
-                                                                      });
-                                                                    }
-
-                                                                    return show == true ? blink : noBlink;
-                                                                  },
-                                                                )),
+                                                                child: Center(child: AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
                                                               ),
                                                             ],
                                                           ),
@@ -623,7 +603,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
                   var size = MediaQuery.of(context).size;
                   var itemWidth = (size.width / 4);
-                  var itemHeight = ((size.height - 100) / 2);
+                  var itemHeight = stationStream.value.length <= 8 ? (((size.height - 200) / 2) - 20) : (((size.height - 100) / 2));
                   var aspectRatio = itemWidth / itemHeight;
 
                   return Container(
@@ -647,7 +627,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             itemCount: value.length,
                             itemBuilder: (context, i) {
                               final Station station = value[i];
-                              bool show = true;
 
                               return station.ticketServing != "" ?
                               FutureBuilder(
@@ -662,9 +641,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                           TweenAnimationBuilder<Color?>(
                                             tween: ColorTween(
                                                 begin: Colors.red,
-                                                end: Theme.of(context).cardColor.withAlpha(200)
+                                                end: Theme.of(context).cardColor
                                             ),
-                                            duration: Duration(seconds: 180),
+                                            duration: Duration(seconds: 5),
                                             builder: (BuildContext context, color, Widget? child) {
                                               updateBlinker(ticket);
                                               return Opacity(
@@ -691,22 +670,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                         flex: 6,
                                                         child: Center(child: Padding(
                                                           padding: const EdgeInsets.all(10.0),
-                                                          child: StatefulBuilder(builder: (BuildContext context, setStateText) {
-
-
-                                                            final blink = Blink(AutoSizeText(ticket.codeAndNumber!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
-                                                            final noBlink = AutoSizeText(ticket.codeAndNumber!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85));
-
-                                                            if (show == true) {
-                                                              Timer.periodic(Duration(seconds: 10), (value) {
-                                                                show = false;
-                                                                setStateText((){});
-                                                              });
-                                                            }
-
-                                                            return show == true ? blink : noBlink;
-
-                                                          }),
+                                                          child: AutoSizeText(station.ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
                                                         )),
                                                       )
                                                     ],
@@ -738,7 +702,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                     flex: 6,
                                                     child: Center(child: Padding(
                                                       padding: const EdgeInsets.all(10.0),
-                                                      child: AutoSizeText(savedStationState[i].ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                      child: AutoSizeText(station.ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
                                                     )),
                                                   )
                                                 ],

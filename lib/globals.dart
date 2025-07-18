@@ -397,42 +397,6 @@ class _WebVideoPlayerState extends State<WebVideoPlayer> {
   }
 }
 
-class Blink extends StatefulWidget {
-  final Widget _target;
-  const Blink(this._target, {Key? key}) : super(key: key);
-  @override
-  _BlinkState createState() => _BlinkState();
-}
-
-class _BlinkState extends State<Blink> {
-  bool _show = true;
-  Timer? _timer;
-
-  @override
-  void initState() {
-
-    _timer = Timer.periodic(Duration(milliseconds: 500), (_) {
-      setState(() => _show = !_show);
-    });
-
-
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) => _show ? Visibility(
-      visible: true,
-      child: widget._target) : Visibility(
-      visible: false,
-      child: widget._target);
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-}
-
 
 
 
