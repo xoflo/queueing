@@ -575,6 +575,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                                     if (serving != null) {
                                       final List<dynamic> result = await getStationSQL("${serving!.stationName!}${serving!.stationNumber! == 0 ? "" : " ${serving!.stationNumber!}"}".trim());
+                                      print(result);
                                       final Station servingStation = Station.fromJson(result[0]);
 
                                       showDialog(context: context, builder: (_) => AlertDialog(
