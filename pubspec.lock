@@ -97,14 +97,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.9"
-  blinking_text:
+  blinking_timer:
     dependency: "direct main"
     description:
-      name: blinking_text
-      sha256: b5af1883380ab88ee6a9337a1b44fbba7d0670ba889b810c57c9aa58eb33ad92
+      name: blinking_timer
+      sha256: "06df40396833233f23dc0f378759730a90713f6c9f6431c94844fee15dbf0e58"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.4"
+    version: "1.0.1"
   blue_thermal_printer:
     dependency: "direct main"
     description:

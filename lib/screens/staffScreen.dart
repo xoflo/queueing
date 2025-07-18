@@ -1052,7 +1052,7 @@ class _StaffSessionState extends State<StaffSession> {
 
   List<Ticket> alternateTicket(List<Ticket> tickets) {
 
-    tickets.sort((a, b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
+    tickets.sort((a, b) => a.timeCreatedAsDate!.compareTo(b.timeCreatedAsDate!));
 
 
     List<Ticket> priority1 = tickets.where((t) => t.priority == 1).toList();
