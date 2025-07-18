@@ -836,7 +836,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(

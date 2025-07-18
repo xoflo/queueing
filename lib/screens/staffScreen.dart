@@ -200,15 +200,12 @@ class _StaffScreenState extends State<StaffScreen> {
                                       itemCount: snapshot.data!.length,
                                       itemBuilder: (context, i) {
                                         final Station station = Station.fromJson(snapshot.data![i]);
-
-                                        print("ThisStation: ${station.stationName}${station.stationNumber}");
-
                                         return InkWell(
                                           child: Card(
                                               child: Column(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
-                                                  Text("${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                                  Text("${station.stationName}${station.stationNumber == 0 ? ""  : " ${station.stationNumber}"}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                                                   station.inSession == 0
                                                       ? Text("Available",
                                                       style:
@@ -850,6 +847,7 @@ class _StaffSessionState extends State<StaffSession> {
                                     onChanged: (value) {
                                   alternate = !alternate;
                                   callByUI.value = 0;
+                                  callByUpdate = 0;
                                   setState((){});
                                 });
                               },
@@ -912,7 +910,7 @@ class _StaffSessionState extends State<StaffSession> {
                                       children: [
                                         Text("Upcoming Tickets:", style: TextStyle(fontWeight: FontWeight.w700)),
                                         Container(
-                                          height: 280,
+                                          height: 240,
                                           child: tickets.isEmpty ? Text("No pending tickets\nat the moment.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center) :
                                           ListView.builder(
                                               scrollDirection: Axis.vertical,

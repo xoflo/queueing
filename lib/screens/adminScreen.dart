@@ -99,7 +99,7 @@ class _AdminScreenState extends State<AdminScreen> {
           Align(
           alignment: Alignment.topLeft,
           child: Container(
-            padding: EdgeInsets.all(10.0),
+            padding: EdgeInsets.all(20.0),
             child: Column(
 
               children: [
@@ -2426,18 +2426,30 @@ class _AdminScreenState extends State<AdminScreen> {
         }
       }
 
-      resultsToReturn.sort((a, b) => int.parse(a['id']).compareTo(int.parse(b['id'])));
-
       resultsToReturn.sort((a, b) {
-        final at = b['timeCreated'];
-        final bt = a['timeCreated'];
+        DateTime? at;
+        DateTime? bt;
 
-        if (at == null && bt != null) return 1;  // b before a
-        if (bt == null && at != null) return -1; // a before b
-        if (at != null && bt != null) {
-          return at.compareTo(bt);
+        // Ensure timecreated is a DateTime
+        if (a['timeCreated'] is DateTime) {
+          at = a['timeCreated'];
+        } else if (a['timeCreated'] != null) {
+          at = DateTime.tryParse(a['timeCreated'].toString());
         }
-        return 0;
+
+        if (b['timeCreated'] is DateTime) {
+          bt = b['timeCreated'];
+        } else if (b['timeCreated'] != null) {
+          bt = DateTime.tryParse(b['timeCreated'].toString());
+        }
+
+        // Nulls first
+        if (at == null && bt != null) return -1;
+        if (at != null && bt == null) return 1;
+        if (at == null && bt == null) return 0;
+
+        // Oldest to newest
+        return at!.compareTo(bt!);
       });
 
       return resultsToReturn;
