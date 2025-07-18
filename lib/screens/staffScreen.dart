@@ -574,6 +574,9 @@ class _StaffSessionState extends State<StaffSession> {
                                     final timestamp = DateTime.now().toString();
 
                                     if (serving != null) {
+                                      final List<dynamic> result = await getStationSQL("${serving!.stationName!}${serving!.stationNumber! == 0 ? "" : " ${serving!.stationNumber!}"}".trim());
+                                      final Station servingStation = Station.fromJson(result[0]);
+
                                       showDialog(context: context, builder: (_) => AlertDialog(
                                         title: Text("Confirm Done?"),
                                         content: Container(
@@ -581,7 +584,6 @@ class _StaffSessionState extends State<StaffSession> {
                                             height: 40),
                                         actions: [
                                           TextButton(onPressed: () async {
-
                                             await serving!.update({
                                               "status": "Done",
                                               "timeDone": timestamp,
@@ -601,7 +603,6 @@ class _StaffSessionState extends State<StaffSession> {
                                           }, child: Text("Done")),
                                           TextButton(onPressed: () async {
                                             final timestamp = DateTime.now().toString();
-
                                             await serving!.update({
                                               "status": "Done",
                                               "timeDone": timestamp,
@@ -622,8 +623,9 @@ class _StaffSessionState extends State<StaffSession> {
                                                 });
 
                                                 await widget.station.update({
-                                                  'ticketServing': ticketToServe.codeAndNumber
+                                                  'ticketServing': ""
                                                 });
+
 
 
                                                 servingKey.currentState!.setState(() {});
@@ -632,12 +634,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                 await widget.station.update({
                                                   'ticketServing': ""
                                                 });
+
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
                                               }
                                             } else {
                                               await widget.station.update({
                                                 'ticketServing': ""
                                               });
+
                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
                                             }
 
@@ -661,7 +665,6 @@ class _StaffSessionState extends State<StaffSession> {
                                           await widget.station.update({
                                             'ticketServing': ticketToServe.codeAndNumber!
                                           });
-
 
                                           callByUI.value = 0;
                                         } else {
@@ -702,6 +705,9 @@ class _StaffSessionState extends State<StaffSession> {
                                     final timestamp = DateTime.now().toString();
 
                                     if (serving != null) {
+                                      final List<dynamic> result = await getStationSQL("${serving!.stationName!}${serving!.stationNumber! == 0 ? "" : " ${serving!.stationNumber!}"}".trim());
+                                      final Station servingStation = Station.fromJson(result[0]);
+
                                       showDialog(context: context, builder: (_) => AlertDialog(
                                         title: Text("Select Station to Transfer"),
                                         content: Container(
@@ -719,7 +725,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                         title: Text(service.serviceType!),
                                                         onTap: () async {
                                                           final timestamp = DateTime.now().toString();
-
                                                           await serving!.update({
                                                             'log': "${serving!.log}, $timestamp: ticket transferred to ${service.serviceType}",
                                                             'status': "Pending",
@@ -731,11 +736,12 @@ class _StaffSessionState extends State<StaffSession> {
                                                             'blinker': 0
                                                           });
 
-                                                          serving = null;
-
                                                           await widget.station.update({
                                                             'ticketServing': ""
                                                           });
+
+                                                          serving = null;
+
 
                                                           Navigator.pop(context);
 
@@ -790,6 +796,9 @@ class _StaffSessionState extends State<StaffSession> {
                                           final timestamp = DateTime.now().toString();
 
                                           if (serving != null) {
+                                            final List<dynamic> result = await getStationSQL("${serving!.stationName!}${serving!.stationNumber! == 0 ? "" : " ${serving!.stationNumber!}"}".trim());
+                                            final Station servingStation = Station.fromJson(result[0]);
+
                                             if (callAgainCounter < 3) {
                                               callAgainCounter += 1;
                                               serving!.update({
@@ -816,6 +825,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                         await widget.station.update({
                                                           'ticketServing': ""
                                                         });
+
+
 
                                                         Navigator.pop(context);
                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));

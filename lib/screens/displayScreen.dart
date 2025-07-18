@@ -694,8 +694,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                           child: StatefulBuilder(builder: (BuildContext context, setStateText) {
 
 
-                                                            final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
-                                                            final noBlink = AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85));
+                                                            final blink = Blink(AutoSizeText(ticket.codeAndNumber!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
+                                                            final noBlink = AutoSizeText(ticket.codeAndNumber!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85));
 
                                                             if (show == true) {
                                                               Timer.periodic(Duration(seconds: 10), (value) {
@@ -738,7 +738,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                     flex: 6,
                                                     child: Center(child: Padding(
                                                       padding: const EdgeInsets.all(10.0),
-                                                      child: AutoSizeText(station.ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                      child: AutoSizeText(savedStationState[i].ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
                                                     )),
                                                   )
                                                 ],

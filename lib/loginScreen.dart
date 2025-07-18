@@ -225,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       }
     } catch(e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong. (${site == null ? "No IP" : site})")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong. (${site == null || site == "" ? "No IP" : site})")));
       print(e);
     }
   }

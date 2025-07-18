@@ -1736,7 +1736,16 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         ),
                                                       );
                                                     }),
-                                              )
+                                              ),
+                                              actions: [
+                                                TextButton(onPressed: () {
+                                                  user.update({
+                                                    'assignedStation': "All_999"
+                                                  });
+                                                  Navigator.pop(context);
+                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Allowed to Select")));
+                                                }, child: Text("Allow User to Select"))
+                                              ],
                                             ));
                                           },
                                         )
