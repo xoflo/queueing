@@ -429,13 +429,15 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
                                               Ticket ticket = snapshot.data![0];
 
+                                              bool show = true;
+
                                               return ticket.blinker == 0 ?
                                               TweenAnimationBuilder<Color?>(
                                                   tween: ColorTween(
                                                       begin: Colors.red,
                                                       end: Theme.of(context).cardColor.withAlpha(200)
                                                   ),
-                                                  duration: Duration(seconds: 5),
+                                                  duration: Duration(seconds: 180),
                                                   builder: (BuildContext context, color, Widget? child) {
                                                     updateBlinker(ticket);
                                                     return Padding(
@@ -457,7 +459,20 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                               ),
                                                               Expanded(
                                                                 flex: 55,
-                                                                child: Center(child: AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
+                                                                child: Center(child: StatefulBuilder(builder: (BuildContext context, setStateText) {
+
+                                                                  final noBlink = AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85));
+                                                                  final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
+
+                                                                  if (show == true) {
+                                                                    Timer.periodic(Duration(seconds: 10), (callback) {
+                                                                      show = false;
+                                                                      setStateText((){});
+                                                                    });
+                                                                  }
+
+                                                                  return show == true ? blink : noBlink;
+                                                                })),
                                                               ),
                                                             ],
                                                           ),
@@ -641,13 +656,15 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 Builder(
                                     builder: (context) {
                                       Ticket ticket = snapshot.data![0];
+                                      bool show = true;
+
                                       return ticket.blinker == 0 ?
                                       TweenAnimationBuilder<Color?>(
                                         tween: ColorTween(
                                             begin: Colors.red,
                                             end: Theme.of(context).cardColor.withAlpha(200)
                                         ),
-                                        duration: Duration(seconds: 5),
+                                        duration: Duration(seconds: 180),
                                         builder: (BuildContext context, color, Widget? child) {
                                           updateBlinker(ticket);
                                           return Opacity(
@@ -674,7 +691,20 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                     flex: 6,
                                                     child: Center(child: Padding(
                                                       padding: const EdgeInsets.all(10.0),
-                                                      child: AutoSizeText(station.ticketServing!, style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                                      child: StatefulBuilder(builder: (BuildContext context, setStateText) {
+
+                                                        final noBlink = AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85));
+                                                        final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
+
+                                                        if (show == true) {
+                                                          Timer.periodic(Duration(seconds: 10), (callback) {
+                                                            show = false;
+                                                            setStateText((){});
+                                                          });
+                                                        }
+
+                                                        return show == true ? blink : noBlink;
+                                                      }),
                                                     )),
                                                   )
                                                 ],
