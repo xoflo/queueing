@@ -591,6 +591,10 @@ class _StaffSessionState extends State<StaffSession> {
                                               "log": "${serving!.log}, $timestamp: Ticket Session Finished"
                                             });
 
+                                            await servingStation.update({
+                                              "ticketServing": ""
+                                            });
+
                                             await widget.station.update({
                                               'ticketServing': ""
                                             });
@@ -624,7 +628,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                 });
 
                                                 await widget.station.update({
-                                                  'ticketServing': ""
+                                                  'ticketServing': "${ticketToServe.codeAndNumber}"
                                                 });
 
 
@@ -635,12 +639,17 @@ class _StaffSessionState extends State<StaffSession> {
                                                 await widget.station.update({
                                                   'ticketServing': ""
                                                 });
-
+                                                await servingStation.update({
+                                                  "ticketServing": ""
+                                                });
                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
                                               }
                                             } else {
                                               await widget.station.update({
                                                 'ticketServing': ""
+                                              });
+                                              await servingStation.update({
+                                                "ticketServing": ""
                                               });
 
                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
@@ -673,6 +682,7 @@ class _StaffSessionState extends State<StaffSession> {
                                           await widget.station.update({
                                             'ticketServing': ""
                                           });
+
                                         }
 
                                       } else {
@@ -735,6 +745,10 @@ class _StaffSessionState extends State<StaffSession> {
                                                             'serviceType': "${service.serviceType}",
                                                             'callCheck': 0,
                                                             'blinker': 0
+                                                          });
+
+                                                          await servingStation.update({
+                                                            "ticketServing": ""
                                                           });
 
                                                           await widget.station.update({
@@ -821,6 +835,10 @@ class _StaffSessionState extends State<StaffSession> {
                                                         serving!.update({
                                                           "status": 'Released',
                                                           'log': "${serving!.log!}, ${DateTime.now()}: Ticket Released"
+                                                        });
+
+                                                        await servingStation.update({
+                                                          "ticketServing": ""
                                                         });
 
                                                         await widget.station.update({
