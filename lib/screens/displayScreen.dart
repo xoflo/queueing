@@ -469,6 +469,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                 child: Opacity(
                                                   opacity: 0.8,
                                                   child: Card(
+                                                    color: Theme.of(context).cardColor.withAlpha(200),
                                                     clipBehavior: Clip.antiAlias,
                                                     child: Column(
                                                       children: [
@@ -495,6 +496,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                               child: Opacity(
                                                 opacity: 0.8,
                                                 child: Card(
+                                                  color: Theme.of(context).cardColor.withAlpha(200),
                                                   clipBehavior: Clip.antiAlias,
                                                   child: Column(
                                                     children: [
@@ -519,6 +521,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                               child: Opacity(
                                                 opacity: 0.8,
                                                 child: Card(
+                                                  color: Theme.of(context).cardColor.withAlpha(200),
                                                   clipBehavior: Clip.antiAlias,
                                                   child: Column(
                                                     children: [
@@ -546,6 +549,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                           child: Opacity(
                                             opacity: 0.8,
                                             child: Card(
+                                              color: Theme.of(context).cardColor.withAlpha(200),
                                               clipBehavior: Clip.antiAlias,
                                               child: Column(
                                                 children: [
@@ -678,6 +682,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                   Opacity(
                                     opacity: 0.8,
                                     child: Card(
+                                      color: Theme.of(context).cardColor.withAlpha(200),
                                       clipBehavior: Clip.antiAlias,
                                       elevation: 2,
                                       child: Column(
@@ -708,6 +713,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             Opacity(
                               opacity: 0.8,
                               child: Card(
+                                color: Theme.of(context).cardColor.withAlpha(200),
                                 clipBehavior: Clip.antiAlias,
                                 elevation: 2,
                                 child: Column(
@@ -738,6 +744,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             Opacity(
                               opacity: 0.8,
                               child: Card(
+                                color: Theme.of(context).cardColor.withAlpha(200),
                                 clipBehavior: Clip.antiAlias,
                                 elevation: 2,
                                 child: Column(
@@ -769,6 +776,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       Opacity(
                         opacity: 0.8,
                         child: Card(
+                          color: Theme.of(context).cardColor.withAlpha(200),
                           clipBehavior: Clip.antiAlias,
                           elevation: 2,
                           child: Column(
