@@ -420,7 +420,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                       itemBuilder: (context, i) {
                                         Station station = value[i];
 
-                                        return station.ticketServing != "" ?
+                                        return station.ticketServing != "" || station.ticketServing != null ?
                                         FutureBuilder(
                                           future: getTicketSQL(station.ticketServing),
                                           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
@@ -647,7 +647,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         itemBuilder: (context, i) {
                           final Station station = value[i];
 
-                          return station.ticketServing != "" ?
+                          return station.ticketServing != ""  || station.ticketServing != null ?
                           FutureBuilder(
                               future: getTicketSQL(station.ticketServing),
                               builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
