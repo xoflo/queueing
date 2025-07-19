@@ -723,36 +723,22 @@ class _StaffSessionState extends State<StaffSession> {
                                                                     height: 40),
                                                                 actions: [
                                                                   TextButton(
-                                                                      onPressed:
-                                                                          () async {
-                                                                        await serving!
-                                                                            .update({
-                                                                          "status":
-                                                                              "Done",
-                                                                          "timeDone":
-                                                                              timestamp,
-                                                                          "log":
-                                                                              "${serving!.log}, $timestamp: Ticket Session Finished"
-                                                                        });
+                                                                      onPressed: () async {
+                                                                        try {
+                                                                          await serving!.update({"status": "Done", "timeDone": timestamp, "log": "${serving!.log}, $timestamp: Ticket Session Finished"});
+                                                                          await widget.station.update({'ticketServing': ""});
 
-                                                                        await widget
-                                                                            .station
-                                                                            .update({
-                                                                          'ticketServing':
-                                                                              ""
-                                                                        });
-
-                                                                        serving =
-                                                                            null;
-                                                                        servingKey
-                                                                            .currentState!
-                                                                            .setState(() {});
-                                                                        Navigator.pop(
-                                                                            context);
-                                                                        resetRinger();
-                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                            content:
-                                                                                Text("Ticket complete.")));
+                                                                          serving = null;
+                                                                          servingKey.currentState!.setState(() {});
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                          resetRinger();
+                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                              content:
+                                                                              Text("Ticket complete.")));
+                                                                        } catch(e) {
+                                                                          print(e);
+                                                                        }
                                                                       },
                                                                       child: Text(
                                                                           "Done")),
@@ -761,14 +747,10 @@ class _StaffSessionState extends State<StaffSession> {
                                                                           () async {
                                                                         final timestamp =
                                                                             DateTime.now().toString();
-                                                                        await serving!
-                                                                            .update({
-                                                                          "status":
-                                                                              "Done",
-                                                                          "timeDone":
-                                                                              timestamp,
-                                                                          "log":
-                                                                              "${serving!.log}, $timestamp: Ticket Session Finished"
+                                                                        await serving!.update({
+                                                                          "status": "Done",
+                                                                          "timeDone": timestamp,
+                                                                          "log": "${serving!.log}, $timestamp: Ticket Session Finished"
                                                                         });
 
                                                                         if (tickets
@@ -1369,15 +1351,9 @@ class _StaffSessionState extends State<StaffSession> {
       for (int i = 0; i < sorted.length; i++) {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
-      newTickets.sort((a, b) =>
-          DateTime.parse(a.timeTaken!).compareTo(DateTime.parse(b.timeTaken!)));
 
-      final realTickets = newTickets
-          .where((e) =>
-              DateTime.parse(e.timeCreated!).day == dateNow.day &&
-              DateTime.parse(e.timeCreated!).month == dateNow.month &&
-              DateTime.parse(e.timeCreated!).year == dateNow.year)
-          .toList();
+      newTickets.sort((a, b) => DateTime.parse(a.timeTaken!).compareTo(DateTime.parse(b.timeTaken!)));
+      final List<Ticket> realTickets = newTickets.where((e) => toDateTime(e.timeCreatedAsDate!) == toDateTime(dateNow)).toList();
 
       final List<Ticket> dummyTicket = [];
 

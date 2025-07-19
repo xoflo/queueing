@@ -41,31 +41,35 @@ class MyApp extends StatelessWidget {
 
             seedColor: Colors.blueGrey),
       ),
-      home: FutureBuilder(
-          future: ipHandler(context),
-          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-            return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? ServicesScreen() : BootInterface() :
-              Scaffold(
-                  body: Stack(
-                    children: [
-                      imageBackground(context),
-                      logoBackground(context, 500, 500),
-                      Center(
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                    ],
-                  ));
-      }),
+      home: autoDisplay(context, 0),
       //
     );
   }
 
 }
 
+
+autoDisplay(BuildContext context, int i) {
+  return i == 1 ? FutureBuilder(
+      future: ipHandler(context),
+      builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+        return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? ServicesScreen() : BootInterface(type: 1) :
+        Scaffold(
+            body: Stack(
+              children: [
+                imageBackground(context),
+                logoBackground(context, 500, 500),
+                Center(
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ],
+            ));
+      }) : LoginScreen();
+}
 
 ipHandler(BuildContext context) async {
   try {
@@ -85,7 +89,9 @@ ipHandler(BuildContext context) async {
 
 
 class BootInterface extends StatefulWidget {
-  BootInterface({super.key});
+  BootInterface({super.key, required this.type});
+
+  final int type;
 
   @override
   State<BootInterface> createState() => _BootInterfaceState();
@@ -113,7 +119,7 @@ class _BootInterfaceState extends State<BootInterface> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text("Office of the Ombudsman\nfor Mindanao", style: TextStyle(fontFamily: 'BebasNeue', fontSize: 30), textAlign: TextAlign.center),
-                      Text("Queueing App Kiosk", style: TextStyle(fontFamily: 'Inter', fontSize: 20), textAlign: TextAlign.center),
+                      Text("Queueing App ${widget.type == 1 ? "Kiosk" : "Display"}", style: TextStyle(fontFamily: 'Inter', fontSize: 20), textAlign: TextAlign.center),
                       // Display, Kiosk
                       SizedBox(height: 20),
                       TextField(
@@ -131,7 +137,7 @@ class _BootInterfaceState extends State<BootInterface> {
                             final result = await ipHandler(context);
 
                             if (result == 1) {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 1 ? ServicesScreen() : DisplayScreen()));
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
                             }
