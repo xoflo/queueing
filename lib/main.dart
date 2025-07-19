@@ -48,6 +48,14 @@ class MyApp extends StatelessWidget {
 
 }
 
+kioskBoot() {
+
+}
+
+displayBoot() {
+
+}
+
 
 
 
