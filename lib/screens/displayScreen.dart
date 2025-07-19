@@ -63,65 +63,68 @@ class _DisplayScreenState extends State<DisplayScreen> {
   @override
   Widget build(BuildContext context) {
     containerColor = Theme.of(context).cardTheme.color;
-    return Scaffold(
-      body: FutureBuilder(
-        future: getSettings(context, 'Video View (TV)'),
-        builder: (BuildContext context, AsyncSnapshot<dynamic> vqd) {
-          return vqd.connectionState == ConnectionState.done
-              ? Stack(
-                  children: [
-                    constraint(context, getBackgroundVideoOverlay()),
-                    vqd.data == 1 ?
-                    Container(
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
-                        color: Colors.white60) : logoBackground(context),
-                    constraint(context, getRainbowOverlay()),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        children: [
-                          constraint(context, Column(
-                            children: [
-                              topNowServingText(vqd.data),
-                              Builder(
-                                builder: (BuildContext context) {
-                                  timerInit(vqd.data);
+    return PopScope(
+      onPopInvokedWithResult: (bool, value) async => false,
+      child: Scaffold(
+        body: FutureBuilder(
+          future: getSettings(context, 'Video View (TV)'),
+          builder: (BuildContext context, AsyncSnapshot<dynamic> vqd) {
+            return vqd.connectionState == ConnectionState.done
+                ? Stack(
+                    children: [
+                      constraint(context, getBackgroundVideoOverlay()),
+                      vqd.data == 1 ?
+                      Container(
+                          height: MediaQuery.of(context).size.height,
+                          width: MediaQuery.of(context).size.width,
+                          color: Colors.white60) : logoBackground(context),
+                      constraint(context, getRainbowOverlay()),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
+                          children: [
+                            constraint(context, Column(
+                              children: [
+                                topNowServingText(vqd.data),
+                                Builder(
+                                  builder: (BuildContext context) {
+                                    timerInit(vqd.data);
 
-                                  return vqd.data == 1
-                                      ? videoDisplayWidget()
-                                      : noVideoDisplayWidget();
-                                },
-                              ),
-                            ],
-                          )),
+                                    return vqd.data == 1
+                                        ? videoDisplayWidget()
+                                        : noVideoDisplayWidget();
+                                  },
+                                ),
+                              ],
+                            )),
 
-                          vqd.data != 1
-                              ? Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                          color: hexBlue.withAlpha(150)),
-                          child: Padding(
-                              padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                              child: slidingTextWidget(),
-                          )
-                          ) : SizedBox(),
-                        ],
+                            vqd.data != 1
+                                ? Container(
+                              height: 200,
+                              decoration: BoxDecoration(
+                            color: hexBlue.withAlpha(150)),
+                            child: Padding(
+                                padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                                child: slidingTextWidget(),
+                            )
+                            ) : SizedBox(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : Container(
+                    height: MediaQuery.of(context).size.height,
+                    child: Center(
+                      child: Container(
+                        height: 50,
+                        width: 50,
+                        child: CircularProgressIndicator(),
                       ),
                     ),
-                  ],
-                )
-              : Container(
-                  height: MediaQuery.of(context).size.height,
-                  child: Center(
-                    child: Container(
-                      height: 50,
-                      width: 50,
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                );
-        },
+                  );
+          },
+        ),
       ),
     );
   }

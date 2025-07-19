@@ -41,20 +41,116 @@ class MyApp extends StatelessWidget {
 
             seedColor: Colors.blueGrey),
       ),
-      home: LoginScreen(),
+      home: FutureBuilder(
+          future: ipHandler(context),
+          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+            return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? ServicesScreen() : BootInterface() :
+              Scaffold(
+                  body: Stack(
+                    children: [
+                      imageBackground(context),
+                      logoBackground(context, 500, 500),
+                      Center(
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ],
+                  ));
+      }),
       //
     );
   }
 
 }
 
-kioskBoot() {
 
+ipHandler(BuildContext context) async {
+  try {
+    await getIP();
+    final List<dynamic> controls = await getSettings();
+
+    print("controls: $controls");
+    if (controls.isEmpty) {
+      return 0;
+    } else {
+      return 1;
+    }
+  } catch(e) {
+    return 0;
+  }
 }
 
-displayBoot() {
 
+class BootInterface extends StatefulWidget {
+  BootInterface({super.key});
+
+  @override
+  State<BootInterface> createState() => _BootInterfaceState();
 }
+
+class _BootInterfaceState extends State<BootInterface> {
+  TextEditingController ipcont = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          imageBackground(context),
+          logoBackground(context, 500, 500),
+          Center(
+            child: Opacity(
+              opacity: 0.7,
+              child: Card(
+                child: Container(
+                  padding: EdgeInsets.all(40),
+                  height: 400,
+                  width: 400,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Office of the Ombudsman\nfor Mindanao", style: TextStyle(fontFamily: 'BebasNeue', fontSize: 30), textAlign: TextAlign.center),
+                      Text("Queueing App Kiosk", style: TextStyle(fontFamily: 'Inter', fontSize: 20), textAlign: TextAlign.center),
+                      // Display, Kiosk
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: ipcont,
+                        decoration: InputDecoration(
+                          labelText: 'IP Address: (ex: 192.168.70.80)'
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        height: 50,
+                        width: 120,
+                        child: TextButton(onPressed: () async {
+                          await saveIP(ipcont.text);
+                            final result = await ipHandler(context);
+
+                            if (result == 1) {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
+                            }
+
+
+                        }, child: Text("Access")),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
 
 
 

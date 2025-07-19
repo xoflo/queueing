@@ -96,7 +96,7 @@ imageBackground(BuildContext context) {
     ));
 }
 
-getSettings(BuildContext context, [String? controlName, int? getControl]) async {
+getSettings([BuildContext? context, String? controlName, int? getControl]) async {
   try {
     final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
     final result = await http.get(uri);
@@ -115,8 +115,10 @@ getSettings(BuildContext context, [String? controlName, int? getControl]) async 
       return response;
     }
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Cannot connect to the server. Please try again.")));
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
+    }
     print(e);
     return [];
   }
