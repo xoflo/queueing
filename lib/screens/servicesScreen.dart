@@ -5,6 +5,7 @@ import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_pos_printer_platform_image_3/flutter_pos_printer_platform_image_3.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:queueing/globals.dart';
@@ -39,6 +40,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Timer? timer;
 
+  bool mm80 = false;
+
   @override
   void dispose() {
     timer?.cancel();
@@ -47,6 +50,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   @override
   void initState() {
+
+
     _resetTimer();
 
     if (!kIsWeb) {
@@ -346,7 +351,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
       await addTicketSQL(
           service.serviceType!,
           service.serviceCode!,
-          priority, name, gender
+          priority, name, gender,
+        mm80
       );
     }
   }
@@ -784,7 +790,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-  addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender]) async {
+  addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender, bool? mm80]) async {
     final String timestamp = DateTime.now().toString();
 
     final List<Ticket> tickets = await getTicketSQL(serviceType);
@@ -830,7 +836,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         value = valueBlue ?? 0;
       } else {
         try {
-          final valueUSB = await usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
+          final valueUSB = await usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName", mm80!);
           value = valueUSB ?? 0;
         } catch(e) {
           print(e);
@@ -839,7 +845,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -858,6 +864,28 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   getServiceGroups(String assignedGroup) async {
     try {
+      if (!kIsWeb) {
+        try {
+          final String? usbprinter = await getPrinter();
+          final String? size = await getSize();
+
+
+          if (usbprinter != "" || usbprinter != null) {
+            usb?.selectedDevice = PrinterDevice(name: usbprinter!.split("_")[0], productId: usbprinter.split("_")[1], vendorId: usbprinter.split("_")[2]);
+            if (size == 'mm80') {
+              mm80 = true;
+            } else {
+              mm80 = false;
+            }
+          } else {
+            usb?.selectedDevice = null;
+          }
+        } catch(e) {
+          print(e);
+        }
+      }
+
+
       final uriGroup = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
       final resultGroup = await http.get(uriGroup);
       List<dynamic> responseGroup = jsonDecode(resultGroup.body);
@@ -1063,10 +1091,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
             future: initPlatformState(),
             builder: (BuildContext context,
                 AsyncSnapshot<void> snapshot) {
+
+
+
               return AlertDialog(
                 title: Text('Printer Set-up'),
                   content: Container(
-                    height: 100,
+                    height: 120,
                     width: 300,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1085,7 +1116,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 showDialog(
                                     context: context,
                                     builder: (_) =>
-                                        usb?.interface());
+                                        usb?.interface(mm80));
                               } else {
                                 ScaffoldMessenger.of(
                                     context)
@@ -1253,7 +1284,30 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                    content: Text(
                                        "Android Device Support Only.")));
                              }
-                            })
+                            }),
+                        SizedBox(height: 10),
+                        StatefulBuilder(builder: (context, setState) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("mm57: ", style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+                              Checkbox(value: mm80 == false, onChanged: (value) {
+                                mm80 = false;
+                                saveSize('mm57');
+                                setState((){});
+                              }),
+                              SizedBox(width: 5),
+
+                              Text("mm80: ", style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+                              Checkbox(value: mm80 == true, onChanged: (value) {
+                                mm80 = true;
+                                saveSize('mm80');
+                                setState((){});
+                              }),
+                            ],
+                          );
+
+                        }),
                       ],
                     ),
                   ));

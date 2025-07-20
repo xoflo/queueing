@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
 
             seedColor: Colors.blueGrey),
       ),
-      home: autoDisplay(context, 0),
+      home: autoDisplay(context, 1),
       //
     );
   }

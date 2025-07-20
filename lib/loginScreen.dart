@@ -103,6 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   SizedBox(height: 10),
+                  /*
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -142,6 +143,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
+
+                   */
                   SizedBox(height: 10),
                   TextButton(onPressed: () async {
                     TextEditingController ip = TextEditingController();

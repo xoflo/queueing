@@ -8,12 +8,22 @@ import 'dart:math' as math;
 import 'package:video_player/video_player.dart';
 
 String? site;
+String? printer;
+String? size;
 
 Color hexBlue = Color(0xFF216cb8);
 
 
 updateIP(String ip) {
   site = ip;
+}
+
+updatePrinter(String printer) {
+  printer = printer;
+}
+
+updateSize(String size) {
+  size = size;
 }
 
 getIP() async {
@@ -25,6 +35,28 @@ getIP() async {
 saveIP(String ip) async {
   await HiveService.saveIP(ip);
   updateIP(ip);
+}
+
+getPrinter() async {
+  final String? printer = await HiveService.getPrinter();
+  updatePrinter(printer ?? "");
+  return printer;
+}
+
+savePrinter(String printer) async {
+  await HiveService.savePrinter(printer);
+  updatePrinter(printer);
+}
+
+getSize() async {
+  final String? size = await HiveService.getSize();
+  updateSize(size ?? "");
+  return size;
+}
+
+saveSize(String size) async {
+  await HiveService.saveSize(size);
+  updateSize(size);
 }
 
 stringToList(String text) {
@@ -150,7 +182,7 @@ getMediabg(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Cannot connect to the server. Please try again.")));
     print(e);
-    return null;
+    return [];
   }
 }
 
