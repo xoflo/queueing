@@ -50,7 +50,7 @@ class Usbprint {
                     child: ListView.builder(
                         itemCount: devices.length,
                         itemBuilder: (context, i) {
-                          return ListTile(
+                          return devices[i].name == "ILITEK-TP" ? SizedBox() : ListTile(
                             title: Text(devices[i].name),
                             onTap: () async {
                               final PrinterDevice device = PrinterDevice(name: devices[i].name, productId: devices[i].productId, vendorId: devices[i].vendorId);
