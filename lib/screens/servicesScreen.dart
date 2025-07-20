@@ -832,7 +832,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       if (usb?.selectedDevice == null) {
         int? valueBlue = await printer.ticket("$serviceCode$numberParsed",
-            "$timestamp", "$priorityType", "$ticketName");
+            "$timestamp", "$priorityType", "$ticketName", mm80!);
         value = valueBlue ?? 0;
       } else {
         try {
