@@ -1031,7 +1031,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ));
     } else {
       _devices.forEach((device) {
-        items.add(DropdownMenuItem(
+        device.name == "ILITEK-TP" ? () {}  : items.add(DropdownMenuItem(
           child: Text(device.name ?? ""),
           value: device,
         ));
