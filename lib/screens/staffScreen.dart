@@ -396,7 +396,6 @@ class _StaffSessionState extends State<StaffSession> {
   late Timer pingTimer;
   Timer? ringTimer;
 
-  List<Ticket> tickets = [];
   int ticketLength = 0;
 
   String callBy = "Time Order";
@@ -411,20 +410,18 @@ class _StaffSessionState extends State<StaffSession> {
   ValueNotifier<List<Ticket>> ticketStream = ValueNotifier([]);
   ValueNotifier<Ticket?> servingStream = ValueNotifier(null);
 
-  List<Ticket> savedTicketState = [];
-  List<Ticket> savedServingState = [];
 
   bool swap = false;
 
-  updateTicketStream([int? int]) async {
-    final getTickets = await getTicketSQL();
-    if (int == null) {
+  updateTicketStream([int? i]) async {
+    List<Ticket> getTickets = await getTicketSQL();
+    if (i == 1) {
       swap = !swap;
     }
-    savedTicketState = getTickets;
+
     ticketStream.value = getTickets;
-    tickets = getTickets;
     ticketLength = getTickets.length;
+    return getTicketSQL();
   }
 
   @override
@@ -548,136 +545,101 @@ class _StaffSessionState extends State<StaffSession> {
                                         return snapshotServing
                                                     .connectionState ==
                                                 ConnectionState.done
-                                            ? snapshotServing
-                                                    .data!.isNotEmpty
-                                                ? Builder(
-                                                    builder: (context) {
-
-                                                    resetRinger();
-                                                    return ValueListenableBuilder<Ticket?>(
-                                                      valueListenable: servingStream,
-                                                      builder: (BuildContext context, Ticket? value, Widget? child) {
-                                                        return servingStream.value != null ? Card(
-                                                        clipBehavior:
-                                                            Clip.antiAlias,
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(15.0),
-                                                          child: Container(
-                                                            height: 130,
-                                                            width: 250,
-                                                            child: Column(
+                                            ? Builder(
+                                            builder: (context) {
+                                              resetRinger();
+                                              return ValueListenableBuilder<Ticket?>(
+                                                valueListenable: servingStream,
+                                                builder: (BuildContext context, Ticket? value, Widget? child) {
+                                                  return servingStream.value != null ? Card(
+                                                    clipBehavior:
+                                                    Clip.antiAlias,
+                                                    child: Padding(
+                                                      padding:
+                                                      const EdgeInsets
+                                                          .all(15.0),
+                                                      child: Container(
+                                                        height: 130,
+                                                        width: 250,
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                          children: [
+                                                            Text(
+                                                                overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                                "${servingStream.value!.serviceType}",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                    15,
+                                                                    fontWeight: FontWeight
+                                                                        .w700),
+                                                                textAlign:
+                                                                TextAlign
+                                                                    .center),
+                                                            Text(
+                                                                servingStream.value!
+                                                                    .codeAndNumber!,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                    45)),
+                                                            Row(
                                                               mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                              spacing: 5,
                                                               children: [
                                                                 Text(
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    "${servingStream.value!.serviceType}",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            15,
-                                                                        fontWeight: FontWeight
-                                                                            .w700),
-                                                                    textAlign:
-                                                                        TextAlign
-                                                                            .center),
+                                                                    "Priority:",
+                                                                    style:
+                                                                    TextStyle(fontSize: 15)),
                                                                 Text(
                                                                     servingStream.value!
-                                                                        .codeAndNumber!,
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            45)),
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  spacing: 5,
-                                                                  children: [
-                                                                    Text(
-                                                                        "Priority:",
-                                                                        style:
-                                                                            TextStyle(fontSize: 15)),
-                                                                    Text(
-                                                                        servingStream.value!
-                                                                            .priorityType!,
-                                                                        style:
-                                                                            TextStyle(fontSize: 15)),
-                                                                  ],
-                                                                ),
+                                                                        .priorityType!,
+                                                                    style:
+                                                                    TextStyle(fontSize: 15)),
                                                               ],
                                                             ),
-                                                          ),
+                                                          ],
                                                         ),
-                                                      ) : Card(
-                                                          child: Builder(
-                                                              builder: (context) {
-                                                                resetRinger();
-                                                                return Container(
-                                                                  height: 130,
-                                                                  width: 220,
-                                                                  child: Padding(
-                                                                    padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        20.0),
-                                                                    child: Align(
-                                                                      alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                      child: Text(
-                                                                          "No ticket being served at the moment.",
-                                                                          textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                          style: TextStyle(
-                                                                              color: Colors
-                                                                                  .grey,
-                                                                              fontSize:
-                                                                              15)),
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              }),
-                                                        );
-                                                      },
-                                                    );
-                                                  })
-                                                : Card(
+                                                      ),
+                                                    ),
+                                                  ) : Card(
                                                     child: Builder(
                                                         builder: (context) {
-                                                      servingStream.value = null;
-                                                      resetRinger();
-                                                      return Container(
-                                                        height: 130,
-                                                        width: 220,
-                                                        child: Padding(
-                                                          padding:
+                                                          resetRinger();
+                                                          return Container(
+                                                            height: 130,
+                                                            width: 220,
+                                                            child: Padding(
+                                                              padding:
                                                               const EdgeInsets
                                                                   .all(
                                                                   20.0),
-                                                          child: Align(
-                                                            alignment:
+                                                              child: Align(
+                                                                alignment:
                                                                 Alignment
                                                                     .center,
-                                                            child: Text(
-                                                                "No ticket being served at the moment.",
-                                                                textAlign:
+                                                                child: Text(
+                                                                    "No ticket being served at the moment.",
+                                                                    textAlign:
                                                                     TextAlign
                                                                         .center,
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .grey,
-                                                                    fontSize:
+                                                                    style: TextStyle(
+                                                                        color: Colors
+                                                                            .grey,
+                                                                        fontSize:
                                                                         15)),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }),
-                                                  )
+                                                              ),
+                                                            ),
+                                                          );
+                                                        }),
+                                                  );
+                                                },
+                                              );
+                                            })
                                             : Container(
                                                 height: 300,
                                                 child: Center(
@@ -738,11 +700,15 @@ class _StaffSessionState extends State<StaffSession> {
                                                                   TextButton(
                                                                       onPressed: () async {
                                                                         try {
-                                                                          await servingStream.value!.update({"status": "Done", "timeDone": timestamp, "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
-                                                                          servingStream.value = null;
-                                                                          await widget.station.update({'ticketServing': ""});
+                                                                          servingStream.value!.update({
+                                                                            "status": "Done",
+                                                                            "timeDone": timestamp,
+                                                                            "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
 
+                                                                          await widget.station.update({'ticketServing': ""});
                                                                           await updateServingTicketStream();
+                                                                          await updateTicketStream();
+
                                                                           Navigator.pop(
                                                                               context);
                                                                           resetRinger();
@@ -751,6 +717,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                               Text("Ticket complete.")));
                                                                         } catch(e) {
                                                                           print(e);
+                                                                          print("Done in Dialog");
                                                                         }
                                                                       },
                                                                       child: Text(
@@ -758,110 +725,97 @@ class _StaffSessionState extends State<StaffSession> {
                                                                   TextButton(
                                                                       onPressed:
                                                                           () async {
-                                                                        final timestamp =
-                                                                            DateTime.now().toString();
-                                                                        await servingStream.value!.update({
-                                                                          "status": "Done",
-                                                                          "timeDone": timestamp,
-                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
-                                                                        });
 
-                                                                        servingStream.value = null;
+                                                                        try {
 
-                                                                        if (ticketStream.value.isNotEmpty) {
-                                                                          if (ticketStream.value[0].serviceType! == callBy ||
-                                                                              callBy == 'Time Order') {
-                                                                            await ticketStream.value[0].update({
-                                                                              "userAssigned": widget.user.username,
-                                                                              "status": "Serving",
-                                                                              "stationName": widget.station.stationName,
-                                                                              "stationNumber": widget.station.stationNumber,
-                                                                              "log": "${tickets[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                                              "timeTaken": timestamp,
-                                                                            });
+                                                                          final timestamp =
+                                                                          DateTime.now().toString();
 
-                                                                            await widget.station.update({
-                                                                              'ticketServing': "${ticketStream.value[0].codeAndNumber}"
-                                                                            });
-
-                                                                            await updateServingTicketStream();
-                                                                            Navigator.pop(context);
-                                                                          } else {
-                                                                            await widget.station.update({
-                                                                              'ticketServing': ""
-                                                                            });
-                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No '$callBy' Tickets at the moment.")));
-                                                                          }
-                                                                        } else {
-                                                                          await widget
-                                                                              .station
-                                                                              .update({
-                                                                            'ticketServing':
-                                                                                ""
+                                                                          servingStream.value!.update({
+                                                                            "status": "Done",
+                                                                            "timeDone": timestamp,
+                                                                            "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
                                                                           });
 
-                                                                          ScaffoldMessenger.of(context)
-                                                                              .showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
+                                                                          if (ticketStream.value.isNotEmpty) {
+                                                                            if (ticketStream.value[0].serviceType! == callBy || callBy == 'Time Order') {
+                                                                              ticketStream.value[0].update({
+                                                                                "userAssigned": widget.user.username,
+                                                                                "status": "Serving",
+                                                                                "stationName": widget.station.stationName,
+                                                                                "stationNumber": widget.station.stationNumber,
+                                                                                "log": "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                                                "timeTaken": timestamp,
+                                                                              });
+
+
+                                                                              await widget.station.update({'ticketServing': "${ticketStream.value[0].codeAndNumber}"});
+                                                                              await updateServingTicketStream();
+                                                                              await updateTicketStream(1);
+
+                                                                              Navigator.pop(context);
+                                                                            }
+                                                                          } else {
+                                                                            await widget
+                                                                                .station
+                                                                                .update({
+                                                                              'ticketServing':
+                                                                              ""
+                                                                            });
+
+                                                                            ScaffoldMessenger.of(context)
+                                                                                .showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
+                                                                          }
+                                                                        } catch(e) {
+                                                                          print(e);
+                                                                          print('Call Next in Dialog');
                                                                         }
+
                                                                       },
                                                                       child: Text(
                                                                           "Call Next"))
                                                                 ],
                                                               ));
                                                 } else {
-                                                  if (tickets.isNotEmpty) {
-                                                    if (ticketStream.value[0]
-                                                                .serviceType! ==
-                                                            callBy ||
-                                                        callBy ==
-                                                            'Time Order') {
-                                                      final timestamp =
-                                                          DateTime.now()
-                                                              .toString();
-                                                      ticketStream.value[0].update({
-                                                        "userAssigned": widget
-                                                            .user.username,
-                                                        "status": "Serving",
-                                                        "stationName": widget
-                                                            .station
-                                                            .stationName,
-                                                        "stationNumber": widget
-                                                            .station
-                                                            .stationNumber,
-                                                        "log":
-                                                            "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                        "timeTaken": timestamp
-                                                      });
 
-                                                      await widget.station
-                                                          .update({
-                                                        'ticketServing':
-                                                        ticketStream.value[0]
-                                                                .codeAndNumber!
-                                                      });
+                                                  try {
+                                                    if (ticketStream.value.isNotEmpty) {
+                                                      if (ticketStream.value[0]
+                                                          .serviceType! ==
+                                                          callBy ||
+                                                          callBy ==
+                                                              'Time Order') {
+                                                        final timestamp =
+                                                        DateTime.now().toString();
+                                                        ticketStream.value[0].update({
+                                                          "userAssigned": widget.user.username,
+                                                          "status": "Serving",
+                                                          "stationName": widget.station.stationName,
+                                                          "stationNumber": widget.station.stationNumber,
+                                                          "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                          "timeTaken": timestamp
+                                                        });
 
-                                                      await updateTicketStream();
-                                                      await updateServingTicketStream();
+                                                        await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
+                                                        await updateServingTicketStream();
+                                                        await updateTicketStream(1);
+
+                                                      }
                                                     } else {
+                                                      await widget.station.update(
+                                                          {'ticketServing': ""});
                                                       ScaffoldMessenger.of(
-                                                              context)
+                                                          context)
                                                           .showSnackBar(SnackBar(
-                                                              content: Text(
-                                                                  "No '$callBy' Tickets at the moment.")));
-                                                      await widget.station
-                                                          .update({
-                                                        'ticketServing': ""
-                                                      });
+                                                          content: Text(
+                                                              "No pending tickets to serve at the moment.")));
                                                     }
-                                                  } else {
-                                                    await widget.station.update(
-                                                        {'ticketServing': ""});
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(SnackBar(
-                                                            content: Text(
-                                                                "No pending tickets to serve at the moment.")));
+                                                  } catch(e) {
+                                                    print(e);
+                                                    print("Call Next no Dialog");
                                                   }
+
+
                                                 }
                                               },
                                             ),
@@ -931,12 +885,10 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                 'ticketServing': ""
                                                                                               });
 
-                                                                                              servingStream.value = null;
-
                                                                                               Navigator.pop(context);
-
                                                                                               resetRinger();
-                                                                                              await updateServingTicketStream();
+
+                                                                                              servingStream.value = null;
                                                                                             },
                                                                                           );
                                                                                         })
@@ -1030,6 +982,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                               'ticketServing': ""
                                                                             });
 
+                                                                            await updateServingTicketStream();
+
                                                                             Navigator.pop(context);
                                                                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));
                                                                             resetRinger();
@@ -1062,7 +1016,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                 value: alternate,
                                                 onChanged: (value) async {
                                                   alternate = !alternate;
-                                                  await updateTicketStream(1);
+                                                  await updateTicketStream();
                                                   setStateCheck((){});
                                                 });
                                           },
@@ -1075,7 +1029,6 @@ class _StaffSessionState extends State<StaffSession> {
 
                                         SizedBox(width: 5),
                                         IconButton(onPressed: () async {
-                                          swap = !swap;
                                           await updateTicketStream(1);
                                         }, icon: Icon(Icons.change_circle_outlined))
                                       ],
@@ -1153,7 +1106,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                     .w700)),
                                                     Container(
                                                       height: 240,
-                                                      child: tickets.isEmpty
+                                                      child: ticketStream.value.isEmpty
                                                           ? Text(
                                                               "No pending tickets\nat the moment.",
                                                               style: TextStyle(
@@ -1163,20 +1116,20 @@ class _StaffSessionState extends State<StaffSession> {
                                                                   TextAlign
                                                                       .center)
                                                           : FutureBuilder(
-                                                            future: updateTicketStream(1),
+                                                            future: updateTicketStream(),
                                                             builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
                                                               return ValueListenableBuilder(
                                                                 valueListenable: ticketStream,
                                                                 builder: (BuildContext context, List<Ticket> value, Widget? child) {
                                                                   return ListView.builder(
                                                                       scrollDirection: Axis.vertical,
-                                                                      itemCount: tickets.length,
+                                                                      itemCount: ticketStream.value.length,
                                                                       itemBuilder: (context, i) {
                                                                         return ListTile(
                                                                           dense: true,
-                                                                          title: Text("${i + 1}. ${tickets[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                                                                          subtitle: Text(tickets[i].priorityType == "Regular" ? "" : tickets[i].priorityType!.length > 20 ? "(${smartAbbreviate(tickets[i].priorityType!)})" : tickets[i].priorityType!, style: TextStyle(fontWeight: FontWeight.bold)),
-                                                                          trailing: tickets[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
+                                                                          title: Text("${i + 1}. ${ticketStream.value[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                                                                          subtitle: Text(ticketStream.value[i].priorityType == "Regular" ? "" : ticketStream.value[i].priorityType!.length > 20 ? "(${smartAbbreviate(ticketStream.value[i].priorityType!)})" : ticketStream.value[i].priorityType!, style: TextStyle(fontWeight: FontWeight.bold)),
+                                                                          trailing: ticketStream.value[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
                                                                         );
                                                                       });
                                                                 },
@@ -1243,7 +1196,7 @@ class _StaffSessionState extends State<StaffSession> {
     return control ?? 0;
   }
 
-  getTicketSQL() async {
+  Future<List<Ticket>> getTicketSQL() async {
     final dateNow = DateTime.now();
 
     try {
@@ -1274,22 +1227,26 @@ class _StaffSessionState extends State<StaffSession> {
               e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1)))))
           .toList();
 
-      if (callBy == "Time Order") {
-        newTickets.sort((a, b) => DateTime.parse(b.timeCreated!)
-            .compareTo(DateTime.parse(a.timeCreated!)));
 
+      if (callBy == "Time Order") {
+        newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
+            .compareTo(DateTime.parse(b.timeCreated!)));
       } else {
         newTickets.sort((a, b) {
-          if ((a.serviceType! == callBy) && (b.serviceType! != callBy))
+          if ((a.serviceType! == callBy) && (b.serviceType! != callBy)) {
             return -1;
-          if ((a.serviceType! != callBy) && (b.serviceType! == callBy))
+          }
+          if ((a.serviceType! != callBy) && (b.serviceType! == callBy)) {
             return 1;
+          }
           return 0;
         });
       }
 
+
       newTickets.sort((a, b) => b.priority!
           .compareTo(a.priority!));
+
 
       if (alternate == true) {
         newTickets = alternateTickets(newTickets);
@@ -1340,10 +1297,14 @@ class _StaffSessionState extends State<StaffSession> {
 
 
   updateServingTicketStream() async {
-    final List<Ticket> servings = await getServingTicketSQL();
-
-    servingStream.value = servings.isNotEmpty ? servings[0] : null;
-    savedServingState = servings;
+    List<Ticket> servings = await getServingTicketSQL();
+    if (servings.isEmpty) {
+      servingStream.value = null;
+      print("Servings: null");
+    } else {
+      servingStream.value = servings[0];
+      print("Servings: ${servings[0].codeAndNumber}");
+    }
     return servings;
   }
 
@@ -1370,12 +1331,12 @@ class _StaffSessionState extends State<StaffSession> {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
 
-      newTickets.sort((a, b) => DateTime.parse(a.timeTaken!).compareTo(DateTime.parse(b.timeTaken!)));
-      final List<Ticket> realTickets = newTickets.where((e) => toDateTime(e.timeCreatedAsDate!) == toDateTime(dateNow)).toList();
+      newTickets = newTickets.where((e) => toDateTime(e.timeCreatedAsDate!) == toDateTime(dateNow)).toList();
+      newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
-      final List<Ticket> dummyTicket = [];
+      print('return: $newTickets');
 
-      return realTickets.isEmpty ? dummyTicket : realTickets;
+      return newTickets;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
@@ -1489,7 +1450,7 @@ class _StaffSessionState extends State<StaffSession> {
     }
 
     if (inactiveLength != null && inactiveOn == 1) {
-      if (servingStream.value == null && tickets.isNotEmpty) {
+      if (servingStream.value == null && ticketStream.value.isNotEmpty) {
         if (ringTimer == null) {
           ringTimer =
               Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {

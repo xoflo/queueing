@@ -53,9 +53,10 @@ class Station {
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
       final response = await http.put(uri, body: jsonEncode(body));
       print(response.body);
-
+      return;
     } catch(e) {
       print(e);
+      return;
     }
   }
 }
