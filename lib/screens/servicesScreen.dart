@@ -845,7 +845,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      // value == 1
+
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -864,10 +866,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   getServiceGroups(String assignedGroup) async {
     try {
-      if (!kIsWeb) {
+
+           if (!kIsWeb) {
         try {
-          final String? usbprinter = await getPrinter();
-          final String? size = await getSize();
+          final dynamic usbprinter = await getPrinter();
+          final dynamic size = await getSize();
 
 
           if (usbprinter != "" || usbprinter != null) {
@@ -884,6 +887,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
           print(e);
         }
       }
+
+
 
 
       final uriGroup = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
@@ -1097,7 +1102,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
               return AlertDialog(
                 title: Text('Printer Set-up'),
                   content: Container(
-                    height: 120,
+                    height: 140,
                     width: 300,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

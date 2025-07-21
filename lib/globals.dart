@@ -38,7 +38,7 @@ saveIP(String ip) async {
 }
 
 getPrinter() async {
-  final String? printer = await HiveService.getPrinter();
+  final dynamic printer = await HiveService.getPrinter();
   updatePrinter(printer ?? "");
   return printer;
 }

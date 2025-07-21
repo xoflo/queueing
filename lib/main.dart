@@ -41,7 +41,8 @@ class MyApp extends StatelessWidget {
 
             seedColor: Colors.blueGrey),
       ),
-      home: autoDisplay(context, 1),
+      home: autoDisplay(context, 0),
+      // 0: Phone, 1: Kiosk, Display
       //
     );
   }
@@ -53,6 +54,7 @@ autoDisplay(BuildContext context, int i) {
   return i == 1 ? FutureBuilder(
       future: ipHandler(context),
       builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+        // 0: Display, 1: Services
         return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? ServicesScreen() : BootInterface(type: 1) :
         Scaffold(
             body: Stack(

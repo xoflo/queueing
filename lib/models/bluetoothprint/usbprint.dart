@@ -20,61 +20,76 @@ class Usbprint {
   interface(bool mm80) {
 
 
-    final String printer = getPrinter();
-
-    if (printer != "") {
-      selectedDevice = PrinterDevice(name: printer.split("_")[0], productId: printer.split("_")[1], vendorId: printer.split("_")[1]);
-    }
 
     return AlertDialog(
-      content: StatefulBuilder(
-        builder: (BuildContext context, setState) {
-          return Container(
-            width: 400,
-            height: 400,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Row(
+      content: FutureBuilder(
+        future: getPrinter(),
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          return snapshot.connectionState == ConnectionState.done ? StatefulBuilder(
+            builder: (BuildContext context, setState) {
+
+              if (snapshot.data != null) {
+                selectedDevice = PrinterDevice(name: snapshot.data!.split("_")[0], productId: snapshot.data!.split("_")[1], vendorId: snapshot.data!.split("_")[1]);
+              }
+
+              return Container(
+                width: 400,
+                height: 400,
+                child: SingleChildScrollView(
+                  child: Column(
                     children: [
-                      Text("Devices Found: ${devices.length}"),
-                      Text(" | Selected: ${selectedDevice != null ? selectedDevice!.name : "None"}"),
-                      TextButton(onPressed: () {
-                        _scan(PrinterType.usb);
-                        setState((){});
-                      }, child: Text("Scan Devices"))
+                      Row(
+                        children: [
+                          Text("Devices Found: ${devices.length}"),
+                          Text(" | Selected: ${selectedDevice != null ? selectedDevice!.name : "None"}"),
+                          TextButton(onPressed: () {
+                            _scan(PrinterType.usb);
+                            setState((){});
+                          }, child: Text("Scan Devices"))
+                        ],
+                      ),
+                      Container(
+                        height: 350,
+                        child: ListView.builder(
+                            itemCount: devices.length,
+                            itemBuilder: (context, i) {
+                              return devices[i].name == "ILITEK-TP" ? SizedBox() : ListTile(
+                                title: Text(devices[i].name),
+                                onTap: () async {
+                                  final PrinterDevice device = PrinterDevice(name: devices[i].name, productId: devices[i].productId, vendorId: devices[i].vendorId);
+                                  await _connectDevice(context, device);
+                                  await savePrinter("${devices[i].name}_${devices[i].productId}_${devices[i].vendorId}");
+                                  await saveSize(mm80 == true ? 'mm80' : 'mm57');
+
+                                  selectedDevice = device;
+                                  setState((){});
+                                },
+                              );
+                            }),
+                      ),
+                      TextButton(
+                          child: Text("Print Test"),
+                          onPressed: () async {
+                            try {
+                              final bytes  = await buildTicket();
+                              await printTicket(bytes);
+                            } catch(e) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                            }
+                          })
                     ],
                   ),
-                  Container(
-                    height: 350,
-                    child: ListView.builder(
-                        itemCount: devices.length,
-                        itemBuilder: (context, i) {
-                          return devices[i].name == "ILITEK-TP" ? SizedBox() : ListTile(
-                            title: Text(devices[i].name),
-                            onTap: () async {
-                              final PrinterDevice device = PrinterDevice(name: devices[i].name, productId: devices[i].productId, vendorId: devices[i].vendorId);
-                              await _connectDevice(context, device);
-                              await savePrinter("${devices[i].name}_${devices[i].productId}_${devices[i].vendorId}");
-                              await saveSize(mm80 == true ? 'mm80' : 'mm57');
-
-                              selectedDevice = device;
-                              setState((){});
-                            },
-                          );
-                        }),
-                  ),
-                  TextButton(
-                      child: Text("Print Test"),
-                      onPressed: () async {
-                        try {
-                          final bytes  = await buildTicket();
-                          await printTicket(bytes);
-                        } catch(e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                        }
-                      })
-                ],
+                ),
+              );
+            },
+          ) : Container(
+            height: 400,
+            width: 400,
+            child: Center(
+              child: Container(
+                height: 50,
+                width: 50,
+                child: CircularProgressIndicator(),
               ),
             ),
           );
