@@ -700,7 +700,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                   TextButton(
                                                                       onPressed: () async {
                                                                         try {
-                                                                          servingStream.value!.update({
+                                                                          await servingStream.value!.update({
                                                                             "status": "Done",
                                                                             "timeDone": timestamp,
                                                                             "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
@@ -731,7 +731,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                           final timestamp =
                                                                           DateTime.now().toString();
 
-                                                                          servingStream.value!.update({
+                                                                          await servingStream.value!.update({
                                                                             "status": "Done",
                                                                             "timeDone": timestamp,
                                                                             "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
@@ -739,7 +739,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                                           if (ticketStream.value.isNotEmpty) {
                                                                             if (ticketStream.value[0].serviceType! == callBy || callBy == 'Time Order') {
-                                                                              ticketStream.value[0].update({
+                                                                              await ticketStream.value[0].update({
                                                                                 "userAssigned": widget.user.username,
                                                                                 "status": "Serving",
                                                                                 "stationName": widget.station.stationName,
@@ -787,7 +787,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                               'Time Order') {
                                                         final timestamp =
                                                         DateTime.now().toString();
-                                                        ticketStream.value[0].update({
+                                                        await ticketStream.value[0].update({
                                                           "userAssigned": widget.user.username,
                                                           "status": "Serving",
                                                           "stationName": widget.station.stationName,
@@ -946,7 +946,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                   if (servingStream.value != null) {
                                                     if (callAgainCounter < 3) {
                                                       callAgainCounter += 1;
-                                                      servingStream.value!.update({
+                                                      await servingStream.value!.update({
                                                         'blinker': 0,
                                                         "callCheck": 0,
                                                         'log':
@@ -973,7 +973,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                               "Release"),
                                                                           onPressed:
                                                                               () async {
-                                                                            servingStream.value!.update({
+                                                                            await servingStream.value!.update({
                                                                               "status": 'Released',
                                                                               'log': "${servingStream.value!.log!}, ${DateTime.now()}: Ticket Released"
                                                                             });
