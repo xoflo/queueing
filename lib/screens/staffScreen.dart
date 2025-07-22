@@ -50,8 +50,6 @@ class _StaffScreenState extends State<StaffScreen> {
         final station = Station.fromJson(pingSorted[i]);
         final pingDate = DateTime.parse(station.sessionPing!);
 
-        print(newTime.difference(pingDate).inSeconds);
-
         if (newTime.difference(pingDate).inSeconds > 3) {
           await station
               .update({'inSession': 0, 'userInSession': "", 'sessionPing': ""});
