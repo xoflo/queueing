@@ -1304,11 +1304,9 @@ class _StaffSessionState extends State<StaffSession> {
     List<Ticket> servings = await getServingTicketSQL();
     if (servings.isEmpty) {
       servingStream.value = null;
-      print("Servings: null");
       return servings;
     } else {
       servingStream.value = servings[0];
-      print("Servings: ${servings[0].codeAndNumber}");
       return servings;
     }
   }
