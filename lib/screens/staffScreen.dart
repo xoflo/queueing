@@ -1337,8 +1337,6 @@ class _StaffSessionState extends State<StaffSession> {
       newTickets = newTickets.where((e) => toDateTime(e.timeCreatedAsDate!) == toDateTime(dateNow)).toList();
       newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
-      print('return: $newTickets');
-
       return newTickets;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
