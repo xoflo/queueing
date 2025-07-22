@@ -56,7 +56,6 @@ class Ticket {
   update(dynamic data) async {
 
     try {
-
       final body = {
         'id': data['id'] ?? this.id,
         'timeCreated': data['timeCreated'] ?? this.timeCreated,
@@ -78,8 +77,10 @@ class Ticket {
         'blinker': data['blinker'] ?? this.blinker,
         'gender': data['gender'] ?? this.gender,
       };
+
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final response = await http.put(uri, body: jsonEncode(body));
+      print(response.body);
       return;
     } catch(e) {
       print(e);

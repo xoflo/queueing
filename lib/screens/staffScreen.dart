@@ -50,8 +50,10 @@ class _StaffScreenState extends State<StaffScreen> {
         final station = Station.fromJson(pingSorted[i]);
         final pingDate = DateTime.parse(station.sessionPing!);
 
-        if (newTime.difference(pingDate).inSeconds > 2.5) {
-          station
+        print(newTime.difference(pingDate).inSeconds);
+
+        if (newTime.difference(pingDate).inSeconds > 3) {
+          await station
               .update({'inSession': 0, 'userInSession': "", 'sessionPing': ""});
 
           setState(() {});
@@ -421,7 +423,7 @@ class _StaffSessionState extends State<StaffSession> {
 
     ticketStream.value = getTickets;
     ticketLength = getTickets.length;
-    return getTicketSQL();
+    return getTickets;
   }
 
   @override
@@ -1301,11 +1303,12 @@ class _StaffSessionState extends State<StaffSession> {
     if (servings.isEmpty) {
       servingStream.value = null;
       print("Servings: null");
+      return servings;
     } else {
       servingStream.value = servings[0];
       print("Servings: ${servings[0].codeAndNumber}");
+      return servings;
     }
-    return servings;
   }
 
   getServingTicketSQL() async {
