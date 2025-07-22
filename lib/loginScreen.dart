@@ -105,6 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: 10),
 
                   // comment
+                  /*
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -144,6 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
+                   */
 
                    //comment
                   SizedBox(height: 10),
