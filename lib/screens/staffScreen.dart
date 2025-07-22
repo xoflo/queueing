@@ -977,7 +977,10 @@ class _StaffSessionState extends State<StaffSession> {
                                                                               () async {
                                                                             await servingStream.value!.update({
                                                                               "status": 'Released',
-                                                                              'log': "${servingStream.value!.log!}, ${DateTime.now()}: Ticket Released"
+                                                                              'log': "${servingStream.value!.log!}, ${DateTime.now()}: Ticket Released",
+                                                                              'userAssigned': "",
+                                                                              'stationName': "",
+                                                                              'stationNumber': "",
                                                                             });
 
                                                                             await widget.station.update({
@@ -985,6 +988,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                             });
 
                                                                             await updateServingTicketStream();
+                                                                            servingStream.value = null;
 
                                                                             Navigator.pop(context);
                                                                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));
