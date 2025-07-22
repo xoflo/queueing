@@ -55,6 +55,7 @@ class _AdminScreenState extends State<AdminScreen> {
   String? displayPriorities;
   String? displayStatus;
   String? displayGender;
+  bool log = false;
 
   // Service
 
@@ -2870,7 +2871,7 @@ class _AdminScreenState extends State<AdminScreen> {
                               }, child: Text("Filter"))
                             ],
                           ));
-                        }, child: Text(statuses.isNotEmpty ? "Status: $displayPriorities" : "Status: All")),
+                        }, child: Text(statuses.isNotEmpty ? "Status: $displayStatus" : "Status: All")),
                         SizedBox(width: 10),
                         ElevatedButton(onPressed: () {
                           final _listViewKey = GlobalKey();
@@ -2936,10 +2937,25 @@ class _AdminScreenState extends State<AdminScreen> {
                                   return AlertDialog(
                                     title: Text("Export"),
                                     content: Container(
-                                      height: 140,
+                                      height: fileType == '.XLSX' ? 180 : 160,
                                       width: 200,
                                       child: Column(
                                         children: [
+                                          fileType == '.XLSX' ? Row(
+                                            children: [
+                                              StatefulBuilder(
+                                                builder: (context, setStateCheck) {
+                                                  return Checkbox(value: log, onChanged: (value) {
+                                                    log = !log;
+                                                    setStateCheck((){});
+                                                  });
+                                                },
+                                              ),
+                                              SizedBox(width: 5),
+                                              Text("Include Ticket Log")
+                                            ],
+                                          ) : SizedBox(),
+                                          SizedBox(height: 10),
                                           Align(
                                               alignment: Alignment.centerLeft,
                                               child: Text("File Type", style: TextStyle(fontSize: 18))),
@@ -3121,7 +3137,7 @@ class _AdminScreenState extends State<AdminScreen> {
     String? statusesXlsx;
     String? gendersXlsx;
 
-    if (displayDate != null) dateXlsx = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else dateXlsx = "${DateFormat.yMMMMd().format(dates[0])}";
+    if (displayDate != null) dateXlsx = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else dateXlsx = "${DateFormat.yMMMMd().format(DateTime.now())}";
     if (displayUsers != null) usersXlsx = users.join(', '); else usersXlsx = "All";
     if (displayServiceTypes != null) serviceTypesXlsx = serviceTypes.join(', '); else serviceTypesXlsx = "All";
     if (displayPriorities != null) prioritiesXlsx = priorities.join(', '); else prioritiesXlsx = "All";
@@ -3170,6 +3186,7 @@ class _AdminScreenState extends State<AdminScreen> {
       TextCellValue('Priority'),
       TextCellValue('Status'),
       TextCellValue('Gender'),
+      log == true ? TextCellValue("Log") : null
     ]);
 
     for (int i = 0; i < tickets.length; i++) {
@@ -3181,7 +3198,8 @@ class _AdminScreenState extends State<AdminScreen> {
         TextCellValue(tickets[i].serviceType!),
         TextCellValue(tickets[i].priorityType!),
         TextCellValue(tickets[i].status!),
-        TextCellValue(tickets[i].gender!)
+        TextCellValue(tickets[i].gender!),
+        log == true ? TextCellValue(tickets[i].log!) : null
       ]
       );
     }
@@ -3241,7 +3259,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
 
-    if (displayDate != null) datePdf = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else datePdf = "${DateFormat.yMMMMd().format(dates[0])}";
+    if (displayDate != null) datePdf = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else datePdf = "${DateFormat.yMMMMd().format(DateTime.now())}";
     if (displayUsers != null) usersPdf = users.join(', '); else usersPdf = "All";
     if (displayServiceTypes != null) serviceTypesPdf = serviceTypes.join(', '); else serviceTypesPdf = "All";
     if (displayPriorities != null) prioritiesPdf = priorities.join(', '); else prioritiesPdf = "All";
@@ -3344,6 +3362,7 @@ class _AdminScreenState extends State<AdminScreen> {
                   center(pw.Text("Status", style: bold)),
                   pw.Spacer(),
                   center(pw.Text("Gender", style: bold)),
+
                 ]
             ),
             pw.SizedBox(height: 5),
@@ -3374,7 +3393,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     pw.Spacer(),
                     contain(pw.Text(tickets[i].status!)),
                     pw.Spacer(),
-                    contain(pw.Text(tickets[i].gender!))
+                    contain(pw.Text(tickets[i].gender!)),
                   ]),
               pw.SizedBox(height: 1),
             ]
