@@ -17,7 +17,7 @@ class Usbprint {
   PrinterDevice? selectedDevice;
 
 
-  interface(bool mm80) {
+  interface() {
 
 
 
@@ -29,7 +29,11 @@ class Usbprint {
             builder: (BuildContext context, setState) {
 
               if (snapshot.data != null) {
-                selectedDevice = PrinterDevice(name: snapshot.data!.split("_")[0], productId: snapshot.data!.split("_")[1], vendorId: snapshot.data!.split("_")[1]);
+                if (snapshot.data != 'BT') {
+                  selectedDevice = PrinterDevice(name: snapshot.data!.split("_")[0], productId: snapshot.data!.split("_")[1], vendorId: snapshot.data!.split("_")[1]);
+                } else {
+                  selectedDevice = null;
+                }
               }
 
               return Container(
@@ -59,7 +63,6 @@ class Usbprint {
                                   final PrinterDevice device = PrinterDevice(name: devices[i].name, productId: devices[i].productId, vendorId: devices[i].vendorId);
                                   await _connectDevice(context, device);
                                   await savePrinter("${devices[i].name}_${devices[i].productId}_${devices[i].vendorId}");
-                                  await saveSize(mm80 == true ? 'mm80' : 'mm57');
 
                                   selectedDevice = device;
                                   setState((){});
@@ -110,66 +113,38 @@ class Usbprint {
     return bytes;
   }
 
-  buildTicketQueue(String codeAndNumber, String timeCreated, String priority, String ticketname, bool mm80) async {
+  buildTicketQueue(String codeAndNumber, String timeCreated, String priority, String ticketname) async {
     try {
       final profile = await CapabilityProfile.load();
-      final generator = Generator(mm80 == true ? PaperSize.mm80 : PaperSize.mm58, profile);
+      final generator = Generator(PaperSize.mm58, profile);
 
       List<int> bytes = [];
 
-      if (mm80 == true) {
-        bytes += utf8.encode('\n');
+      bytes += utf8.encode('\n');
 
-        bytes += [0x1B, 0x61, 0x01];
-        bytes += [0x1B, 0x21, 0x20];
-        bytes += utf8.encode('Office of the\nOmbudsman\n');
+      bytes += [0x1B, 0x61, 0x01];               // ESC a 1 -> center
+      bytes += [0x1B, 0x21, 0x30];               // Double height + double width
+      bytes += utf8.encode('Office of the\nOmbudsman\n');
 
-        bytes += [0x1B, 0x21, 0x08];
-        bytes += utf8.encode('Davao City, Philippines\n');
-        bytes += utf8.encode('\n');
+      bytes += [0x1B, 0x21, 0x08];               // Emphasized
+      bytes += utf8.encode('Davao City, Philippines\n');
+      bytes += utf8.encode('\n');
 
-        bytes += [0x1B, 0x21, 0x01];
-        bytes += utf8.encode('YOUR TICKET NUMBER IS:\n');
+      bytes += [0x1B, 0x21, 0x10];               // Slightly larger
+      bytes += utf8.encode('YOUR TICKET NUMBER IS:\n');
 
-        bytes += [0x1D, 0x21, 0x11];
-        bytes += utf8.encode('$codeAndNumber\n');
+      bytes += [0x1D, 0x21, 0x33];               // Very large
+      bytes += utf8.encode('$codeAndNumber\n');
 
-        bytes += [0x1D, 0x21, 0x00];
+      bytes += [0x1D, 0x21, 0x00];               // Normal size
 
-        bytes += [0x1B, 0x61, 0x00];
-        bytes += utf8.encode('Time: $timeCreated\n');
-        bytes += utf8.encode('Priority: $priority\n');
-        bytes += utf8.encode('Name: $ticketname\n');
+      bytes += [0x1B, 0x61, 0x00];               // ESC a 0 -> left
+      bytes += utf8.encode('Time: $timeCreated\n');
+      bytes += utf8.encode('Priority: $priority\n');
+      bytes += utf8.encode('Name: $ticketname\n');
 
-        bytes += utf8.encode('\n\n\n\n');
-        bytes += [0x1D, 0x56, 0x00];
-      } else {
-        bytes += utf8.encode('\n');
-
-        bytes += [0x1B, 0x61, 0x01];               // ESC a 1 -> center
-        bytes += [0x1B, 0x21, 0x30];               // Double height + double width
-        bytes += utf8.encode('Office of the\nOmbudsman\n');
-
-        bytes += [0x1B, 0x21, 0x08];               // Emphasized
-        bytes += utf8.encode('Davao City, Philippines\n');
-        bytes += utf8.encode('\n');
-
-        bytes += [0x1B, 0x21, 0x10];               // Slightly larger
-        bytes += utf8.encode('YOUR TICKET NUMBER IS:\n');
-
-        bytes += [0x1D, 0x21, 0x33];               // Very large
-        bytes += utf8.encode('$codeAndNumber\n');
-
-        bytes += [0x1D, 0x21, 0x00];               // Normal size
-
-        bytes += [0x1B, 0x61, 0x00];               // ESC a 0 -> left
-        bytes += utf8.encode('Time: $timeCreated\n');
-        bytes += utf8.encode('Priority: $priority\n');
-        bytes += utf8.encode('Name: $ticketname\n');
-
-        bytes += utf8.encode('\n\n\n\n');
-        bytes += [0x1D, 0x56, 0x00];
-      }
+      bytes += utf8.encode('\n\n\n\n');
+      bytes += [0x1D, 0x56, 0x00];
 
       await printTicket(bytes);
 

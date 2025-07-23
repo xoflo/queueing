@@ -40,8 +40,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Timer? timer;
 
-  bool mm80 = false;
-
   @override
   void dispose() {
     timer?.cancel();
@@ -352,7 +350,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
           service.serviceType!,
           service.serviceCode!,
           priority, name, gender,
-        mm80
       );
     }
   }
@@ -790,7 +787,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-  addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender, bool? mm80]) async {
+  addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender]) async {
     final String timestamp = DateTime.now().toString();
 
     final List<Ticket> tickets = await getTicketSQL(serviceType);
@@ -832,11 +829,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       if (usb?.selectedDevice == null) {
         int? valueBlue = await printer.ticket("$serviceCode$numberParsed",
-            "$timestamp", "$priorityType", "$ticketName", mm80!);
+            "$timestamp", "$priorityType", "$ticketName");
         value = valueBlue ?? 0;
       } else {
         try {
-          final valueUSB = await usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName", mm80!);
+          final valueUSB = await usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
           value = valueUSB ?? 0;
         } catch(e) {
           print(e);
@@ -847,7 +844,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 1
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -874,11 +871,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
 
           if (usbprinter != "" || usbprinter != null) {
-            usb?.selectedDevice = PrinterDevice(name: usbprinter!.split("_")[0], productId: usbprinter.split("_")[1], vendorId: usbprinter.split("_")[2]);
-            if (size == 'mm80') {
-              mm80 = true;
+            if (usbprinter != 'BT') {
+              usb?.selectedDevice = PrinterDevice(name: usbprinter!.split("_")[0], productId: usbprinter.split("_")[1], vendorId: usbprinter.split("_")[2]);
             } else {
-              mm80 = false;
+              usb?.selectedDevice = null;
             }
           } else {
             usb?.selectedDevice = null;
@@ -964,6 +960,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
       switch (state) {
         case BlueThermalPrinter.CONNECTED:
           _connected = true;
+          usb?.selectedDevice = null;
+          savePrinter('BT');
           setState(() {
             print("bluetooth device state: connected");
           });
@@ -1052,6 +1050,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
           bluetooth.connect(_device!).catchError((error) {
             _connected = false;
           });
+          savePrinter('BT');
+          usb?.selectedDevice = null;
           _connected = true;
         }
       });
@@ -1121,7 +1121,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 showDialog(
                                     context: context,
                                     builder: (_) =>
-                                        usb?.interface(mm80));
+                                        usb?.interface());
                               } else {
                                 ScaffoldMessenger.of(
                                     context)
@@ -1290,29 +1290,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                        "Android Device Support Only.")));
                              }
                             }),
-                        SizedBox(height: 10),
-                        StatefulBuilder(builder: (context, setState) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("mm57: ", style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
-                              Checkbox(value: mm80 == false, onChanged: (value) {
-                                mm80 = false;
-                                saveSize('mm57');
-                                setState((){});
-                              }),
-                              SizedBox(width: 5),
-
-                              Text("mm80: ", style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
-                              Checkbox(value: mm80 == true, onChanged: (value) {
-                                mm80 = true;
-                                saveSize('mm80');
-                                setState((){});
-                              }),
-                            ],
-                          );
-
-                        }),
                       ],
                     ),
                   ));

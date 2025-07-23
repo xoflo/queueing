@@ -27,56 +27,27 @@ class BluetoothPrinter {
     });
   }
 
-  ticket(String codeAndNumber, String timeCreated, String priority, String ticketname, bool mm80) async {
+  ticket(String codeAndNumber, String timeCreated, String priority, String ticketname) async {
 
     try {
       final result = await bluetooth.isConnected.then((isConnected) {
         if (isConnected == true) {
-          if (mm80 == true) {
-            bluetooth.printNewLine();
+          bluetooth.printNewLine();
+          bluetooth.printCustom("Office of the Ombudsman", Size.boldLarge.val, Align.center.val);
+          bluetooth.printCustom("Davao City, Philippines", Size.bold.val, Align.center.val);
+          bluetooth.printNewLine();
+          bluetooth.printCustom("YOUR TICKET NUMBER IS:", Size.medium.val, Align.center.val);
+          List<int> bytes = [0x1D, 0x21, 0x33];
+          bytes += utf8.encode("$codeAndNumber\n");
+          bytes += [0x1D, 0x21, 0x00];
+          bluetooth.writeBytes(Uint8List.fromList(bytes));
+          bluetooth.printCustom("Time: $timeCreated", Size.bold.val, Align.left.val);
+          bluetooth.printCustom("Priority: $priority", Size.bold.val, Align.left.val);
+          bluetooth.printCustom("Name: $ticketname", Size.bold.val, Align.left.val);
+          bluetooth
+              .paperCut();
 
-            bluetooth.printCustom("Office of the Ombudsman", Size.boldLarge.val, Align.center.val);
-            bluetooth.printCustom("Davao City, Philippines", Size.bold.val, Align.center.val);
-
-            bluetooth.printNewLine();
-
-            bluetooth.printCustom("YOUR TICKET NUMBER IS:", Size.medium.val, Align.center.val);
-
-            List<int> bytes = [0x1D, 0x21, 0x11];
-            bytes += utf8.encode("$codeAndNumber\n");
-            bytes += [0x1D, 0x21, 0x00];
-            bluetooth.writeBytes(Uint8List.fromList(bytes));
-
-            bluetooth.printNewLine();
-
-            bluetooth.printCustom("Time: $timeCreated", Size.bold.val, Align.left.val);
-            bluetooth.printCustom("Priority: $priority", Size.bold.val, Align.left.val);
-            bluetooth.printCustom("Name: $ticketname", Size.bold.val, Align.left.val);
-
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-            bluetooth.paperCut();
-
-            return 1;
-          } else {
-
-            bluetooth.printNewLine();
-            bluetooth.printCustom("Office of the Ombudsman", Size.boldLarge.val, Align.center.val);
-            bluetooth.printCustom("Davao City, Philippines", Size.bold.val, Align.center.val);
-            bluetooth.printNewLine();
-            bluetooth.printCustom("YOUR TICKET NUMBER IS:", Size.medium.val, Align.center.val);
-            List<int> bytes = [0x1D, 0x21, 0x33];
-            bytes += utf8.encode("$codeAndNumber\n");
-            bytes += [0x1D, 0x21, 0x00];
-            bluetooth.writeBytes(Uint8List.fromList(bytes));
-            bluetooth.printCustom("Time: $timeCreated", Size.bold.val, Align.left.val);
-            bluetooth.printCustom("Priority: $priority", Size.bold.val, Align.left.val);
-            bluetooth.printCustom("Name: $ticketname", Size.bold.val, Align.left.val);
-            bluetooth
-                .paperCut();
-
-            return 1;
-          }
+          return 1;
         }
       });
 
