@@ -27,6 +27,8 @@ class Ticket {
   DateTime? timeCreatedAsDate;
   String? codeAndNumber;
   int? blinker;
+  
+  String? servingTime;
 
   Ticket.fromJson(dynamic data) {
     this.id = int.parse(data['id']);
@@ -37,8 +39,8 @@ class Ticket {
     this.userAssigned = data['userAssigned'];
     this.stationName = data['stationName'];
     this.stationNumber = int.parse(data['stationNumber']);
-    this.timeTaken = data['timeTaken'];
-    this.timeDone = data['timeDone'];
+    this.timeTaken = data['timeTaken'] == null || data['timeTaken'] == "" ? null : data['timeTaken'];
+    this.timeDone = data['timeDone'] == null || data['timeDone'] == "" ? null : data['timeDone'];
     this.status = data['status'];
     this.log = data['log'];
     this.priority = int.parse(data['priority']);
@@ -51,6 +53,23 @@ class Ticket {
     this.gender = data['gender'];
 
     this.timeCreatedAsDate = DateTime.parse(data['timeCreated'].toString());
+
+
+    if ((data['timeTaken'] != null && data['timeTaken'] != "") && (data['timeDone'] != null && data['timeDone'] != "")) {
+      final timeDifference = DateTime.parse(data['timeDone']).difference(DateTime.parse(data['timeTaken']));
+      this.servingTime = "${_printDuration(timeDifference)}";
+      print("servingTime: $servingTime");
+    } else {
+      this.servingTime = null;
+    }
+  }
+
+  String _printDuration(Duration duration) {
+    String negativeSign = duration.isNegative ? '-' : '';
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60).abs());
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60).abs());
+    return "$negativeSign${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   update(dynamic data) async {

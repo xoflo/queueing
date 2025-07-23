@@ -9,7 +9,10 @@ import 'package:queueing/models/media.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
+import 'package:web_socket_channel/io.dart';
 import '../models/user.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
 
 class StaffScreen extends StatefulWidget {
   const StaffScreen({super.key, required this.user});
@@ -413,8 +416,10 @@ class _StaffSessionState extends State<StaffSession> {
 
   bool swap = false;
 
+  late WebSocketChannel channel;
+
   updateTicketStream([int? i]) async {
-    List<Ticket> getTickets = await getTicketSQL();
+    List<Ticket> getTickets = await getTicketSQL('filtered');
     if (i == 1) {
       swap = !swap;
     }
@@ -426,14 +431,39 @@ class _StaffSessionState extends State<StaffSession> {
 
   @override
   void initState() {
+
+    initPing();
+    super.initState();
+  }
+
+/*
+
+
+  listenNode() {
+    final url = 'ws://${site.toString().split(":")[0]}:3000';
+    if (kIsWeb) {
+      channel = WebSocketChannel.connect(Uri.parse(url));
+    } else {
+      channel = IOWebSocketChannel.connect(url);
+    }
+
+    channel.stream.listen((message) async {
+        print(message);
+        await updateTicketStream();
+        await updateServingTicketStream();
+      },
+      onDone: () => print(''),
+      onError: (error) => print(''),
+    );
+
+    channel.sink.add("Update");
+
     if (ringTimer != null) {
       ringTimer!.cancel();
       ringTimer = null;
     }
-    initPing();
-
-    super.initState();
   }
+ */
 
   @override
   void dispose() {
@@ -457,13 +487,14 @@ class _StaffSessionState extends State<StaffSession> {
       inactiveLength = int.parse(timeControl['other']);
       inactiveOn = int.parse(timeControl['value']);
 
-      List<Ticket> retrievedTickets = await getTicketSQL();
+
+      final retrievedTickets = await getTicketSQL('filtered');
 
       if (ticketLength != retrievedTickets.length) {
         await updateTicketStream();
         await updateServingTicketStream();
-        initRinger();
       }
+
     });
     super.initState();
   }
@@ -682,8 +713,8 @@ class _StaffSessionState extends State<StaffSession> {
                                               ),
                                               onTap: () async {
 
-                                                final timestamp =
-                                                    DateTime.now().toString();
+                                                final timestamp = DateTime.now().toString();
+                                                /*
 
                                                 if (servingStream.value != null) {
                                                   showDialog(
@@ -776,8 +807,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                           "Call Next"))
                                                                 ],
                                                               ));
-                                                } else {
-
+                                                } else {}
+                                                 */
                                                   try {
                                                     if (ticketStream.value.isNotEmpty) {
                                                       if (ticketStream.value[0]
@@ -785,8 +816,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                           callBy ||
                                                           callBy ==
                                                               'Time Order') {
-                                                        final timestamp =
-                                                        DateTime.now().toString();
                                                         await ticketStream.value[0].update({
                                                           "userAssigned": widget.user.username,
                                                           "status": "Serving",
@@ -802,6 +831,26 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                       }
                                                     } else {
+                                                      if (servingStream.value != null) {
+                                                        try {
+                                                          await servingStream.value!.update({
+                                                            "status": "Done",
+                                                            "timeDone": timestamp,
+                                                            "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
+
+                                                          await widget.station.update({'ticketServing': ""});
+                                                          await updateServingTicketStream();
+                                                          await updateTicketStream();
+
+                                                          resetRinger();
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                              content:
+                                                              Text("Ticket complete.")));
+                                                        } catch(e) {
+                                                          print(e);
+                                                        }
+                                                      }
+
                                                       await widget.station.update(
                                                           {'ticketServing': ""});
                                                       ScaffoldMessenger.of(
@@ -816,7 +865,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                   }
 
 
-                                                }
                                               },
                                             ),
                                           ),
@@ -887,8 +935,32 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                                                               Navigator.pop(context);
                                                                                               resetRinger();
-
                                                                                               servingStream.value = null;
+
+                                                                                              if (ticketStream.value.isNotEmpty) {
+                                                                                                if (ticketStream.value[0]
+                                                                                                    .serviceType! ==
+                                                                                                    callBy ||
+                                                                                                    callBy ==
+                                                                                                        'Time Order') {
+                                                                                                  await ticketStream.value[0].update({
+                                                                                                    "userAssigned": widget.user.username,
+                                                                                                    "status": "Serving",
+                                                                                                    "stationName": widget.station.stationName,
+                                                                                                    "stationNumber": widget.station.stationNumber,
+                                                                                                    "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                                                                    "timeTaken": timestamp
+                                                                                                  });
+
+                                                                                                  await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
+                                                                                                  
+                                                                                                  // channel.sink.add("Update");
+                                                                                                  
+                                                                                                  await updateServingTicketStream();
+                                                                                                  await updateTicketStream(1);
+
+                                                                                                }
+                                                                                              }
                                                                                             },
                                                                                           );
                                                                                         })
@@ -1197,14 +1269,16 @@ class _StaffSessionState extends State<StaffSession> {
     final control = response
         .where((e) => e['controlName'] == 'Staff Inactive Beep')
         .toList()[0];
+
+
     return control ?? 0;
   }
 
-  Future<List<Ticket>> getTicketSQL() async {
+  Future<List<Ticket>> getTicketSQL([String? filtered]) async {
     final dateNow = DateTime.now();
 
     try {
-      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php?today=true');
       final result = await http.get(uri);
       final List<dynamic> response = jsonDecode(result.body);
 
