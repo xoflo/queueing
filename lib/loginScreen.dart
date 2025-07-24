@@ -26,6 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
+
+    username.text = 'staff2';
+    pass.text = 'staff2';
+
     getIP();
     super.initState();
   }
@@ -105,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: 10),
 
                   // comment
-                  /*
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -146,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                   */
+
                    //comment
                   SizedBox(height: 10),
                   TextButton(onPressed: () async {

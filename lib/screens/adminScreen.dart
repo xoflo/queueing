@@ -96,14 +96,13 @@ class _AdminScreenState extends State<AdminScreen> {
         children: [
           imageBackground(context),
           logoBackground(context, 350),
-          Align(
-            alignment: Alignment.topLeft,
-            child: Container(
-              padding: EdgeInsets.all(20.0),
-              child: Column(
-
-                children: [
-                  Row(
+          Container(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width - 40,
+                  child: Row(
                     spacing: 10,
                     children: [
                       Align(
@@ -112,70 +111,73 @@ class _AdminScreenState extends State<AdminScreen> {
                               style: TextStyle(
                                   fontSize: MediaQuery.of(context).size.width < 400 ? 20 : 30, fontWeight: FontWeight.w700))),
                       Spacer(),
-                      Container(
-                        height: 45,
-                        width:  MediaQuery.of(context).size.width < 400 ? 200 : 220,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            IconButton(
-                                color: colorHandler(screenIndex, 0),
-                                tooltip: 'Services',
-                                onPressed: () {
-                                  screenIndex = 0;
-                                  setState(() {});
-                                },
-                                icon: Icon(Icons.sticky_note_2)),
-                            IconButton(
-                                color: colorHandler(screenIndex, 1),
-                                tooltip: 'Users',
-                                onPressed: () {
-                                  screenIndex = 1;
-                                  setState(() {});
-                                },
-                                icon: Icon(Icons.supervised_user_circle_rounded)),
-                            IconButton(
-                                color: colorHandler(screenIndex, 2),
-                                tooltip: 'Stations',
-                                onPressed: () {
-                                  screenIndex = 2;
-                                  setState(() {});
-                                },
-                                icon: Icon(Icons.desktop_windows_rounded)),
-                            IconButton(
-                                color: colorHandler(screenIndex, 3),
-                                tooltip: 'Archive',
-                                onPressed: () {
-                                  screenIndex = 3;
-                                  setState(() {});
-                                },
-                                icon: Icon(Icons.history_edu)),
-                            IconButton(
-                                tooltip: "Log-out",
-                                onPressed: () {
-                                  showDialog(context: context, builder: (_) => AlertDialog(
-                                      title: Text("Log-out"),
-                                      actions: [TextButton(onPressed: () {
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                      }, child: Text("Log-out", style: TextStyle(color: Colors.red)))],
-                                      content: Container(
-                                        height: 30,
-                                        child: Text("You will log-out as Administrator."),
-                                      )
-                                  ));
-                                },
-                                icon: Icon(Icons.logout))
-                          ],
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          height: 45,
+                          width:  MediaQuery.of(context).size.width < 400 ? 200 : 220,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              IconButton(
+                                  color: colorHandler(screenIndex, 0),
+                                  tooltip: 'Services',
+                                  onPressed: () {
+                                    screenIndex = 0;
+                                    setState(() {});
+                                  },
+                                  icon: Icon(Icons.sticky_note_2)),
+                              IconButton(
+                                  color: colorHandler(screenIndex, 1),
+                                  tooltip: 'Users',
+                                  onPressed: () {
+                                    screenIndex = 1;
+                                    setState(() {});
+                                  },
+                                  icon: Icon(Icons.supervised_user_circle_rounded)),
+                              IconButton(
+                                  color: colorHandler(screenIndex, 2),
+                                  tooltip: 'Stations',
+                                  onPressed: () {
+                                    screenIndex = 2;
+                                    setState(() {});
+                                  },
+                                  icon: Icon(Icons.desktop_windows_rounded)),
+                              IconButton(
+                                  color: colorHandler(screenIndex, 3),
+                                  tooltip: 'Archive',
+                                  onPressed: () {
+                                    screenIndex = 3;
+                                    setState(() {});
+                                  },
+                                  icon: Icon(Icons.history_edu)),
+                              IconButton(
+                                  tooltip: "Log-out",
+                                  onPressed: () {
+                                    showDialog(context: context, builder: (_) => AlertDialog(
+                                        title: Text("Log-out"),
+                                        actions: [TextButton(onPressed: () {
+                                          Navigator.pop(context);
+                                          Navigator.pop(context);
+                                        }, child: Text("Log-out", style: TextStyle(color: Colors.red)))],
+                                        content: Container(
+                                          height: 30,
+                                          child: Text("You will log-out as Administrator."),
+                                        )
+                                    ));
+                                  },
+                                  icon: Icon(Icons.logout))
+                            ],
+                          ),
                         ),
                       )
                     ],
                   ),
-                  Divider(),
-                  SizedBox(height: 10),
-                  screenHandler(screenIndex)
-                ],
-              ),
+                ),
+                Divider(),
+                SizedBox(height: 10),
+                screenHandler(screenIndex)
+              ],
             ),
           )],
       ),
@@ -237,7 +239,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 children: [
                   Container(
                     height: 45,
-                    width: MediaQuery.of(context).size.width - 50,
+                    width: MediaQuery.of(context).size.width - 100,
                     child: ListView(
                       padding: EdgeInsets.all(5),
                       scrollDirection: Axis.horizontal,
@@ -245,7 +247,7 @@ class _AdminScreenState extends State<AdminScreen> {
                         ElevatedButton(
                             onPressed: () {
                               addService(0);
-                            },
+                              },
                             child: Text("+ Service")),
                         SizedBox(width: 5),
                         ElevatedButton(
@@ -334,642 +336,561 @@ class _AdminScreenState extends State<AdminScreen> {
                                       )));
                             },
                             child: Text("+ Priority Type")),
-                        Spacer(),
-                        IconButton(onPressed: () {
-                          showDialog(context: context, builder: (_) => AlertDialog(
-                            title: Text("Settings"),
-                            content: Container(
-                              height: 400,
-                              width: 400,
-                              child: StatefulBuilder(
-                                builder: (BuildContext context, void Function(void Function()) setStateSetting) {
-                                  return FutureBuilder(
-                                    future: getSettings(context),
-                                    builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                      return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
-                                          itemCount: snapshot.data!.length,
-                                          itemBuilder: (context, i) {
-                                            final control = Control.fromJson(snapshot.data![i]);
+                      ],
+                    ),
+                  ),
 
-                                            return ListTile(
-                                              title: Row(
-                                                spacing: 5,
-                                                children: [
-                                                  Text(control.controlName!, style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 11 : 16)),
-                                                ],
-                                              ),
-                                              subtitle: Row(
-                                                children: [
-                                                  control.controlName! == "Video View (TV)" ? TextButton(onPressed: () async {
-                                                    showDialog(context: context, builder: (_) => StatefulBuilder(
-                                                      builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                                        return AlertDialog(
-                                                          title: Text("Video List"),
-                                                          content: FutureBuilder(
-                                                            future: getMedia(context),
-                                                            builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                                              return snapshot.connectionState == ConnectionState.done ?
-                                                              Container(
-                                                                height: 400,
-                                                                width: 400,
-                                                                child: snapshot.data!.length == 0 ? Center(child: Text("No Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
-                                                                    itemCount: snapshot.data!.length,
-                                                                    itemBuilder: (context, i) {
-                                                                      final media = Media.fromJson(snapshot.data![i]);
-                                                                      return ListTile(
-                                                                        title: Text(media.name!),
-                                                                        onTap: () async {
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(onPressed: () {
+                      showDialog(context: context, builder: (_) => AlertDialog(
+                        title: Text("Settings"),
+                        content: Container(
+                          height: 400,
+                          width: 400,
+                          child: StatefulBuilder(
+                            builder: (BuildContext context, void Function(void Function()) setStateSetting) {
+                              return FutureBuilder(
+                                future: getSettings(context),
+                                builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                  return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ? ListView.builder(
+                                      itemCount: snapshot.data!.length,
+                                      itemBuilder: (context, i) {
+                                        final control = Control.fromJson(snapshot.data![i]);
 
-                                                                          final link = Uri.parse("http://$site/queueing_api/videos/${media.link}");
-                                                                          final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
-                                                                            setStateSetting(() {}); // refresh UI when video is ready
-                                                                          });
+                                        return ListTile(
+                                          title: Row(
+                                            spacing: 5,
+                                            children: [
+                                              Text(control.controlName!, style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 11 : 16)),
+                                            ],
+                                          ),
+                                          subtitle: Row(
+                                            children: [
+                                              control.controlName! == "Video View (TV)" ? TextButton(onPressed: () async {
+                                                showDialog(context: context, builder: (_) => StatefulBuilder(
+                                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                    return AlertDialog(
+                                                      title: Text("Video List"),
+                                                      content: FutureBuilder(
+                                                        future: getMedia(context),
+                                                        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                          return snapshot.connectionState == ConnectionState.done ?
+                                                          Container(
+                                                            height: 400,
+                                                            width: 400,
+                                                            child: snapshot.data!.length == 0 ? Center(child: Text("No Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
+                                                                itemCount: snapshot.data!.length,
+                                                                itemBuilder: (context, i) {
+                                                                  final media = Media.fromJson(snapshot.data![i]);
+                                                                  return ListTile(
+                                                                    title: Text(media.name!),
+                                                                    onTap: () async {
 
-                                                                          videoController.setLooping(true);
-                                                                          int player = 0;
+                                                                      final link = Uri.parse("http://$site/queueing_api/videos/${media.link}");
+                                                                      final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
+                                                                        setStateSetting(() {}); // refresh UI when video is ready
+                                                                      });
 
-                                                                          dispose(){
-                                                                            videoController.dispose();
-                                                                          }
+                                                                      videoController.setLooping(true);
+                                                                      int player = 0;
 
-                                                                          showDialog(context: context, builder: (_) => AlertDialog(
-                                                                            content: StatefulBuilder(
-                                                                              builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
-                                                                                return Container(
-                                                                                  height: 400,
-                                                                                  width: 400,
-                                                                                  child: Column(
-                                                                                    children: [
-                                                                                      Container(
-                                                                                          height: 350,
-                                                                                          width: 350,
-                                                                                          child: VideoPlayer(videoController)
-                                                                                      ),
-                                                                                      IconButton(onPressed: () {if (player == 0) {
-                                                                                        player = 1;
-                                                                                        videoController.play();
-                                                                                        setStateSetting((){});
-                                                                                      } else {
-                                                                                        player = 0;
-                                                                                        videoController.pause();
-                                                                                        setStateSetting((){});
-                                                                                      }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
-                                                                                    ],
+                                                                      dispose(){
+                                                                        videoController.dispose();
+                                                                      }
+
+                                                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                                                        content: StatefulBuilder(
+                                                                          builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                                                            return Container(
+                                                                              height: 400,
+                                                                              width: 400,
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  Container(
+                                                                                      height: 350,
+                                                                                      width: 350,
+                                                                                      child: VideoPlayer(videoController)
                                                                                   ),
-                                                                                );
-                                                                              },
-                                                                            ),
-                                                                          ));
-                                                                        },
-                                                                        trailing: IconButton(onPressed: () async {
-                                                                          final uri = Uri.parse(
-                                                                              "http://$site/queueing_api/api_videoDelete.php");
-
-                                                                          final response = await http.post(uri, body: {
-                                                                            'filename': media.link,
-                                                                          });
-
-                                                                          if (response.statusCode == 200) {
-                                                                            print("Response: ${response.body}");
-
-                                                                            final uri = Uri.parse('http://$site/queueing_api/api_media.php');
-                                                                            final body = jsonEncode({'id': media.id});
-                                                                            final result = await http.delete(uri, body: body);
-                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
-                                                                            setStateList((){});
-
-
-                                                                          } else {
-                                                                            print("Error: ${response.statusCode}");
-                                                                          }
-
-                                                                        }, icon: Icon(Icons.delete)),
-                                                                      );
-                                                                    }),
-                                                              ) : Container(
-                                                                height: 50,
-                                                                width: 50,
-                                                                child: CircularProgressIndicator(),
-                                                              );
-                                                            },
-                                                          ),
-                                                          actions: [
-                                                            TextButton(onPressed: () async {
-                                                              try {
-                                                                final result = await FilePicker.platform.pickFiles(
-                                                                  type: FileType.video,
-                                                                  allowMultiple: false,
-                                                                  withData: true,
-                                                                );
-
-                                                                if (result != null && result.files.isNotEmpty) {
-                                                                  final file = result.files.first;
-                                                                  final uri = Uri.parse(
-                                                                      "http://$site/queueing_api/api_video.php");
-
-                                                                  final request = http.MultipartRequest(
-                                                                      "POST", uri);
-                                                                  request.files.add(
-                                                                      http.MultipartFile.fromBytes(
-                                                                        'file',
-                                                                        file.bytes!,
-                                                                        filename: file.name,
+                                                                                  IconButton(onPressed: () {if (player == 0) {
+                                                                                    player = 1;
+                                                                                    videoController.play();
+                                                                                    setStateSetting((){});
+                                                                                  } else {
+                                                                                    player = 0;
+                                                                                    videoController.pause();
+                                                                                    setStateSetting((){});
+                                                                                  }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
+                                                                                ],
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                        ),
                                                                       ));
+                                                                    },
+                                                                    trailing: IconButton(onPressed: () async {
+                                                                      final uri = Uri.parse(
+                                                                          "http://$site/queueing_api/api_videoDelete.php");
+
+                                                                      final response = await http.post(uri, body: {
+                                                                        'filename': media.link,
+                                                                      });
+
+                                                                      if (response.statusCode == 200) {
+                                                                        print("Response: ${response.body}");
+
+                                                                        final uri = Uri.parse('http://$site/queueing_api/api_media.php');
+                                                                        final body = jsonEncode({'id': media.id});
+                                                                        final result = await http.delete(uri, body: body);
+                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
+                                                                        setStateList((){});
+
+
+                                                                      } else {
+                                                                        print("Error: ${response.statusCode}");
+                                                                      }
+
+                                                                    }, icon: Icon(Icons.delete)),
+                                                                  );
+                                                                }),
+                                                          ) : Container(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: CircularProgressIndicator(),
+                                                          );
+                                                        },
+                                                      ),
+                                                      actions: [
+                                                        TextButton(onPressed: () async {
+                                                          try {
+                                                            final result = await FilePicker.platform.pickFiles(
+                                                              type: FileType.video,
+                                                              allowMultiple: false,
+                                                              withData: true,
+                                                            );
+
+                                                            if (result != null && result.files.isNotEmpty) {
+                                                              final file = result.files.first;
+                                                              final uri = Uri.parse(
+                                                                  "http://$site/queueing_api/api_video.php");
+
+                                                              final request = http.MultipartRequest(
+                                                                  "POST", uri);
+                                                              request.files.add(
+                                                                  http.MultipartFile.fromBytes(
+                                                                    'file',
+                                                                    file.bytes!,
+                                                                    filename: file.name,
+                                                                  ));
 
 
 
-                                                                  List<dynamic> media = await getMedia(context);
-                                                                  List<dynamic> similar = media.where((e) => e['name'] == file.name).toList();
+                                                              List<dynamic> media = await getMedia(context);
+                                                              List<dynamic> similar = media.where((e) => e['name'] == file.name).toList();
 
-                                                                  if (similar.isEmpty) {
-                                                                    if (file.size < 524288000) {
-                                                                      final response = await request.send();
-                                                                      addMedia(file.name, file.name);
-                                                                      print(response.headers);
-                                                                      setStateList((){});
-                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
-                                                                    } else {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
-                                                                    }
-                                                                  } else {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
-                                                                  }
-
+                                                              if (similar.isEmpty) {
+                                                                if (file.size < 524288000) {
+                                                                  final response = await request.send();
+                                                                  addMedia(file.name, file.name);
+                                                                  print(response.headers);
+                                                                  setStateList((){});
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
+                                                                } else {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
                                                                 }
-                                                              } catch(e) {
-                                                                print(e);
+                                                              } else {
+                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
                                                               }
 
-                                                            }, child: Text("Add Video"))
-                                                          ],
-                                                        );
-                                                      },
-                                                    ));
-                                                  }, child: Text("Set Videos")) : SizedBox(),
-                                                  control.controlName! == "Sliding Text" ? TextButton(
-                                                      onPressed: () {
-                                                        TextEditingController sliding = TextEditingController();
+                                                            }
+                                                          } catch(e) {
+                                                            print(e);
+                                                          }
+
+                                                        }, child: Text("Add Video"))
+                                                      ],
+                                                    );
+                                                  },
+                                                ));
+                                              }, child: Text("Set Videos")) : SizedBox(),
+                                              control.controlName! == "Sliding Text" ? TextButton(
+                                                  onPressed: () {
+                                                    TextEditingController sliding = TextEditingController();
 
 
-                                                        final space = "                    ";
+                                                    final space = "                    ";
 
-                                                        String string = control.other!;
-                                                        string.trimLeft();
-                                                        string = string.split(space).join('\n');
-                                                        string = string.replaceFirst(RegExp(r'[\n\r]+'), '');
-                                                        sliding.text = string;
-
-                                                        showDialog(context: context, builder: (_) => AlertDialog(
-                                                          title: Text("Set Text"),
-                                                          content: Container(
-                                                            height: 310,
-                                                            width: 350,
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.all(8.0),
-                                                              child: Column(
-                                                                children: [
-                                                                  TextField(
-                                                                    controller: sliding,
-                                                                    decoration: InputDecoration(
-                                                                      border: OutlineInputBorder(
-                                                                          borderRadius: BorderRadius.circular(15)
-                                                                      ),
-                                                                      hintText: 'Input Sliding Text Content Here',
-                                                                    ),
-                                                                    maxLines: 10,
-                                                                  ),
-                                                                  SizedBox(height: 5),
-                                                                  Text("'Enter' will separate messages.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center)
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          actions: [
-                                                            TextButton(onPressed: () {
-
-                                                              List<String> lines = sliding.text.split(RegExp(r'\r?\n'));
-                                                              lines = lines.where((line) => line.trim().isNotEmpty).toList();
-                                                              String finalString = space + lines.join(space);
-
-                                                              control.update({
-                                                                'other' : finalString
-                                                              });
-                                                              Navigator.pop(context);
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
-                                                            }, child: Text("Update"))
-                                                          ],
-                                                        ));
-                                                      }, child: Text("Set Text")) : SizedBox(),
-                                                  control.controlName! == "Kiosk Password" ? TextButton(onPressed: () {
-                                                    TextEditingController pass = TextEditingController();
+                                                    String string = control.other!;
+                                                    string.trimLeft();
+                                                    string = string.split(space).join('\n');
+                                                    string = string.replaceFirst(RegExp(r'[\n\r]+'), '');
+                                                    sliding.text = string;
 
                                                     showDialog(context: context, builder: (_) => AlertDialog(
-                                                      title: Text("Kiosk Password"),
+                                                      title: Text("Set Text"),
                                                       content: Container(
-                                                        height: 100,
+                                                        height: 310,
+                                                        width: 350,
                                                         child: Padding(
                                                           padding: const EdgeInsets.all(8.0),
                                                           child: Column(
                                                             children: [
                                                               TextField(
+                                                                controller: sliding,
                                                                 decoration: InputDecoration(
-                                                                    labelText: 'Set Password'
+                                                                  border: OutlineInputBorder(
+                                                                      borderRadius: BorderRadius.circular(15)
+                                                                  ),
+                                                                  hintText: 'Input Sliding Text Content Here',
                                                                 ),
-                                                                controller: pass,
+                                                                maxLines: 10,
                                                               ),
+                                                              SizedBox(height: 5),
+                                                              Text("'Enter' will separate messages.", style: TextStyle(color: Colors.grey), textAlign: TextAlign.center)
                                                             ],
                                                           ),
                                                         ),
                                                       ),
                                                       actions: [
                                                         TextButton(onPressed: () {
+
+                                                          List<String> lines = sliding.text.split(RegExp(r'\r?\n'));
+                                                          lines = lines.where((line) => line.trim().isNotEmpty).toList();
+                                                          String finalString = space + lines.join(space);
+
                                                           control.update({
-                                                            'other' : pass.text
+                                                            'other' : finalString
                                                           });
                                                           Navigator.pop(context);
-                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Kiosk Password Updated")));
+                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sliding Text Updated")));
                                                         }, child: Text("Update"))
                                                       ],
                                                     ));
-                                                  }, child: Text("Set Password")) : SizedBox(),
-                                                  control.controlName! == "BG Video (TV)" ? TextButton(onPressed: () async {
-                                                    showDialog(context: context, builder: (_) => StatefulBuilder(
-                                                      builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                                        return AlertDialog(
-                                                          title: Text("BG Video List"),
-                                                          content: FutureBuilder(
-                                                            future: getMediabg(context),
-                                                            builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                                              return snapshot.connectionState == ConnectionState.done ?
-                                                              Container(
-                                                                height: 400,
-                                                                width: 400,
-                                                                child: snapshot.data!.length == 0 ? Center(child: Text("No BG Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
-                                                                    itemCount: snapshot.data!.length,
-                                                                    itemBuilder: (context, i) {
-                                                                      final media = Media.fromJson(snapshot.data![i]);
-                                                                      return ListTile(
-                                                                        title: Text(media.name!),
-                                                                        onTap: () async {
-                                                                          final link = Uri.parse("http://$site/queueing_api/bgvideos/${media.link}");
-                                                                          final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
-                                                                            setStateSetting(() {}); // refresh UI when video is ready
-                                                                          });
+                                                  }, child: Text("Set Text")) : SizedBox(),
+                                              control.controlName! == "Kiosk Password" ? TextButton(onPressed: () {
+                                                TextEditingController pass = TextEditingController();
 
-                                                                          videoController.setLooping(true);
-                                                                          int player = 0;
-
-                                                                          dispose(){
-                                                                            videoController.dispose();
-                                                                          }
-
-                                                                          showDialog(context: context, builder: (_) => AlertDialog(
-                                                                            content: StatefulBuilder(
-                                                                              builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
-                                                                                return Container(
-                                                                                  height: 400,
-                                                                                  width: 400,
-                                                                                  child: Column(
-                                                                                    children: [
-                                                                                      Container(
-                                                                                          height: 350,
-                                                                                          width: 350,
-                                                                                          child: VideoPlayer(videoController)
-                                                                                      ),
-                                                                                      IconButton(onPressed: () {if (player == 0) {
-                                                                                        player = 1;
-                                                                                        videoController.play();
-                                                                                        setStateSetting((){});
-                                                                                      } else {
-                                                                                        player = 0;
-                                                                                        videoController.pause();
-                                                                                        setStateSetting((){});
-                                                                                      }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
-                                                                                    ],
-                                                                                  ),
-                                                                                );
-                                                                              },
-                                                                            ),
-                                                                          ));
-                                                                        },
-                                                                        trailing: IconButton(onPressed: () async {
-                                                                          final uri = Uri.parse(
-                                                                              "http://$site/queueing_api/api_videoDeletebg.php");
-
-                                                                          final response = await http.post(uri, body: {
-                                                                            'filename': media.link,
-                                                                          });
-
-                                                                          if (response.statusCode == 200) {
-                                                                            print("Response: ${response.body}");
-
-                                                                            final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
-                                                                            final body = jsonEncode({'id': media.id});
-                                                                            final result = await http.delete(uri, body: body);
-                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
-                                                                            setStateList((){});
-
-
-                                                                          } else {
-                                                                            print("Error: ${response.statusCode}");
-                                                                          }
-
-                                                                        }, icon: Icon(Icons.delete)),
-                                                                      );
-                                                                    }),
-                                                              ) : Container(
-                                                                height: 50,
-                                                                width: 50,
-                                                                child: CircularProgressIndicator(),
-                                                              );
-                                                            },
+                                                showDialog(context: context, builder: (_) => AlertDialog(
+                                                  title: Text("Kiosk Password"),
+                                                  content: Container(
+                                                    height: 100,
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: Column(
+                                                        children: [
+                                                          TextField(
+                                                            decoration: InputDecoration(
+                                                                labelText: 'Set Password'
+                                                            ),
+                                                            controller: pass,
                                                           ),
-                                                          actions: [
-                                                            TextButton(onPressed: () async {
-                                                              try {
-                                                                final result = await FilePicker.platform.pickFiles(
-                                                                  type: FileType.video,
-                                                                  allowMultiple: false,
-                                                                  withData: true,
-                                                                );
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(onPressed: () {
+                                                      control.update({
+                                                        'other' : pass.text
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Kiosk Password Updated")));
+                                                    }, child: Text("Update"))
+                                                  ],
+                                                ));
+                                              }, child: Text("Set Password")) : SizedBox(),
+                                              control.controlName! == "BG Video (TV)" ? TextButton(onPressed: () async {
+                                                showDialog(context: context, builder: (_) => StatefulBuilder(
+                                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                    return AlertDialog(
+                                                      title: Text("BG Video List"),
+                                                      content: FutureBuilder(
+                                                        future: getMediabg(context),
+                                                        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                          return snapshot.connectionState == ConnectionState.done ?
+                                                          Container(
+                                                            height: 400,
+                                                            width: 400,
+                                                            child: snapshot.data!.length == 0 ? Center(child: Text("No BG Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
+                                                                itemCount: snapshot.data!.length,
+                                                                itemBuilder: (context, i) {
+                                                                  final media = Media.fromJson(snapshot.data![i]);
+                                                                  return ListTile(
+                                                                    title: Text(media.name!),
+                                                                    onTap: () async {
+                                                                      final link = Uri.parse("http://$site/queueing_api/bgvideos/${media.link}");
+                                                                      final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
+                                                                        setStateSetting(() {}); // refresh UI when video is ready
+                                                                      });
 
-                                                                if (result != null && result.files.isNotEmpty) {
-                                                                  final file = result.files.first;
-                                                                  final uri = Uri.parse(
-                                                                      "http://$site/queueing_api/api_videobg.php");
+                                                                      videoController.setLooping(true);
+                                                                      int player = 0;
 
-                                                                  final request = http.MultipartRequest(
-                                                                      "POST", uri);
-                                                                  request.files.add(
-                                                                      http.MultipartFile.fromBytes(
-                                                                        'file',
-                                                                        file.bytes!,
-                                                                        filename: file.name,
-                                                                      ));
+                                                                      dispose(){
+                                                                        videoController.dispose();
+                                                                      }
 
-                                                                  List<dynamic> mediabg = await getMediabg(context);
-                                                                  List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
-
-                                                                  if (similar.isEmpty) {
-                                                                    if (file.size < 524288000) {
-                                                                      final response = await request.send();
-                                                                      addMediabg(file.name, file.name);
-                                                                      print(response.headers);
-                                                                      setStateList((){});
-                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
-                                                                    } else {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
-                                                                    }
-                                                                  } else {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
-                                                                  }
-                                                                }
-                                                              } catch(e) {
-                                                                print(e);
-                                                              }
-
-                                                            }, child: Text("Add Video"))
-                                                          ],
-                                                        );
-                                                      },
-                                                    ));
-                                                  }, child: Text("Set BG Videos")) : SizedBox(),
-                                                  control.controlName! == "BG Video (Kiosk)" ? TextButton(onPressed: () async {
-                                                    showDialog(context: context, builder: (_) => StatefulBuilder(
-                                                      builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                                        return AlertDialog(
-                                                          title: Text("BG Video List"),
-                                                          content: FutureBuilder(
-                                                            future: getMediabg(context),
-                                                            builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                                              return snapshot.connectionState == ConnectionState.done ?
-                                                              Container(
-                                                                height: 400,
-                                                                width: 400,
-                                                                child: snapshot.data!.length == 0 ? Center(child: Text("No BG Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
-                                                                    itemCount: snapshot.data!.length,
-                                                                    itemBuilder: (context, i) {
-                                                                      final media = Media.fromJson(snapshot.data![i]);
-                                                                      return ListTile(
-                                                                        title: Text(media.name!),
-                                                                        onTap: () async {
-                                                                          final link = Uri.parse("http://$site/queueing_api/bgvideos/${media.link}");
-                                                                          final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
-                                                                            setStateSetting(() {}); // refresh UI when video is ready
-                                                                          });
-
-                                                                          videoController.setLooping(true);
-                                                                          int player = 0;
-
-                                                                          dispose(){
-                                                                            videoController.dispose();
-                                                                          }
-
-                                                                          showDialog(context: context, builder: (_) => AlertDialog(
-                                                                            content: StatefulBuilder(
-                                                                              builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
-                                                                                return Container(
-                                                                                  height: 400,
-                                                                                  width: 400,
-                                                                                  child: Column(
-                                                                                    children: [
-                                                                                      Container(
-                                                                                          height: 350,
-                                                                                          width: 350,
-                                                                                          child: VideoPlayer(videoController)
-                                                                                      ),
-                                                                                      IconButton(onPressed: () {if (player == 0) {
-                                                                                        player = 1;
-                                                                                        videoController.play();
-                                                                                        setStateSetting((){});
-                                                                                      } else {
-                                                                                        player = 0;
-                                                                                        videoController.pause();
-                                                                                        setStateSetting((){});
-                                                                                      }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
-                                                                                    ],
+                                                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                                                        content: StatefulBuilder(
+                                                                          builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                                                            return Container(
+                                                                              height: 400,
+                                                                              width: 400,
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  Container(
+                                                                                      height: 350,
+                                                                                      width: 350,
+                                                                                      child: VideoPlayer(videoController)
                                                                                   ),
-                                                                                );
-                                                                              },
-                                                                            ),
-                                                                          ));
-                                                                        },
-                                                                        trailing: IconButton(onPressed: () async {
-                                                                          final uri = Uri.parse(
-                                                                              "http://$site/queueing_api/api_videoDeletebg.php");
-
-                                                                          final response = await http.post(uri, body: {
-                                                                            'filename': media.link,
-                                                                          });
-
-                                                                          if (response.statusCode == 200) {
-                                                                            print("Response: ${response.body}");
-
-                                                                            final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
-                                                                            final body = jsonEncode({'id': media.id});
-                                                                            final result = await http.delete(uri, body: body);
-                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
-                                                                            setStateList((){});
-
-
-                                                                          } else {
-                                                                            print("Error: ${response.statusCode}");
-                                                                          }
-
-                                                                        }, icon: Icon(Icons.delete)),
-                                                                      );
-                                                                    }),
-                                                              ) : Container(
-                                                                height: 50,
-                                                                width: 50,
-                                                                child: CircularProgressIndicator(),
-                                                              );
-                                                            },
-                                                          ),
-                                                          actions: [
-                                                            TextButton(onPressed: () async {
-                                                              try {
-                                                                final result = await FilePicker.platform.pickFiles(
-                                                                  type: FileType.video,
-                                                                  allowMultiple: false,
-                                                                  withData: true,
-                                                                );
-
-                                                                if (result != null && result.files.isNotEmpty) {
-                                                                  final file = result.files.first;
-                                                                  final uri = Uri.parse(
-                                                                      "http://$site/queueing_api/api_videobg.php");
-
-                                                                  final request = http.MultipartRequest(
-                                                                      "POST", uri);
-                                                                  request.files.add(
-                                                                      http.MultipartFile.fromBytes(
-                                                                        'file',
-                                                                        file.bytes!,
-                                                                        filename: file.name,
-                                                                      ));
-
-                                                                  List<dynamic> mediabg = await getMediabg(context);
-                                                                  List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
-
-                                                                  if (similar.isEmpty) {
-                                                                    if (file.size < 524288000) {
-                                                                      final response = await request.send();
-                                                                      addMediabg(file.name, file.name);
-                                                                      print(response.headers);
-                                                                      setStateList((){});
-                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
-                                                                    } else {
-                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
-                                                                    }
-                                                                  } else {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
-                                                                  }
-                                                                }
-                                                              } catch(e) {
-                                                                print(e);
-                                                              }
-
-                                                            }, child: Text("Add Video"))
-                                                          ],
-                                                        );
-                                                      },
-                                                    ));
-                                                  }, child: Text("Set BG Videos")) : SizedBox(),
-                                                  control.controlName! == "RGB Screen (Kiosk)" ? TextButton(
-                                                      onPressed: () {
-
-                                                        bool alwaysOn = false;
-                                                        TextEditingController visibleTime = TextEditingController();
-                                                        TextEditingController invisibleTime = TextEditingController();
-                                                        double opacity = 0;
-
-
-                                                        if (control.other != null) {
-                                                          visibleTime.text = control.other.toString().split(':')[0];
-                                                          invisibleTime.text = control.other.toString().split(':')[1];
-                                                          opacity = double.parse(control.other.toString().split(':')[2]);
-                                                        }
-
-                                                        showDialog(context: context, builder: (_) => AlertDialog(
-                                                          title: Text("RGB (Kiosk)"),
-                                                          content: Container(
-                                                              height: 250,
-                                                              width: 150,
-                                                              child: StatefulBuilder(
-                                                                builder: (context, setStateDialog) {
-                                                                  return Column(
-                                                                    children: [
-                                                                      CheckboxListTile(
-                                                                          title: Text("Always On"),
-                                                                          value: alwaysOn, onChanged: (value) {
-                                                                        alwaysOn = !alwaysOn;
-                                                                        setStateDialog((){});
-                                                                      }),
-                                                                      alwaysOn == false ?
-                                                                      Column(
-                                                                        children: [
-                                                                          TextField(
-                                                                            inputFormatters: [
-                                                                              FilteringTextInputFormatter.digitsOnly
-                                                                            ],
-                                                                            controller: visibleTime,
-                                                                            decoration: InputDecoration(
-                                                                                labelText: 'Display Length (In Seconds)'
-                                                                            ),
-                                                                          ),
-                                                                          TextField(
-                                                                            inputFormatters: [
-                                                                              FilteringTextInputFormatter.digitsOnly
-                                                                            ],
-                                                                            controller: invisibleTime,
-                                                                            decoration: InputDecoration(
-                                                                                labelText: 'Pause Interval (In Seconds)'
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(height: 10),
-                                                                          Center(child: Text("Opacity: $opacity", style: TextStyle(fontWeight: FontWeight.w700))),
-                                                                          Slider(
-                                                                            value: opacity,
-                                                                            min: 0,
-                                                                            max: 1,
-                                                                            divisions: 10, // step of 0.1
-                                                                            label: opacity.toStringAsFixed(1),
-                                                                            onChanged: (v) => setStateDialog(() => opacity = v),
-                                                                          ),
-                                                                        ],
-                                                                      ) : Container(
-                                                                        height: 200,
-                                                                        child: Center(
-                                                                          child: Text("RGB Screen will always be on.", style: TextStyle(color: Colors.grey)),
+                                                                                  IconButton(onPressed: () {if (player == 0) {
+                                                                                    player = 1;
+                                                                                    videoController.play();
+                                                                                    setStateSetting((){});
+                                                                                  } else {
+                                                                                    player = 0;
+                                                                                    videoController.pause();
+                                                                                    setStateSetting((){});
+                                                                                  }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
+                                                                                ],
+                                                                              ),
+                                                                            );
+                                                                          },
                                                                         ),
-                                                                      )
-                                                                    ],
-                                                                  );
-                                                                },
-                                                              )
-                                                          ),
-                                                          actions: [
-                                                            TextButton(onPressed: () async {
-                                                              final visibleValue = removeExtraZeros(visibleTime.text.trim());
-                                                              final realVisible = visibleValue == "0" || visibleValue == "" ? "10" : visibleTime.text.trim();
-                                                              final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
-                                                              final realAlways = alwaysOn == true ? "1" : "0";
+                                                                      ));
+                                                                    },
+                                                                    trailing: IconButton(onPressed: () async {
+                                                                      final uri = Uri.parse(
+                                                                          "http://$site/queueing_api/api_videoDeletebg.php");
 
-                                                              await control.update({
-                                                                'other': '$realVisible:$realInvisible:$opacity:$realAlways'
-                                                              });
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
-                                                              Navigator.pop(context);
-                                                            }, child: Text("Save"))
-                                                          ],
-                                                        ));
-                                                      }, child: Text("Customize")) : SizedBox(),
-                                                  control.controlName! == "RGB Screen (TV)" ? TextButton(onPressed: () {
+                                                                      final response = await http.post(uri, body: {
+                                                                        'filename': media.link,
+                                                                      });
+
+                                                                      if (response.statusCode == 200) {
+                                                                        print("Response: ${response.body}");
+
+                                                                        final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
+                                                                        final body = jsonEncode({'id': media.id});
+                                                                        final result = await http.delete(uri, body: body);
+                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
+                                                                        setStateList((){});
+
+
+                                                                      } else {
+                                                                        print("Error: ${response.statusCode}");
+                                                                      }
+
+                                                                    }, icon: Icon(Icons.delete)),
+                                                                  );
+                                                                }),
+                                                          ) : Container(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: CircularProgressIndicator(),
+                                                          );
+                                                        },
+                                                      ),
+                                                      actions: [
+                                                        TextButton(onPressed: () async {
+                                                          try {
+                                                            final result = await FilePicker.platform.pickFiles(
+                                                              type: FileType.video,
+                                                              allowMultiple: false,
+                                                              withData: true,
+                                                            );
+
+                                                            if (result != null && result.files.isNotEmpty) {
+                                                              final file = result.files.first;
+                                                              final uri = Uri.parse(
+                                                                  "http://$site/queueing_api/api_videobg.php");
+
+                                                              final request = http.MultipartRequest(
+                                                                  "POST", uri);
+                                                              request.files.add(
+                                                                  http.MultipartFile.fromBytes(
+                                                                    'file',
+                                                                    file.bytes!,
+                                                                    filename: file.name,
+                                                                  ));
+
+                                                              List<dynamic> mediabg = await getMediabg(context);
+                                                              List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
+
+                                                              if (similar.isEmpty) {
+                                                                if (file.size < 524288000) {
+                                                                  final response = await request.send();
+                                                                  addMediabg(file.name, file.name);
+                                                                  print(response.headers);
+                                                                  setStateList((){});
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                                } else {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
+                                                                }
+                                                              } else {
+                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
+                                                              }
+                                                            }
+                                                          } catch(e) {
+                                                            print(e);
+                                                          }
+
+                                                        }, child: Text("Add Video"))
+                                                      ],
+                                                    );
+                                                  },
+                                                ));
+                                              }, child: Text("Set BG Videos")) : SizedBox(),
+                                              control.controlName! == "BG Video (Kiosk)" ? TextButton(onPressed: () async {
+                                                showDialog(context: context, builder: (_) => StatefulBuilder(
+                                                  builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                    return AlertDialog(
+                                                      title: Text("BG Video List"),
+                                                      content: FutureBuilder(
+                                                        future: getMediabg(context),
+                                                        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                          return snapshot.connectionState == ConnectionState.done ?
+                                                          Container(
+                                                            height: 400,
+                                                            width: 400,
+                                                            child: snapshot.data!.length == 0 ? Center(child: Text("No BG Videos Added", style: TextStyle(color: Colors.grey))) : ListView.builder(
+                                                                itemCount: snapshot.data!.length,
+                                                                itemBuilder: (context, i) {
+                                                                  final media = Media.fromJson(snapshot.data![i]);
+                                                                  return ListTile(
+                                                                    title: Text(media.name!),
+                                                                    onTap: () async {
+                                                                      final link = Uri.parse("http://$site/queueing_api/bgvideos/${media.link}");
+                                                                      final videoController = VideoPlayerController.networkUrl(link)..initialize().then((_) {
+                                                                        setStateSetting(() {}); // refresh UI when video is ready
+                                                                      });
+
+                                                                      videoController.setLooping(true);
+                                                                      int player = 0;
+
+                                                                      dispose(){
+                                                                        videoController.dispose();
+                                                                      }
+
+                                                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                                                        content: StatefulBuilder(
+                                                                          builder: (BuildContext context, void Function(void Function()) setStatePlayer) {
+                                                                            return Container(
+                                                                              height: 400,
+                                                                              width: 400,
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  Container(
+                                                                                      height: 350,
+                                                                                      width: 350,
+                                                                                      child: VideoPlayer(videoController)
+                                                                                  ),
+                                                                                  IconButton(onPressed: () {if (player == 0) {
+                                                                                    player = 1;
+                                                                                    videoController.play();
+                                                                                    setStateSetting((){});
+                                                                                  } else {
+                                                                                    player = 0;
+                                                                                    videoController.pause();
+                                                                                    setStateSetting((){});
+                                                                                  }}, icon: player == 0 ? Icon(Icons.play_arrow) : Icon(Icons.pause))
+                                                                                ],
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                        ),
+                                                                      ));
+                                                                    },
+                                                                    trailing: IconButton(onPressed: () async {
+                                                                      final uri = Uri.parse(
+                                                                          "http://$site/queueing_api/api_videoDeletebg.php");
+
+                                                                      final response = await http.post(uri, body: {
+                                                                        'filename': media.link,
+                                                                      });
+
+                                                                      if (response.statusCode == 200) {
+                                                                        print("Response: ${response.body}");
+
+                                                                        final uri = Uri.parse('http://$site/queueing_api/api_mediabg.php');
+                                                                        final body = jsonEncode({'id': media.id});
+                                                                        final result = await http.delete(uri, body: body);
+                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Video removed")));
+                                                                        setStateList((){});
+
+
+                                                                      } else {
+                                                                        print("Error: ${response.statusCode}");
+                                                                      }
+
+                                                                    }, icon: Icon(Icons.delete)),
+                                                                  );
+                                                                }),
+                                                          ) : Container(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: CircularProgressIndicator(),
+                                                          );
+                                                        },
+                                                      ),
+                                                      actions: [
+                                                        TextButton(onPressed: () async {
+                                                          try {
+                                                            final result = await FilePicker.platform.pickFiles(
+                                                              type: FileType.video,
+                                                              allowMultiple: false,
+                                                              withData: true,
+                                                            );
+
+                                                            if (result != null && result.files.isNotEmpty) {
+                                                              final file = result.files.first;
+                                                              final uri = Uri.parse(
+                                                                  "http://$site/queueing_api/api_videobg.php");
+
+                                                              final request = http.MultipartRequest(
+                                                                  "POST", uri);
+                                                              request.files.add(
+                                                                  http.MultipartFile.fromBytes(
+                                                                    'file',
+                                                                    file.bytes!,
+                                                                    filename: file.name,
+                                                                  ));
+
+                                                              List<dynamic> mediabg = await getMediabg(context);
+                                                              List<dynamic> similar = mediabg.where((e) => e['name'] == file.name).toList();
+
+                                                              if (similar.isEmpty) {
+                                                                if (file.size < 524288000) {
+                                                                  final response = await request.send();
+                                                                  addMediabg(file.name, file.name);
+                                                                  print(response.headers);
+                                                                  setStateList((){});
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to Background Videos")));
+                                                                } else {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File must not be above 500MB")));
+                                                                }
+                                                              } else {
+                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} already exists")));
+                                                              }
+                                                            }
+                                                          } catch(e) {
+                                                            print(e);
+                                                          }
+
+                                                        }, child: Text("Add Video"))
+                                                      ],
+                                                    );
+                                                  },
+                                                ));
+                                              }, child: Text("Set BG Videos")) : SizedBox(),
+                                              control.controlName! == "RGB Screen (Kiosk)" ? TextButton(
+                                                  onPressed: () {
+
                                                     bool alwaysOn = false;
                                                     TextEditingController visibleTime = TextEditingController();
                                                     TextEditingController invisibleTime = TextEditingController();
                                                     double opacity = 0;
+
 
                                                     if (control.other != null) {
                                                       visibleTime.text = control.other.toString().split(':')[0];
@@ -978,7 +899,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                     }
 
                                                     showDialog(context: context, builder: (_) => AlertDialog(
-                                                      title: Text("RGB (TV)"),
+                                                      title: Text("RGB (Kiosk)"),
                                                       content: Container(
                                                           height: 250,
                                                           width: 150,
@@ -1051,75 +972,159 @@ class _AdminScreenState extends State<AdminScreen> {
                                                       ],
                                                     ));
                                                   }, child: Text("Customize")) : SizedBox(),
-                                                  control.controlName! == "Staff Inactive Beep" ? TextButton(onPressed: () {
+                                              control.controlName! == "RGB Screen (TV)" ? TextButton(onPressed: () {
+                                                bool alwaysOn = false;
+                                                TextEditingController visibleTime = TextEditingController();
+                                                TextEditingController invisibleTime = TextEditingController();
+                                                double opacity = 0;
 
-                                                    TextEditingController time = TextEditingController();
-                                                    time.text = control.other ?? "";
+                                                if (control.other != null) {
+                                                  visibleTime.text = control.other.toString().split(':')[0];
+                                                  invisibleTime.text = control.other.toString().split(':')[1];
+                                                  opacity = double.parse(control.other.toString().split(':')[2]);
+                                                }
 
-                                                    showDialog(context: context, builder: (_) => AlertDialog(
-                                                      title: Text("Update Timer"),
-                                                      content: Container(
-                                                        height: 150,
-                                                        width: 150,
-                                                        child: Column(
-                                                          children: [
-                                                            TextField(
-                                                              decoration: InputDecoration(
-                                                                  labelText: 'Inactive Time (Seconds)'
-                                                              ),
-                                                              controller: time,
-                                                              inputFormatters: [
-                                                                FilteringTextInputFormatter.digitsOnly
-                                                              ],
-                                                            )
+                                                showDialog(context: context, builder: (_) => AlertDialog(
+                                                  title: Text("RGB (TV)"),
+                                                  content: Container(
+                                                      height: 250,
+                                                      width: 150,
+                                                      child: StatefulBuilder(
+                                                        builder: (context, setStateDialog) {
+                                                          return Column(
+                                                            children: [
+                                                              CheckboxListTile(
+                                                                  title: Text("Always On"),
+                                                                  value: alwaysOn, onChanged: (value) {
+                                                                alwaysOn = !alwaysOn;
+                                                                setStateDialog((){});
+                                                              }),
+                                                              alwaysOn == false ?
+                                                              Column(
+                                                                children: [
+                                                                  TextField(
+                                                                    inputFormatters: [
+                                                                      FilteringTextInputFormatter.digitsOnly
+                                                                    ],
+                                                                    controller: visibleTime,
+                                                                    decoration: InputDecoration(
+                                                                        labelText: 'Display Length (In Seconds)'
+                                                                    ),
+                                                                  ),
+                                                                  TextField(
+                                                                    inputFormatters: [
+                                                                      FilteringTextInputFormatter.digitsOnly
+                                                                    ],
+                                                                    controller: invisibleTime,
+                                                                    decoration: InputDecoration(
+                                                                        labelText: 'Pause Interval (In Seconds)'
+                                                                    ),
+                                                                  ),
+                                                                  SizedBox(height: 10),
+                                                                  Center(child: Text("Opacity: $opacity", style: TextStyle(fontWeight: FontWeight.w700))),
+                                                                  Slider(
+                                                                    value: opacity,
+                                                                    min: 0,
+                                                                    max: 1,
+                                                                    divisions: 10, // step of 0.1
+                                                                    label: opacity.toStringAsFixed(1),
+                                                                    onChanged: (v) => setStateDialog(() => opacity = v),
+                                                                  ),
+                                                                ],
+                                                              ) : Container(
+                                                                height: 200,
+                                                                child: Center(
+                                                                  child: Text("RGB Screen will always be on.", style: TextStyle(color: Colors.grey)),
+                                                                ),
+                                                              )
+                                                            ],
+                                                          );
+                                                        },
+                                                      )
+                                                  ),
+                                                  actions: [
+                                                    TextButton(onPressed: () async {
+                                                      final visibleValue = removeExtraZeros(visibleTime.text.trim());
+                                                      final realVisible = visibleValue == "0" || visibleValue == "" ? "10" : visibleTime.text.trim();
+                                                      final realInvisible = invisibleTime.text.trim() == "" ? "0" : invisibleTime.text.trim();
+                                                      final realAlways = alwaysOn == true ? "1" : "0";
+
+                                                      await control.update({
+                                                        'other': '$realVisible:$realInvisible:$opacity:$realAlways'
+                                                      });
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${control.controlName!} setting saved.")));
+                                                      Navigator.pop(context);
+                                                    }, child: Text("Save"))
+                                                  ],
+                                                ));
+                                              }, child: Text("Customize")) : SizedBox(),
+                                              control.controlName! == "Staff Inactive Beep" ? TextButton(onPressed: () {
+
+                                                TextEditingController time = TextEditingController();
+                                                time.text = control.other ?? "";
+
+                                                showDialog(context: context, builder: (_) => AlertDialog(
+                                                  title: Text("Update Timer"),
+                                                  content: Container(
+                                                    height: 150,
+                                                    width: 150,
+                                                    child: Column(
+                                                      children: [
+                                                        TextField(
+                                                          decoration: InputDecoration(
+                                                              labelText: 'Inactive Time (Seconds)'
+                                                          ),
+                                                          controller: time,
+                                                          inputFormatters: [
+                                                            FilteringTextInputFormatter.digitsOnly
                                                           ],
-                                                        ),
-                                                      ),
-                                                      actions: [
-                                                        TextButton(
-                                                            onPressed: () async {
-                                                              final timeValue = removeExtraZeros(time.text.trim());
-
-                                                              if (timeValue != "0" || timeValue != "") {
-                                                                await control.update({
-                                                                  'other': time.text.trim()
-                                                                });
-                                                                Navigator.pop(context);
-                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Inactive Timer updated.")));
-                                                              } else {
-                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Value cannot be zero")));
-                                                              }
-
-                                                            }, child: Text("Update"))
+                                                        )
                                                       ],
-                                                    ));
-                                                  }, child: Text("Set Time")) : SizedBox()
-                                                ],
-                                              ),
-                                              trailing: Switch(value: control.value! == 1, onChanged: (value) {
-                                                control.update({
-                                                  'id': control.id!,
-                                                  'value': control.value! == 1 ? 0 : 1
-                                                });
-                                                setStateSetting((){});
-                                              }),
-                                            );
-                                          }) : Container(
-                                        height: 300,
-                                        child: Center(
-                                          child: Text("No settings"),
-                                        ),
-                                      ) : Container();
-                                    },
-                                  );
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                        onPressed: () async {
+                                                          final timeValue = removeExtraZeros(time.text.trim());
+
+                                                          if (timeValue != "0" || timeValue != "") {
+                                                            await control.update({
+                                                              'other': time.text.trim()
+                                                            });
+                                                            Navigator.pop(context);
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Inactive Timer updated.")));
+                                                          } else {
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Value cannot be zero")));
+                                                          }
+
+                                                        }, child: Text("Update"))
+                                                  ],
+                                                ));
+                                              }, child: Text("Set Time")) : SizedBox()
+                                            ],
+                                          ),
+                                          trailing: Switch(value: control.value! == 1, onChanged: (value) {
+                                            control.update({
+                                              'id': control.id!,
+                                              'value': control.value! == 1 ? 0 : 1
+                                            });
+                                            setStateSetting((){});
+                                          }),
+                                        );
+                                      }) : Container(
+                                    height: 300,
+                                    child: Center(
+                                      child: Text("No settings"),
+                                    ),
+                                  ) : Container();
                                 },
-                              ),
-                            ),
-                          ));
-                        }, icon: Icon(Icons.settings))
-                      ],
-                    ),
-                  ),
+                              );
+                            },
+                          ),
+                        ),
+                      ));
+                    }, icon: Icon(Icons.settings)),
+                  )
                 ],
               )),
           StatefulBuilder(
@@ -1744,10 +1749,12 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         return ListTile(
                                                             title: Text("${station.stationName!} ${station.stationNumber! == 0 ? "" : " ${station.stationNumber!}"}"),
                                                           onTap: () {
-                                                              Navigator.pop(context);
-                                                              user.update({
-                                                                'assignedStation': "${stationNameAndNumber}_$stationId"
-                                                              });
+
+                                                            user.update({
+                                                              'assignedStation': "${stationNameAndNumber}_$stationId"
+                                                            });
+
+                                                            Navigator.pop(context);
                                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Assigned to $stationNameAndNumber")));
                                                           },
                                                         );

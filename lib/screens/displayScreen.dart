@@ -11,6 +11,8 @@ import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/media.dart';
 import 'package:video_player/video_player.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/station.dart';
 import '../models/ticket.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -31,7 +33,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   ValueNotifier<List<Station>> stationStream = ValueNotifier([]);
 
-  List<Station> savedStationState = [];
+
+  late WebSocketChannel channel;
 
 
   Future<void> _speak(String code, String teller) async {
@@ -58,6 +61,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
           ],
         ));
 
+  }
+
+  @override
+  void initState() {
+    listenNode();
+    super.initState();
   }
 
   @override
@@ -88,7 +97,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 topNowServingText(vqd.data),
                                 Builder(
                                   builder: (BuildContext context) {
-                                    timerInit(vqd.data);
+                                   // timerInit();
 
                                     return vqd.data == 1
                                         ? videoDisplayWidget()
@@ -142,7 +151,98 @@ class _DisplayScreenState extends State<DisplayScreen> {
         : Container(height: 30);
   }
 
-  timerInit(int vqd) {
+
+  listenNode() {
+    final url = 'ws://${site.toString().split(":")[0]}:3000';
+    if (kIsWeb) {
+      channel = WebSocketChannel.connect(Uri.parse(url));
+    } else {
+      channel = IOWebSocketChannel.connect(url);
+    }
+
+    channel.stream.listen((message) async {
+      if (message.toString().trim() == 'sink') {
+        print('Received sink. Updating...');
+        await updateDisplay();
+      } else {
+        print('Ignored message: $message');
+      }
+    },
+      onDone: () => print('WS Done'),
+      onError: (error) => print('WS Error'),
+    );
+
+    channel.sink.add('sink');
+
+  }
+
+  updateDisplay() async {
+    final List<Ticket> retrieved = await getTicketSQL();
+          if (retrieved.length != ticketsLength) {
+            final List<Ticket> toUpdate =
+            retrieved
+                .where(
+                    (e) => e.callCheck == 0)
+                .toList();
+            if (toUpdate.isNotEmpty) {
+
+              Ticket? ticket;
+
+              for (int i = 0;
+              i < toUpdate.length;
+              i++) {
+                await toUpdate[i].update({
+                  "id": toUpdate[i].id,
+                  "callCheck": 1,
+                });
+
+                ticket = toUpdate[i];
+              }
+              ticketsLength = retrieved.length;
+
+              AudioPlayer player = AudioPlayer();
+              player
+                  .play(AssetSource('sound.mp3'));
+              if (ticket != null) {
+                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
+              }
+
+              await updateStations();
+            }
+
+            ticketsLength = retrieved.length;
+            await updateStations();
+
+          } else {
+
+            Ticket? ticket;
+
+            final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
+            if (toUpdate.isNotEmpty) {
+              for (int i = 0; i < toUpdate.length; i++) {
+                await toUpdate[i].update({
+                  "id": toUpdate[i].id,
+                  "callCheck": 1,
+                });
+
+                ticket = toUpdate[i];
+              }
+
+              ticketsLength = retrieved.length;
+              AudioPlayer player = AudioPlayer();
+              player
+                  .play(AssetSource('sound.mp3'));
+              if (ticket != null) {
+                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
+              }
+
+              await updateStations();
+
+            }
+          }
+  }
+
+  timerInit() {
     return timer = Timer.periodic(
         Duration(seconds: 3, milliseconds: 0),
             (value) async {
@@ -529,13 +629,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                       ),
                                                       Expanded(
                                                         flex: 55,
-                                                        child: Center(child: AutoSizeText("${savedStationState[i].ticketServing}", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
+                                                        child: Center(child: AutoSizeText("", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
                                               ),
-                                            ) : Padding(
+                                            ) :
+                                            Padding(
                                               padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
                                               child: Opacity(
                                                 opacity: 0.8,
@@ -554,7 +655,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                       ),
                                                       Expanded(
                                                         flex: 55,
-                                                        child: Center(child: AutoSizeText("${savedStationState[i].ticketServing}", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
+                                                        child: Center(child: AutoSizeText("", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
                                                       ),
                                                     ],
                                                   ),
@@ -582,7 +683,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                   ),
                                                   Expanded(
                                                     flex: 55,
-                                                    child: Center(child: AutoSizeText("${savedStationState[i].ticketServing}", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
+                                                    child: Center(child: AutoSizeText("", style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85))),
                                                   ),
                                                 ],
                                               ),
@@ -597,7 +698,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           )
                       ),
                     );
-
                   }
               );
             },
@@ -610,7 +710,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
   updateStations() async {
     List<Station> stations = await getStationSQL();
     stationStream.value = stations;
-    savedStationState = stations;
     return stations;
   }
 
@@ -645,7 +744,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                     return GridView.builder(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             childAspectRatio: aspectRatio,
-                            crossAxisCount: value.length <= 8 ? 4 : 5),
+                            crossAxisCount: 5),
                         itemCount: value.length,
                         itemBuilder: (context, i) {
                           final Station station = value[i];
@@ -771,7 +870,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                           flex: 6,
                                           child: Center(child: Padding(
                                             padding: const EdgeInsets.all(10.0),
-                                            child: AutoSizeText("${savedStationState[i].ticketServing}", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                            child: AutoSizeText("", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
                                           )),
                                         )
                                       ],
@@ -802,7 +901,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                           flex: 6,
                                           child: Center(child: Padding(
                                             padding: const EdgeInsets.all(10.0),
-                                            child: AutoSizeText("${savedStationState[i].ticketServing}", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
+                                            child: AutoSizeText("", style: TextStyle(fontSize: 70, fontWeight: FontWeight.w700), maxFontSize: double.infinity),
                                           )),
                                         )
                                       ],

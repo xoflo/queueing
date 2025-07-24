@@ -87,6 +87,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             spacing: 5,
             children: [
+
               FloatingActionButton(
                   child: Icon(Icons.wifi),
                   onPressed: () async {
@@ -844,7 +845,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 1
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         print(result.body);
         ScaffoldMessenger.of(context).showSnackBar(
