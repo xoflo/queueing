@@ -418,6 +418,8 @@ class _StaffSessionState extends State<StaffSession> {
   bool swap = false;
 
   late WebSocketChannel channel;
+  Timer? reconnectTimer;
+  bool isConnected = false;
 
   int stationChanges = 0;
 
@@ -520,6 +522,7 @@ class _StaffSessionState extends State<StaffSession> {
     }
 
     channel.stream.listen((message) async {
+      isConnected = true;
       if (message.toString().trim() == 'sink') {
         print('Received sink. Updating...');
         await updateTicketStream(1);
@@ -527,13 +530,36 @@ class _StaffSessionState extends State<StaffSession> {
       } else {
         print('Ignored message: $message');
       }
+    },
+      onDone: () {
+        isConnected = false;
+        print("❌ Disconnected");
+        tryReconnect();
       },
-      onDone: () => print('WS Done'),
-      onError: (error) => print('WS Error'),
+      onError: (err) {
+        isConnected = false;
+        print("⚠️ Error: $err");
+        tryReconnect();
+      },
+      cancelOnError: true,
     );
 
     channel.sink.add('sink');
 
+  }
+
+  void tryReconnect() {
+    if (reconnectTimer?.isActive ?? false) return;
+    reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
+      if (!isConnected) {
+        print("🔁 Reconnecting...");
+        listenNode();
+      } else {
+        print("✅ Reconnected");
+        reconnectTimer?.cancel();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Reconnected to server.")));
+      }
+    });
   }
 
 
@@ -784,157 +810,81 @@ class _StaffSessionState extends State<StaffSession> {
                                               ),
                                             ),
                                             onTap: () async {
-
                                               final timestamp = DateTime.now().toString();
-                                              /*
-
-                                              if (servingStream.value != null) {
-                                                showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (_) => AlertDialog(
-                                                              title: Text(
-                                                                  "Confirm Done?"),
-                                                              content: Container(
-                                                                  child: Text(
-                                                                      "'Done' to complete and 'Call Next' to serve next ticket."),
-                                                                  height: 40),
-                                                              actions: [
-                                                                TextButton(
-                                                                    onPressed: () async {
-                                                                      try {
-                                                                        await servingStream.value!.update({
-                                                                          "status": "Done",
-                                                                          "timeDone": timestamp,
-                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
-
-                                                                        await widget.station.update({'ticketServing': ""});
-
-
-
-
-                                                                        Navigator.pop(
-                                                                            context);
-                                                                        resetRinger();
-
-
-
-                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                            content:
-                                                                            Text("Ticket complete.")));
-                                                                      } catch(e) {
-                                                                        print(e);
-                                                                        print("Done in Dialog");
-                                                                      }
-                                                                    },
-                                                                    child: Text(
-                                                                        "Done")),
-                                                                TextButton(
-                                                                    onPressed:
-                                                                        () async {
-
-                                                                      try {
-
-                                                                        final timestamp =
-                                                                        DateTime.now().toString();
-
-                                                                        await servingStream.value!.update({
-                                                                          "status": "Done",
-                                                                          "timeDone": timestamp,
-                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
-                                                                        });
-
-                                                                        if (ticketStream.value.isNotEmpty) {
-                                                                          if (ticketStream.value[0].serviceType! == callBy || callBy == 'Time Order') {
-                                                                            await ticketStream.value[0].update({
-                                                                              "userAssigned": widget.user.username,
-                                                                              "status": "Serving",
-                                                                              "stationName": widget.station.stationName,
-                                                                              "stationNumber": widget.station.stationNumber,
-                                                                              "log": "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                                              "timeTaken": timestamp,
-                                                                            });
-
-
-                                                                            await widget.station.update({'ticketServing': "${ticketStream.value[0].codeAndNumber}"});
-                                                                            await updateServingTicketStream();
-                                                                            await updateTicketStream(1);
-
-                                                                            Navigator.pop(context);
-                                                                          }
-                                                                        } else {
-                                                                          await widget
-                                                                              .station
-                                                                              .update({
-                                                                            'ticketServing':
-                                                                            ""
-                                                                          });
-
-                                                                          ScaffoldMessenger.of(context)
-                                                                              .showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
-                                                                        }
-                                                                      } catch(e) {
-                                                                        print(e);
-                                                                        print('Call Next in Dialog');
-                                                                      }
-
-                                                                    },
-                                                                    child: Text(
-                                                                        "Call Next"))
-                                                              ],
-                                                            ));
-                                              } else {}
-                                               */
                                                 try {
-                                                  if (ticketStream.value.isNotEmpty) {
-                                                    if (ticketStream.value[0]
-                                                        .serviceType! ==
-                                                        callBy ||
-                                                        callBy ==
-                                                            'Time Order') {
-                                                      await ticketStream.value[0].update({
-                                                        "userAssigned": widget.user.username,
-                                                        "status": "Serving",
-                                                        "stationName": widget.station.stationName,
-                                                        "stationNumber": widget.station.stationNumber,
-                                                        "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                        "timeTaken": timestamp
-                                                      });
-
-                                                      await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
+                                                  if (servingStream.value != null) {
+                                                    try {
+                                                      await servingStream.value!.update({
+                                                        "status": "Done",
+                                                        "timeDone": timestamp,
+                                                        "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
 
                                                       channel.sink.add("sink");
 
-                                                    }
-                                                  } else {
-                                                    if (servingStream.value != null) {
-                                                      try {
-                                                        await servingStream.value!.update({
-                                                          "status": "Done",
-                                                          "timeDone": timestamp,
-                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
+                                                      if (ticketStream.value.isNotEmpty) {
+                                                        if (ticketStream.value[0]
+                                                            .serviceType! ==
+                                                            callBy ||
+                                                            callBy ==
+                                                                'Time Order') {
+                                                          await ticketStream.value[0].update({
+                                                            "userAssigned": widget.user.username,
+                                                            "status": "Serving",
+                                                            "stationName": widget.station.stationName,
+                                                            "stationNumber": widget.station.stationNumber,
+                                                            "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                            "timeTaken": timestamp
+                                                          });
+
+                                                          await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
+
+                                                          channel.sink.add("sink");
+
+                                                        }
+                                                      } else {
 
                                                         await widget.station.update({'ticketServing': ""});
-
                                                         channel.sink.add("sink");
-
                                                         resetRinger();
                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                                             content:
                                                             Text("Ticket complete.")));
-                                                      } catch(e) {
-                                                        print(e);
                                                       }
-                                                    }
 
-                                                    await widget.station.update(
-                                                        {'ticketServing': ""});
-                                                    ScaffoldMessenger.of(
-                                                        context)
-                                                        .showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            "No pending tickets to serve at the moment.")));
+                                                    } catch(e) {
+                                                      print(e);
+                                                    }
+                                                  } else {
+                                                    if (ticketStream.value.isNotEmpty) {
+                                                      if (ticketStream.value[0]
+                                                          .serviceType! ==
+                                                          callBy ||
+                                                          callBy ==
+                                                              'Time Order') {
+                                                        await ticketStream.value[0].update({
+                                                          "userAssigned": widget.user.username,
+                                                          "status": "Serving",
+                                                          "stationName": widget.station.stationName,
+                                                          "stationNumber": widget.station.stationNumber,
+                                                          "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                          "timeTaken": timestamp
+                                                        });
+
+                                                        await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
+
+                                                        channel.sink.add("sink");
+
+                                                      }
+                                                    }  else {
+
+                                                      ScaffoldMessenger.of(
+                                                          context)
+                                                          .showSnackBar(SnackBar(
+                                                          content: Text(
+                                                              "No pending tickets to serve at the moment.")));
                                                   }
+                                              }
+
                                                 } catch(e) {
                                                   print(e);
                                                   print("Call Next no Dialog");
@@ -1634,3 +1584,105 @@ class _StaffSessionState extends State<StaffSession> {
     player.stop();
   }
 }
+
+
+/*
+
+                                              if (servingStream.value != null) {
+                                                showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (_) => AlertDialog(
+                                                              title: Text(
+                                                                  "Confirm Done?"),
+                                                              content: Container(
+                                                                  child: Text(
+                                                                      "'Done' to complete and 'Call Next' to serve next ticket."),
+                                                                  height: 40),
+                                                              actions: [
+                                                                TextButton(
+                                                                    onPressed: () async {
+                                                                      try {
+                                                                        await servingStream.value!.update({
+                                                                          "status": "Done",
+                                                                          "timeDone": timestamp,
+                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
+
+                                                                        await widget.station.update({'ticketServing': ""});
+
+
+
+
+                                                                        Navigator.pop(
+                                                                            context);
+                                                                        resetRinger();
+
+
+
+                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                            content:
+                                                                            Text("Ticket complete.")));
+                                                                      } catch(e) {
+                                                                        print(e);
+                                                                        print("Done in Dialog");
+                                                                      }
+                                                                    },
+                                                                    child: Text(
+                                                                        "Done")),
+                                                                TextButton(
+                                                                    onPressed:
+                                                                        () async {
+
+                                                                      try {
+
+                                                                        final timestamp =
+                                                                        DateTime.now().toString();
+
+                                                                        await servingStream.value!.update({
+                                                                          "status": "Done",
+                                                                          "timeDone": timestamp,
+                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
+                                                                        });
+
+                                                                        if (ticketStream.value.isNotEmpty) {
+                                                                          if (ticketStream.value[0].serviceType! == callBy || callBy == 'Time Order') {
+                                                                            await ticketStream.value[0].update({
+                                                                              "userAssigned": widget.user.username,
+                                                                              "status": "Serving",
+                                                                              "stationName": widget.station.stationName,
+                                                                              "stationNumber": widget.station.stationNumber,
+                                                                              "log": "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                                              "timeTaken": timestamp,
+                                                                            });
+
+
+                                                                            await widget.station.update({'ticketServing': "${ticketStream.value[0].codeAndNumber}"});
+                                                                            await updateServingTicketStream();
+                                                                            await updateTicketStream(1);
+
+                                                                            Navigator.pop(context);
+                                                                          }
+                                                                        } else {
+                                                                          await widget
+                                                                              .station
+                                                                              .update({
+                                                                            'ticketServing':
+                                                                            ""
+                                                                          });
+
+                                                                          ScaffoldMessenger.of(context)
+                                                                              .showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
+                                                                        }
+                                                                      } catch(e) {
+                                                                        print(e);
+                                                                        print('Call Next in Dialog');
+                                                                      }
+
+                                                                    },
+                                                                    child: Text(
+                                                                        "Call Next"))
+                                                              ],
+                                                            ));
+                                              } else {}
+                                               */
+

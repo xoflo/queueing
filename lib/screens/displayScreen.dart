@@ -35,6 +35,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
   late WebSocketChannel channel;
+  Timer? reconnectTimer;
+  bool isConnected = false;
 
 
   Future<void> _speak(String code, String teller) async {
@@ -65,8 +67,30 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   @override
   void initState() {
+
     listenNode();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    channel?.sink.close();
+    reconnectTimer?.cancel();
+    super.dispose();
+  }
+
+  void tryReconnect() {
+    if (reconnectTimer?.isActive ?? false) return;
+    reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
+      if (!isConnected) {
+        print("🔁 Reconnecting...");
+        listenNode();
+      } else {
+        print("✅ Reconnected");
+        reconnectTimer?.cancel();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Reconnected to server.")));
+      }
+    });
   }
 
   @override
@@ -161,6 +185,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
     }
 
     channel.stream.listen((message) async {
+      isConnected = true;
       if (message.toString().trim() == 'sink') {
         print('Received sink. Updating...');
         await updateDisplay();
@@ -168,8 +193,17 @@ class _DisplayScreenState extends State<DisplayScreen> {
         print('Ignored message: $message');
       }
     },
-      onDone: () => print('WS Done'),
-      onError: (error) => print('WS Error'),
+      onDone: () {
+        isConnected = false;
+        print("❌ Disconnected");
+        tryReconnect();
+      },
+      onError: (err) {
+        isConnected = false;
+        print("⚠️ Error: $err");
+        tryReconnect();
+      },
+      cancelOnError: true,
     );
 
     channel.sink.add('sink');

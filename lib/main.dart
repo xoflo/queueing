@@ -70,7 +70,7 @@ autoDisplay(BuildContext context, int i) {
                 ),
               ],
             ));
-      }) : LoginScreen();
+      }) : LoginScreen(debug: 0);
 }
 
 ipHandler(BuildContext context) async {

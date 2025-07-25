@@ -13,7 +13,9 @@ import 'package:queueing/screens/staffScreen.dart';
 import 'models/user.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, required this.debug});
+
+  final int debug;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -27,8 +29,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
 
-    username.text = 'staff2';
-    pass.text = 'staff2';
+    if (widget.debug == 1) {
+      username.text = 'staff';
+      pass.text = 'staff';
+    }
 
     getIP();
     super.initState();
@@ -110,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // comment
 
-                  Row(
+                  widget.debug == 1 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
@@ -148,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         }, child: Text("Services Kiosk")),
                       ),
                     ],
-                  ),
+                  ) : SizedBox(),
 
                    //comment
                   SizedBox(height: 10),

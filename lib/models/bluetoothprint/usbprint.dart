@@ -46,12 +46,12 @@ class Usbprint {
                         children: [
                           Text("Devices Found: ${devices.length}"),
                           Text(" | Selected: ${selectedDevice != null ? selectedDevice!.name : "None"}"),
-                          TextButton(onPressed: () {
-                            _scan(PrinterType.usb);
-                            setState((){});
-                          }, child: Text("Scan Devices"))
                         ],
                       ),
+                      TextButton(onPressed: () {
+                        _scan(PrinterType.usb);
+                        setState((){});
+                      }, child: Text("Scan Devices")),
                       Container(
                         height: 350,
                         child: ListView.builder(

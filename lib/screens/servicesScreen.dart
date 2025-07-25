@@ -13,6 +13,8 @@ import 'package:queueing/models/bluetoothprint/usbprint.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/services/serviceGroup.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/bluetoothprint/bluetoothprint.dart';
 import '../models/controls.dart';
 import '../models/priority.dart';
@@ -38,6 +40,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Usbprint? usb;
 
+  late WebSocketChannel channel;
+  Timer? reconnectTimer;
+  bool isConnected = false;
+
   Timer? timer;
 
   @override
@@ -48,8 +54,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   @override
   void initState() {
-
-
+    listenNode();
     _resetTimer();
 
     if (!kIsWeb) {
@@ -74,6 +79,51 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
 
   int toCut = 0;
+
+
+  listenNode() {
+    final url = 'ws://${site.toString().split(":")[0]}:3000';
+    if (kIsWeb) {
+      channel = WebSocketChannel.connect(Uri.parse(url));
+    } else {
+      channel = IOWebSocketChannel.connect(url);
+    }
+
+    channel.stream.listen((message) async {
+      isConnected = true;
+      if (message.toString().trim() == 'sink') {
+        print('Received sink. Updating...');
+      } else {
+        print('Ignored message: $message');
+      }
+    },
+      onDone: () {
+        isConnected = false;
+        print("❌ Disconnected");
+        tryReconnect();
+      },
+      onError: (err) {
+        isConnected = false;
+        print("⚠️ Error: $err");
+        tryReconnect();
+      },
+      cancelOnError: true,
+    );
+  }
+
+  void tryReconnect() {
+    if (reconnectTimer?.isActive ?? false) return;
+    reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
+      if (!isConnected) {
+        print("🔁 Reconnecting...");
+        listenNode();
+      } else {
+        print("✅ Reconnected");
+        reconnectTimer?.cancel();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Reconnected to server.")));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -845,11 +895,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 1
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
-        print(result.body);
+
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
+        channel.sink.add('sink');
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("No Printer Connected.")));
@@ -862,31 +914,61 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
+  _handlePrinter() async {
+    if (!kIsWeb) {
+      try {
+        final dynamic usbprinter = await getPrinter();
+        final dynamic size = await getSize();
+
+
+        if (usbprinter != "" || usbprinter != null) {
+          if (usbprinter == 'BT') {
+            usb?.selectedDevice = null;
+          } else {
+            final name =  usbprinter!.split("_")[0];
+            final productId = usbprinter.split("_")[1];
+            final vendorId = usbprinter.split("_")[2];
+
+            try {
+              usb!.selectedDevice = PrinterDevice(name: name, productId: productId, vendorId: vendorId);
+              await usb!.printerManager.connect(
+                  type: PrinterType.usb,
+                  model: UsbPrinterInput(name: name, productId: productId, vendorId: vendorId));
+            } catch(e) {
+              List<PrinterDevice> devices = [];
+
+              usb!.devices.clear();
+              usb!.printerManager.discovery(type: PrinterType.usb).listen((device) {
+
+                if (device.name != 'ILITEK-TP') {
+                  devices.add(device);
+                }
+              });
+
+              if (devices.isNotEmpty) {
+                await usb!.printerManager.connect(
+                    type: PrinterType.usb,
+                    model: UsbPrinterInput(name: devices[0].name, productId: devices[0].productId, vendorId: devices[0].vendorId));
+              } else {
+                usb!.selectedDevice = null;
+                savePrinter("");
+              }
+            }
+          }
+        } else {
+          usb?.selectedDevice = null;
+        }
+      } catch(e) {
+        print(e);
+      }
+    }
+
+  }
+
   getServiceGroups(String assignedGroup) async {
     try {
 
-           if (!kIsWeb) {
-        try {
-          final dynamic usbprinter = await getPrinter();
-          final dynamic size = await getSize();
-
-
-          if (usbprinter != "" || usbprinter != null) {
-            if (usbprinter != 'BT') {
-              usb?.selectedDevice = PrinterDevice(name: usbprinter!.split("_")[0], productId: usbprinter.split("_")[1], vendorId: usbprinter.split("_")[2]);
-            } else {
-              usb?.selectedDevice = null;
-            }
-          } else {
-            usb?.selectedDevice = null;
-          }
-        } catch(e) {
-          print(e);
-        }
-      }
-
-
-
+      _handlePrinter();
 
       final uriGroup = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
       final resultGroup = await http.get(uriGroup);
