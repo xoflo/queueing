@@ -41,10 +41,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Usbprint? usb;
 
-  late WebSocketChannel channel;
-  Timer? reconnectTimer;
-  bool isConnected = false;
-
   Timer? timer;
 
   @override

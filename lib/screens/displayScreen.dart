@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/media.dart';
+import 'package:queueing/node.dart';
 import 'package:video_player/video_player.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -25,7 +26,6 @@ class DisplayScreen extends StatefulWidget {
 }
 
 class _DisplayScreenState extends State<DisplayScreen> {
-  late Timer timer;
   int ticketsLength = 0;
   Color? containerColor;
 
@@ -34,9 +34,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
   ValueNotifier<List<Station>> stationStream = ValueNotifier([]);
 
 
-  late WebSocketChannel channel;
-  Timer? reconnectTimer;
-  bool isConnected = false;
 
 
   Future<void> _speak(String code, String teller) async {
@@ -71,7 +68,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
   void initState() {
     super.initState();
 
-    channel.stream.listen((message) {
+    NodeSocketService().stream.listen((message) {
       final json = jsonDecode(message);
       final type = json['type'];
       final data = json['data'];
@@ -86,12 +83,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    channel?.sink.close();
-    reconnectTimer?.cancel();
-    super.dispose();
-  }
 
 
   @override
@@ -241,76 +232,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
             }
           }
-  }
-
-  timerInit() {
-    return timer = Timer.periodic(
-        Duration(seconds: 3, milliseconds: 0),
-            (value) async {
-          final List<Ticket> retrieved = await getTicketSQL();
-          if (retrieved.length != ticketsLength) {
-            final List<Ticket> toUpdate =
-            retrieved
-                .where(
-                    (e) => e.callCheck == 0)
-                .toList();
-            if (toUpdate.isNotEmpty) {
-
-              Ticket? ticket;
-
-              for (int i = 0;
-              i < toUpdate.length;
-              i++) {
-                await toUpdate[i].update({
-                  "id": toUpdate[i].id,
-                  "callCheck": 1,
-                });
-
-                ticket = toUpdate[i];
-              }
-              ticketsLength = retrieved.length;
-
-              AudioPlayer player = AudioPlayer();
-              player
-                  .play(AssetSource('sound.mp3'));
-              if (ticket != null) {
-                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
-              }
-
-              await updateStations();
-            }
-
-            ticketsLength = retrieved.length;
-            await updateStations();
-
-          } else {
-
-            Ticket? ticket;
-
-            final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
-            if (toUpdate.isNotEmpty) {
-              for (int i = 0; i < toUpdate.length; i++) {
-                await toUpdate[i].update({
-                  "id": toUpdate[i].id,
-                  "callCheck": 1,
-                });
-
-                ticket = toUpdate[i];
-              }
-
-              ticketsLength = retrieved.length;
-              AudioPlayer player = AudioPlayer();
-              player
-                  .play(AssetSource('sound.mp3'));
-              if (ticket != null) {
-                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
-              }
-
-              await updateStations();
-
-            }
-          }
-        });
   }
 
   slidingTextSpacer(int vqd) {

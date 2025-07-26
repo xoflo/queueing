@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.blueGrey),
       ),
       home: Scaffold(
-        body: FutureBuilder(future: ipHandler(null), builder: (context, AsyncSnapshot<int> snapshot) {
+        body: FutureBuilder(future: ipHandler(context), builder: (context, AsyncSnapshot<int> snapshot) {
           return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 2) : BootInterface(type: 2) :
           Stack(
             children: [
@@ -84,9 +84,10 @@ autoDisplay(BuildContext context, int i) {
 
 ipHandler([BuildContext? context]) async {
   try {
-    await getIP();
+    final ip = await getIP();
+    NodeSocketService().connect(context: context);
+    print(ip);
     final List<dynamic> controls = await getSettings();
-    print("controls: $controls");
     if (controls.isEmpty) {
       return 0;
     } else {
@@ -112,57 +113,55 @@ class _BootInterfaceState extends State<BootInterface> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          imageBackground(context),
-          logoBackground(context, 500, 500),
-          Center(
-            child: Opacity(
-              opacity: 0.7,
-              child: Card(
-                child: Container(
-                  padding: EdgeInsets.all(40),
-                  height: 400,
-                  width: 400,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Office of the Ombudsman\nfor Mindanao", style: TextStyle(fontFamily: 'BebasNeue', fontSize: 30), textAlign: TextAlign.center),
-                      Text("Queueing App ${widget.type == 0 ? "Client": widget.type == 1 ? "Kiosk" : "Display"}", style: TextStyle(fontFamily: 'Inter', fontSize: 20), textAlign: TextAlign.center),
-                      // Display, Kiosk
-                      SizedBox(height: 20),
-                      TextField(
-                        controller: ipcont,
-                        decoration: InputDecoration(
+    return Stack(
+      children: [
+        imageBackground(context),
+        logoBackground(context, 500, 500),
+        Center(
+          child: Opacity(
+            opacity: 0.7,
+            child: Card(
+              child: Container(
+                padding: EdgeInsets.all(40),
+                height: 400,
+                width: 400,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Office of the Ombudsman\nfor Mindanao", style: TextStyle(fontFamily: 'BebasNeue', fontSize: 30), textAlign: TextAlign.center),
+                    Text("Queueing App ${widget.type == 0 ? "Client": widget.type == 1 ? "Kiosk" : "Display"}", style: TextStyle(fontFamily: 'Inter', fontSize: 20), textAlign: TextAlign.center),
+                    // Display, Kiosk
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: ipcont,
+                      decoration: InputDecoration(
                           labelText: 'IP Address: (ex: 192.168.70.80)'
-                        ),
                       ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: 120,
-                        child: TextButton(onPressed: () async {
-                          await saveIP(ipcont.text);
-                            final result = await ipHandler(context);
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      height: 50,
+                      width: 120,
+                      child: TextButton(onPressed: () async {
+                        await saveIP(ipcont.text);
+                        final result = await ipHandler(context);
 
-                            if (result == 1) {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 0 ? LoginScreen(debug: 0) : widget.type == 1 ? ServicesScreen() : DisplayScreen()));
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
-                            }
+                        if (result == 1) {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 0 ? LoginScreen(debug: 0) : widget.type == 1 ? ServicesScreen() : DisplayScreen()));
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
+                        }
 
 
-                        }, child: Text("Access")),
-                      )
-                    ],
-                  ),
+                      }, child: Text("Access")),
+                    )
+                  ],
                 ),
               ),
             ),
-          )
-        ],
-      ),
+          ),
+        )
+      ],
     );
   }
 }
