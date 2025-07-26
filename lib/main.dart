@@ -70,7 +70,7 @@ class MyApp extends StatelessWidget {
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 0);
+    return LoginScreen(debug: 1);
   }
 
   if (i == 1) {
@@ -86,6 +86,7 @@ ipHandler([BuildContext? context]) async {
   try {
     final ip = await getIP();
     NodeSocketService().connect();
+
     print(ip);
     final List<dynamic> controls = await getSettings();
     if (controls.isEmpty) {

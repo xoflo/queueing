@@ -34,8 +34,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
   ValueNotifier<List<Station>> stationStream = ValueNotifier([]);
 
 
-
-
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
     await flutterTts.speak("$code, $teller");
@@ -68,29 +66,21 @@ class _DisplayScreenState extends State<DisplayScreen> {
   void initState() {
     super.initState();
 
-    NodeSocketService().stream.listen((message) {
+
+    NodeSocketService().stream.listen((message) async {
       final json = jsonDecode(message);
       final type = json['type'];
-      final data = json['data'];
-
-      if (type == 'updateTicket') {
-        _debounceTimer?.cancel();
-
-        _debounceTimer = Timer(Duration(milliseconds: 500), () async {
-          await updateDisplay();
-        });
-      }
 
       if (type == 'updateStation') {
-        _debounceTimer?.cancel();
+        await updateDisplay();
+      }
 
-        _debounceTimer = Timer(Duration(milliseconds: 500), () async {
-          await updateDisplay();
-        });
+      if (type == 'refresh') {
+        await updateDisplay();
       }
     });
 
-    updateDisplay();
+    NodeSocketService().sendMessage('refresh', {});
   }
 
 
@@ -123,7 +113,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                 topNowServingText(vqd.data),
                                 Builder(
                                   builder: (BuildContext context) {
-                                   // timerInit();
 
                                     return vqd.data == 1
                                         ? videoDisplayWidget()
@@ -179,69 +168,29 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
   updateDisplay() async {
-    final List<Ticket> retrieved = await getTicketSQL();
-          if (retrieved.length != ticketsLength) {
-            final List<Ticket> toUpdate =
-            retrieved
-                .where(
-                    (e) => e.callCheck == 0)
-                .toList();
-            if (toUpdate.isNotEmpty) {
+    final retrieved = await getTicketSQL();
 
-              Ticket? ticket;
+    final List<Ticket> toUpdate =
+    retrieved
+        .where(
+            (e) => e.callCheck == 0)
+        .toList();
 
-              for (int i = 0;
-              i < toUpdate.length;
-              i++) {
-                await toUpdate[i].update({
-                  "id": toUpdate[i].id,
-                  "callCheck": 1,
-                });
+    if (toUpdate.isNotEmpty) {
+      for (int i = 0; i < toUpdate.length; i++) {
+        await toUpdate[i].update({
+          "id": toUpdate[i].id,
+          "callCheck": 1,
+        });
+        AudioPlayer player = AudioPlayer();
+        player
+            .play(AssetSource('sound.mp3'));
+        _speak(toUpdate[i].codeAndNumber!, "${toUpdate[i].stationName!}${toUpdate[i].stationNumber! != 0 ? toUpdate[i].stationNumber! : 0}");
 
-                ticket = toUpdate[i];
-              }
-              ticketsLength = retrieved.length;
+      }
 
-              AudioPlayer player = AudioPlayer();
-              player
-                  .play(AssetSource('sound.mp3'));
-              if (ticket != null) {
-                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
-              }
-
-              await updateStations();
-            }
-
-            ticketsLength = retrieved.length;
-            await updateStations();
-
-          } else {
-
-            Ticket? ticket;
-
-            final List<Ticket> toUpdate = retrieved.where((e) => e.callCheck == 0).toList();
-            if (toUpdate.isNotEmpty) {
-              for (int i = 0; i < toUpdate.length; i++) {
-                await toUpdate[i].update({
-                  "id": toUpdate[i].id,
-                  "callCheck": 1,
-                });
-
-                ticket = toUpdate[i];
-              }
-
-              ticketsLength = retrieved.length;
-              AudioPlayer player = AudioPlayer();
-              player
-                  .play(AssetSource('sound.mp3'));
-              if (ticket != null) {
-                _speak(ticket.codeAndNumber!, "${ticket.stationName!}${ticket.stationNumber! != 0 ? ticket.stationNumber! : 0}");
-              }
-
-              await updateStations();
-
-            }
-          }
+      await updateStations();
+    }
   }
 
   slidingTextSpacer(int vqd) {
@@ -455,7 +404,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                       itemBuilder: (context, i) {
                                         Station station = value[i];
 
-                                        return station.ticketServing != "" || station.ticketServing != null ?
+                                        return (station.ticketServing != "" || station.ticketServing != null) && station.inSession! == 1 ?
                                         FutureBuilder(
                                           future: getTicketSQL(station.ticketServing),
                                           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
@@ -500,10 +449,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                   final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
 
                                                                   if (show == true) {
-                                                                    Timer.periodic(Duration(seconds: 10), (callback) {
+                                                                    final timer = Timer.periodic(Duration(seconds: 10), (callback) {
                                                                       show = false;
                                                                       setStateText((){});
                                                                     });
+
+                                                                    timer.cancel();
                                                                   }
 
                                                                   return show == true ? blink : noBlink;
@@ -681,7 +632,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         itemBuilder: (context, i) {
                           final Station station = value[i];
 
-                          return station.ticketServing != ""  || station.ticketServing != null ?
+                          return (station.ticketServing != ""  || station.ticketServing != null) && station.inSession! == 1 ?
                           FutureBuilder(
                               future: getTicketSQL(station.ticketServing),
                               builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
@@ -731,10 +682,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                         final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
 
                                                         if (show == true) {
-                                                          Timer.periodic(Duration(seconds: 10), (callback) {
+                                                          final timer = Timer.periodic(Duration(seconds: 10), (callback) {
                                                             show = false;
                                                             setStateText((){});
                                                           });
+
+                                                          timer.cancel();
                                                         }
 
                                                         return show == true ? blink : noBlink;
@@ -963,11 +916,11 @@ class _DisplayScreenState extends State<DisplayScreen> {
     final dateNow = DateTime.now();
 
     try {
+
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
-
       final result = await http.get(uri);
-
       final List<dynamic> response = jsonDecode(result.body);
+
       final sorted = response.where((e) => e['status'] == "Serving").toList();
       List<Ticket> newTickets = [];
 

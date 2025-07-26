@@ -14,8 +14,17 @@ class Station {
   int? displayIndex;
   String? nameAndNumber;
 
+
+  safeConvert(dynamic data) {
+    if (data.runtimeType == "".runtimeType) {
+      return int.parse(data);
+    } else {
+      return data;
+    }
+  }
+
   Station.fromJson(dynamic data) {
-    id = int.parse(data['id']);
+    id = safeConvert(data['id']);
     stationNumber = data['stationNumber'] != null ? int.parse(data['stationNumber'].toString()) : data['stationNumber'];
     inSession = data['inSession'] != null ? int.parse(data['inSession'].toString()) : 0;
     userInSession = data['userInSession'];
@@ -25,6 +34,28 @@ class Station {
     displayIndex = data['displayIndex'] != null ? int.parse(data['displayIndex'].toString()) : data['displayIndex'];
 
     nameAndNumber = "${stationName}${stationNumber == 0 ? "" : " $stationNumber"}";
+  }
+
+  ping(dynamic data) async {
+    try {
+      final body = {
+        'id': data['id'] ?? id,
+        'inSession': data['inSession'],
+        'userInSession': data['userInSession'],
+        'sessionPing': data['sessionPing'],
+      };
+
+      inSession = data['inSession'];
+      userInSession = data['userInSession'];
+      sessionPing = data['sessionPing'];
+
+      final uri = Uri.parse('http://$site/queueing_api/api_station.php');
+      final response = await http.put(uri, body: jsonEncode(body));
+      return;
+    } catch(e) {
+      print(e);
+      return;
+    }
   }
 
   update(dynamic data, [bool? noTicketServing]) async {
@@ -52,7 +83,6 @@ class Station {
 
       final uri = Uri.parse('http://$site/queueing_api/api_station.php');
       final response = await http.put(uri, body: jsonEncode(body));
-      print("station: ${response.body}");
       return;
     } catch(e) {
       print(e);

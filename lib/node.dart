@@ -9,13 +9,12 @@ import 'globals.dart';
 
 class NodeSocketService {
   static final NodeSocketService _instance = NodeSocketService._internal();
-
   factory NodeSocketService() => _instance;
-
   NodeSocketService._internal();
 
   late WebSocketChannel _channel;
   late Stream _broadcast;
+  StreamSubscription? _subscription; // ✅ Add this
   bool _isConnected = false;
   Timer? _reconnectTimer;
 
@@ -24,8 +23,9 @@ class NodeSocketService {
   bool get isConnected => _isConnected;
 
   void connect({BuildContext? context}) {
-    if (_isConnected) {
-      print("🛑 Already connected. Skipping connect().");
+    // ❌ Don't rely only on `_isConnected`
+    if (_subscription != null) {
+      print("🛑 Already listening. Skipping connect().");
       return;
     }
 
@@ -41,9 +41,10 @@ class NodeSocketService {
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
 
-    _broadcast.listen(
+    _subscription = _broadcast.listen(
           (message) {
         _isConnected = true;
+
         final json = jsonDecode(message);
         final type = json['type'];
         final data = json['data'];
@@ -54,19 +55,24 @@ class NodeSocketService {
         }
       },
       onDone: () {
-        _isConnected = false;
-        print("❌ Disconnected");
-        _channel.sink.close();
-        _tryReconnect(context);
+        _handleDisconnect(context, reason: "❌ Disconnected");
       },
       onError: (err) {
-        _isConnected = false;
-        print("⚠️ Error: $err");
-        _channel.sink.close();
-        _tryReconnect(context);
+        _handleDisconnect(context, reason: "⚠️ Error: $err");
       },
       cancelOnError: true,
     );
+  }
+
+  void _handleDisconnect(BuildContext? context, {required String reason}) {
+    _isConnected = false;
+    print(reason);
+
+    _subscription?.cancel();
+    _subscription = null;
+
+    _channel.sink.close();
+    _tryReconnect(context);
   }
 
   void _tryReconnect([BuildContext? context]) {
@@ -93,9 +99,10 @@ class NodeSocketService {
     }
   }
 
-  void sendBatch(List<dynamic> data) {
+  void sendBatch(List<Map<String, dynamic>> data) {
     if (_isConnected) {
       final msg = jsonEncode({'batch': data});
+      print(msg);
       _channel.sink.add(msg);
     }
   }
@@ -117,4 +124,14 @@ class NodeSocketService {
       ),
     );
   }
+
+  void dispose() {
+    _subscription?.cancel();
+    _subscription = null;
+    _channel.sink.close();
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _isConnected = false;
+  }
 }
+
