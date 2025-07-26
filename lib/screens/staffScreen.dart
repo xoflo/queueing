@@ -911,6 +911,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   NodeSocketService().sendBatch(dataBatch);
                                                                                                   swap = !swap;
 
+                                                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
+
                                                                                                   Navigator.pop(context, 1);
                                                                                                   resetRinger();
                                                                                                 }

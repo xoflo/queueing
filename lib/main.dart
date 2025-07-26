@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         body: FutureBuilder(future: ipHandler(null), builder: (context, AsyncSnapshot<int> snapshot) {
-          return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 0) : BootInterface(type: 0) :
+          return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 2) : BootInterface(type: 2) :
           Stack(
             children: [
               imageBackground(context),
