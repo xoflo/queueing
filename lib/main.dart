@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:ui';
+import 'package:queueing/node.dart';
 import 'package:queueing/screens/displayScreen.dart';
 import 'package:queueing/screens/servicesScreen.dart';
 import 'package:queueing/screens/staffScreen.dart';
@@ -26,7 +28,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       scrollBehavior: ScrollBehavior().copyWith(dragDevices: {
         PointerDeviceKind.mouse,
@@ -41,7 +42,24 @@ class MyApp extends StatelessWidget {
 
             seedColor: Colors.blueGrey),
       ),
-      home: autoDisplay(context, 1),
+      home: Scaffold(
+        body: FutureBuilder(future: ipHandler(null), builder: (context, AsyncSnapshot<int> snapshot) {
+          return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 0) : BootInterface(type: 0) :
+          Stack(
+            children: [
+              imageBackground(context),
+              logoBackground(context, 500, 500),
+              Center(
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
       // 0: Phone, 1: Kiosk, Display
       //
     );
@@ -51,33 +69,23 @@ class MyApp extends StatelessWidget {
 
 
 autoDisplay(BuildContext context, int i) {
-  return i == 1 ? FutureBuilder(
-      future: ipHandler(context),
-      builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-        // 0: Display, 1: Services
-        return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? DisplayScreen() : BootInterface(type: 0) :
-        Scaffold(
-            body: Stack(
-              children: [
-                imageBackground(context),
-                logoBackground(context, 500, 500),
-                Center(
-                  child: Container(
-                    height: 50,
-                    width: 50,
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-              ],
-            ));
-      }) : LoginScreen(debug: 0);
+  if (i == 0) {
+    return LoginScreen(debug: 0);
+  }
+
+  if (i == 1) {
+    return ServicesScreen();
+  }
+
+  if (i == 2) {
+    return DisplayScreen();
+  }
 }
 
-ipHandler(BuildContext context) async {
+ipHandler([BuildContext? context]) async {
   try {
     await getIP();
     final List<dynamic> controls = await getSettings();
-
     print("controls: $controls");
     if (controls.isEmpty) {
       return 0;
@@ -121,7 +129,7 @@ class _BootInterfaceState extends State<BootInterface> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text("Office of the Ombudsman\nfor Mindanao", style: TextStyle(fontFamily: 'BebasNeue', fontSize: 30), textAlign: TextAlign.center),
-                      Text("Queueing App ${widget.type == 1 ? "Kiosk" : "Display"}", style: TextStyle(fontFamily: 'Inter', fontSize: 20), textAlign: TextAlign.center),
+                      Text("Queueing App ${widget.type == 0 ? "Client": widget.type == 1 ? "Kiosk" : "Display"}", style: TextStyle(fontFamily: 'Inter', fontSize: 20), textAlign: TextAlign.center),
                       // Display, Kiosk
                       SizedBox(height: 20),
                       TextField(
@@ -139,7 +147,7 @@ class _BootInterfaceState extends State<BootInterface> {
                             final result = await ipHandler(context);
 
                             if (result == 1) {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 1 ? ServicesScreen() : DisplayScreen()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 0 ? LoginScreen(debug: 0) : widget.type == 1 ? ServicesScreen() : DisplayScreen()));
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
                             }

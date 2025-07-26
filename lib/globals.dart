@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/hiveService.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'models/media.dart';
 import 'dart:math' as math;
 import 'package:video_player/video_player.dart';
@@ -468,3 +470,174 @@ class _BlinkState extends State<Blink> {
 
 
 
+/*
+
+                                    IconButton(onPressed: () {
+                                      showDialog(context: context, builder: (_) => StatefulBuilder(
+                                        key: dialogKey,
+                                        builder: (BuildContext context, setStateDialog) {
+                                          return AlertDialog(
+                                            title: Text("Select Services (3 Max)"),
+                                            content: Container(
+                                              height: 400,
+                                              width: 400,
+                                              child: FutureBuilder(
+                                                future: thisUser(),
+                                                builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+                                                  return StatefulBuilder(
+                                                    builder: (BuildContext context, void Function(void Function()) setStateList) {
+                                                      return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                                                          itemCount: snapshot.data!.serviceType!.length,
+                                                          itemBuilder: (context, i) {
+                                                            return CheckboxListTile(
+                                                                title: Text(snapshot.data!.serviceType![i]),
+                                                                value: servicesSet.contains(snapshot.data!.serviceType![i].toString()), onChanged: (value) {
+                                                              if (value == true) {
+                                                                if (servicesSet.length == 3) {
+                                                                  servicesSet.removeAt(0);
+                                                                }
+                                                                servicesSet.add(snapshot.data!.serviceType![i].toString());
+                                                                setStateList((){});
+                                                              } else {
+                                                                servicesSet.remove(snapshot.data!.serviceType![i].toString());
+                                                                setStateList((){});
+                                                              }
+
+                                                              print(servicesSet);
+                                                            });
+                                                          }) : Center(
+                                                        child: Container(
+                                                          height: 50,
+                                                          width: 50,
+                                                          child: CircularProgressIndicator(),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(onPressed: () {
+
+                                                try {
+                                                  snapshot.data!.update({
+                                                    "servicesSet": servicesSet.toString()
+                                                  });
+
+                                                  Navigator.pop(context);
+                                                  setState((){});
+
+                                                } catch(e) {
+                                                  print(e);
+                                                }
+
+                                              }, child: Text("Confirm"))
+                                            ],
+                                          );
+                                        },
+                                      )
+                                      );
+                                    }, icon: Icon(Icons.settings))
+                                     */
+
+
+/*
+
+                                              if (servingStream.value != null) {
+                                                showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (_) => AlertDialog(
+                                                              title: Text(
+                                                                  "Confirm Done?"),
+                                                              content: Container(
+                                                                  child: Text(
+                                                                      "'Done' to complete and 'Call Next' to serve next ticket."),
+                                                                  height: 40),
+                                                              actions: [
+                                                                TextButton(
+                                                                    onPressed: () async {
+                                                                      try {
+                                                                        await servingStream.value!.update({
+                                                                          "status": "Done",
+                                                                          "timeDone": timestamp,
+                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
+
+                                                                        await widget.station.update({'ticketServing': ""});
+
+
+
+
+                                                                        Navigator.pop(
+                                                                            context);
+                                                                        resetRinger();
+
+
+
+                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                            content:
+                                                                            Text("Ticket complete.")));
+                                                                      } catch(e) {
+                                                                        print(e);
+                                                                        print("Done in Dialog");
+                                                                      }
+                                                                    },
+                                                                    child: Text(
+                                                                        "Done")),
+                                                                TextButton(
+                                                                    onPressed:
+                                                                        () async {
+
+                                                                      try {
+
+                                                                        final timestamp =
+                                                                        DateTime.now().toString();
+
+                                                                        await servingStream.value!.update({
+                                                                          "status": "Done",
+                                                                          "timeDone": timestamp,
+                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
+                                                                        });
+
+                                                                        if (ticketStream.value.isNotEmpty) {
+                                                                          if (ticketStream.value[0].serviceType! == callBy || callBy == 'Time Order') {
+                                                                            await ticketStream.value[0].update({
+                                                                              "userAssigned": widget.user.username,
+                                                                              "status": "Serving",
+                                                                              "stationName": widget.station.stationName,
+                                                                              "stationNumber": widget.station.stationNumber,
+                                                                              "log": "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                                              "timeTaken": timestamp,
+                                                                            });
+
+
+                                                                            await widget.station.update({'ticketServing': "${ticketStream.value[0].codeAndNumber}"});
+                                                                            await updateServingTicketStream();
+                                                                            await updateTicketStream(1);
+
+                                                                            Navigator.pop(context);
+                                                                          }
+                                                                        } else {
+                                                                          await widget
+                                                                              .station
+                                                                              .update({
+                                                                            'ticketServing':
+                                                                            ""
+                                                                          });
+
+                                                                          ScaffoldMessenger.of(context)
+                                                                              .showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
+                                                                        }
+                                                                      } catch(e) {
+                                                                        print(e);
+                                                                        print('Call Next in Dialog');
+                                                                      }
+
+                                                                    },
+                                                                    child: Text(
+                                                                        "Call Next"))
+                                                              ],
+                                                            ));
+                                              } else {}
+                                               */

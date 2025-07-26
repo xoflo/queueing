@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:queueing/screens/staffScreen.dart';
 
 import 'models/user.dart';
+import 'node.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.debug});
@@ -35,11 +36,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     getIP();
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    NodeSocketService().connect(context: context);
     return Scaffold(
       body: Container(
         height: MediaQuery.of(context).size.height,
@@ -184,8 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         }, child: Text("Set"))
                       ],
                     ));
-                  }, child: Text("Set IP"))
-
+                  }, child: Text("Set IP")),
                 ]
             ),
           ),

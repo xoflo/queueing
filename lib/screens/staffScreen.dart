@@ -9,6 +9,7 @@ import 'package:queueing/models/media.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
+import 'package:queueing/node.dart';
 import 'package:web_socket_channel/io.dart';
 import '../models/user.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -122,76 +123,6 @@ class _StaffScreenState extends State<StaffScreen> {
                                                           fontWeight:
                                                               FontWeight.w700)),
                                                   Spacer(),
-                                                  /*
-
-                                    IconButton(onPressed: () {
-                                      showDialog(context: context, builder: (_) => StatefulBuilder(
-                                        key: dialogKey,
-                                        builder: (BuildContext context, setStateDialog) {
-                                          return AlertDialog(
-                                            title: Text("Select Services (3 Max)"),
-                                            content: Container(
-                                              height: 400,
-                                              width: 400,
-                                              child: FutureBuilder(
-                                                future: thisUser(),
-                                                builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-                                                  return StatefulBuilder(
-                                                    builder: (BuildContext context, void Function(void Function()) setStateList) {
-                                                      return snapshot.connectionState == ConnectionState.done ? ListView.builder(
-                                                          itemCount: snapshot.data!.serviceType!.length,
-                                                          itemBuilder: (context, i) {
-                                                            return CheckboxListTile(
-                                                                title: Text(snapshot.data!.serviceType![i]),
-                                                                value: servicesSet.contains(snapshot.data!.serviceType![i].toString()), onChanged: (value) {
-                                                              if (value == true) {
-                                                                if (servicesSet.length == 3) {
-                                                                  servicesSet.removeAt(0);
-                                                                }
-                                                                servicesSet.add(snapshot.data!.serviceType![i].toString());
-                                                                setStateList((){});
-                                                              } else {
-                                                                servicesSet.remove(snapshot.data!.serviceType![i].toString());
-                                                                setStateList((){});
-                                                              }
-
-                                                              print(servicesSet);
-                                                            });
-                                                          }) : Center(
-                                                        child: Container(
-                                                          height: 50,
-                                                          width: 50,
-                                                          child: CircularProgressIndicator(),
-                                                        ),
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(onPressed: () {
-
-                                                try {
-                                                  snapshot.data!.update({
-                                                    "servicesSet": servicesSet.toString()
-                                                  });
-
-                                                  Navigator.pop(context);
-                                                  setState((){});
-
-                                                } catch(e) {
-                                                  print(e);
-                                                }
-
-                                              }, child: Text("Confirm"))
-                                            ],
-                                          );
-                                        },
-                                      )
-                                      );
-                                    }, icon: Icon(Icons.settings))
-                                     */
                                                 ],
                                               )),
                                           Divider(),
@@ -411,17 +342,13 @@ class _StaffSessionState extends State<StaffSession> {
   int? inactiveLength;
   int? inactiveOn;
 
-  ValueNotifier<List<Ticket>> ticketStream = ValueNotifier([]);
-  ValueNotifier<Ticket?> servingStream = ValueNotifier(null);
-
-
   bool swap = false;
 
-  late WebSocketChannel channel;
-  Timer? reconnectTimer;
-  bool isConnected = false;
-
   int stationChanges = 0;
+
+  ValueNotifier<Ticket?> servingStream = ValueNotifier(null);
+  ValueNotifier<List<Ticket>> ticketStream = ValueNotifier([]);
+  String? ticketServingNow;
 
   getUserSQL() async {
     try {
@@ -487,14 +414,13 @@ class _StaffSessionState extends State<StaffSession> {
     update?.cancel();
   }
 
-  updateTicketStream([int? i]) async {
-    List<Ticket> getTickets = await getTicketSQL('filtered');
+  updateTicketStream([int? i, dynamic data]) {
+    List<Ticket> retrievedTickets = getTicket('filtered', data);
+    ticketStream.value = retrievedTickets;
     if (i == 1) {
       swap = !swap;
     }
-    ticketStream.value = getTickets;
-    ticketLength = getTickets.length;
-    return getTickets;
+    return retrievedTickets;
   }
 
   @override
@@ -506,60 +432,31 @@ class _StaffSessionState extends State<StaffSession> {
       ringTimer = null;
     }
 
-    listenNode();
     initPing();
     initUpdate();
-  }
 
+    NodeSocketService().stream.listen((message) async {
 
+      final json = jsonDecode(message);
+      final type = json['type'];
+      final dynamic data = json['data'];
 
-  listenNode() {
-    final url = 'ws://${site.toString().split(":")[0]}:3000';
-    if (kIsWeb) {
-      channel = WebSocketChannel.connect(Uri.parse(url));
-    } else {
-      channel = IOWebSocketChannel.connect(url);
-    }
+      print(type);
 
-    channel.stream.listen((message) async {
-      isConnected = true;
-      if (message.toString().trim() == 'sink') {
-        print('Received sink. Updating...');
-        await updateTicketStream(1);
-        await updateServingTicketStream();
-      } else {
-        print('Ignored message: $message');
+      if (type == 'getTicket') {
+        updateTicketStream(null, data);
+        updateServingTicketStream(data);
       }
-    },
-      onDone: () {
-        isConnected = false;
-        print("❌ Disconnected");
-        tryReconnect();
-      },
-      onError: (err) {
-        isConnected = false;
-        print("⚠️ Error: $err");
-        tryReconnect();
-      },
-      cancelOnError: true,
-    );
 
-    channel.sink.add('sink');
-
-  }
-
-  void tryReconnect() {
-    if (reconnectTimer?.isActive ?? false) return;
-    reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
-      if (!isConnected) {
-        print("🔁 Reconnecting...");
-        listenNode();
-      } else {
-        print("✅ Reconnected");
-        reconnectTimer?.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Reconnected to server.")));
+      if (type == 'updateTicket') {
+        NodeSocketService().sendMessage('getTicket', {});
+        widget.station.update({
+          'ticketServing': ticketServingNow
+        });
       }
     });
+
+    NodeSocketService().sendMessage('getTicket', {});
   }
 
 
@@ -584,17 +481,6 @@ class _StaffSessionState extends State<StaffSession> {
       final timeControl = await getInactiveTime();
       inactiveLength = int.parse(timeControl['other']);
       inactiveOn = int.parse(timeControl['value']);
-
-
-      /*
-
-      final retrievedTickets = await getTicketSQL('filtered');
-
-      if (ticketLength != retrievedTickets.length) {
-        await updateTicketStream();
-        await updateServingTicketStream();
-      }
-       */
 
     });
   }
@@ -666,121 +552,100 @@ class _StaffSessionState extends State<StaffSession> {
                                     ],
                                   ),
                                   SizedBox(height: 30),
-                                  FutureBuilder(
-                                    future: updateServingTicketStream(),
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<List<Ticket>>
-                                            snapshotServing) {
-                                      return snapshotServing
-                                                  .connectionState ==
-                                              ConnectionState.done
-                                          ? Builder(
-                                          builder: (context) {
-                                            resetRinger();
-                                            return ValueListenableBuilder<Ticket?>(
-                                              valueListenable: servingStream,
-                                              builder: (BuildContext context, Ticket? value, Widget? child) {
-                                                return servingStream.value != null ? Card(
-                                                  clipBehavior:
-                                                  Clip.antiAlias,
-                                                  child: Padding(
-                                                    padding:
-                                                    const EdgeInsets
-                                                        .all(15.0),
-                                                    child: Container(
-                                                      height: 130,
-                                                      width: 250,
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                        children: [
-                                                          Text(
-                                                              overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                              "${servingStream.value!.serviceType}",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                  15,
-                                                                  fontWeight: FontWeight
-                                                                      .w700),
-                                                              textAlign:
-                                                              TextAlign
-                                                                  .center),
-                                                          Text(
-                                                              servingStream.value!
-                                                                  .codeAndNumber!,
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                  45)),
-                                                          Row(
-                                                            mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                            spacing: 5,
-                                                            children: [
-                                                              Text(
-                                                                  "Priority:",
-                                                                  style:
-                                                                  TextStyle(fontSize: 15)),
-                                                              Text(
-                                                                  servingStream.value!
-                                                                      .priorityType!,
-                                                                  style:
-                                                                  TextStyle(fontSize: 15)),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
+                                  Builder(
+                                    builder: (context) {
+                                      return ValueListenableBuilder<Ticket?>(
+                                        valueListenable: servingStream,
+                                        builder: (BuildContext context, Ticket? value, Widget? child) {
+                                          return servingStream.value != null ? Card(
+                                            clipBehavior:
+                                            Clip.antiAlias,
+                                            child: Padding(
+                                              padding:
+                                              const EdgeInsets
+                                                  .all(15.0),
+                                              child: Container(
+                                                height: 130,
+                                                width: 250,
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .center,
+                                                  children: [
+                                                    Text(
+                                                        overflow:
+                                                        TextOverflow
+                                                            .ellipsis,
+                                                        "${servingStream.value!.serviceType}",
+                                                        style: TextStyle(
+                                                            fontSize:
+                                                            15,
+                                                            fontWeight: FontWeight
+                                                                .w700),
+                                                        textAlign:
+                                                        TextAlign
+                                                            .center),
+                                                    Text(
+                                                        servingStream.value!
+                                                            .codeAndNumber!,
+                                                        style: TextStyle(
+                                                            fontSize:
+                                                            45)),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .center,
+                                                      spacing: 5,
+                                                      children: [
+                                                        Text(
+                                                            "Priority:",
+                                                            style:
+                                                            TextStyle(fontSize: 15)),
+                                                        Text(
+                                                            servingStream.value!
+                                                                .priorityType!,
+                                                            style:
+                                                            TextStyle(fontSize: 15)),
+                                                      ],
                                                     ),
-                                                  ),
-                                                ) : Card(
-                                                  child: Builder(
-                                                      builder: (context) {
-                                                        resetRinger();
-                                                        return Container(
-                                                          height: 130,
-                                                          width: 220,
-                                                          child: Padding(
-                                                            padding:
-                                                            const EdgeInsets
-                                                                .all(
-                                                                20.0),
-                                                            child: Align(
-                                                              alignment:
-                                                              Alignment
-                                                                  .center,
-                                                              child: Text(
-                                                                  "No ticket being served at the moment.",
-                                                                  textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .grey,
-                                                                      fontSize:
-                                                                      15)),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      }),
-                                                );
-                                              },
-                                            );
-                                          })
-                                          : Container(
-                                              height: 300,
-                                              child: Center(
-                                                child: Container(
-                                                  height: 50,
-                                                  width: 50,
-                                                  child:
-                                                      CircularProgressIndicator(),
+                                                  ],
                                                 ),
                                               ),
-                                            );
-                                    },
+                                            ),
+                                          ) : Card(
+                                            child: Builder(
+                                                builder: (context) {
+                                                  resetRinger();
+                                                  return Container(
+                                                    height: 130,
+                                                    width: 220,
+                                                    child: Padding(
+                                                      padding:
+                                                      const EdgeInsets
+                                                          .all(
+                                                          20.0),
+                                                      child: Align(
+                                                        alignment:
+                                                        Alignment
+                                                            .center,
+                                                        child: Text(
+                                                            "No ticket being served at the moment.",
+                                                            textAlign:
+                                                            TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .grey,
+                                                                fontSize:
+                                                                15)),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                          );
+                                        },
+                                      );
+                                    }
                                   ),
                                   SizedBox(height: 30),
                                   Row(
@@ -812,14 +677,20 @@ class _StaffSessionState extends State<StaffSession> {
                                             onTap: () async {
                                               final timestamp = DateTime.now().toString();
                                                 try {
+
+                                                  List<Map<String, dynamic>> dataBatch = [];
+
                                                   if (servingStream.value != null) {
                                                     try {
-                                                      await servingStream.value!.update({
-                                                        "status": "Done",
-                                                        "timeDone": timestamp,
-                                                        "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
-
-                                                      channel.sink.add("sink");
+                                                          dataBatch.add({
+                                                              'type': 'updateTicket',
+                                                              'data': {
+                                                                'id': servingStream.value!.id,
+                                                                'status': 'Done',
+                                                                'timeDone': timestamp,
+                                                                'log': "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
+                                                              }
+                                                           });
 
                                                       if (ticketStream.value.isNotEmpty) {
                                                         if (ticketStream.value[0]
@@ -827,24 +698,46 @@ class _StaffSessionState extends State<StaffSession> {
                                                             callBy ||
                                                             callBy ==
                                                                 'Time Order') {
-                                                          await ticketStream.value[0].update({
-                                                            "userAssigned": widget.user.username,
-                                                            "status": "Serving",
-                                                            "stationName": widget.station.stationName,
-                                                            "stationNumber": widget.station.stationNumber,
-                                                            "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                            "timeTaken": timestamp
+
+                                                          dataBatch.add({
+                                                            'type': 'updateTicket',
+                                                            'data': {
+                                                              "id": ticketStream.value[0].id,
+                                                              "userAssigned": widget.user.username,
+                                                              "status": "Serving",
+                                                              "stationName": widget.station.stationName,
+                                                              "stationNumber": widget.station.stationNumber,
+                                                              "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                              "timeTaken": timestamp,
+                                                              "timeDone": ""
+                                                            }
                                                           });
 
-                                                          await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
+                                                          dataBatch.add({
+                                                            'type': 'updateStation',
+                                                            'data': {
+                                                              'id': widget.station.id,
+                                                              'codeAndNumber': ticketStream.value[0].codeAndNumber!
+                                                            }
+                                                          });
 
-                                                          channel.sink.add("sink");
+                                                          ticketServingNow = ticketStream.value[0].codeAndNumber!;
 
+                                                          NodeSocketService().sendBatch(dataBatch);
                                                         }
                                                       } else {
 
-                                                        await widget.station.update({'ticketServing': ""});
-                                                        channel.sink.add("sink");
+                                                        dataBatch.add({
+                                                          'type': 'updateStation',
+                                                          'data': {
+                                                            'id': widget.station.id,
+                                                            'codeAndNumber': ""
+                                                          }
+                                                        });
+
+                                                        ticketServingNow = "";
+                                                        NodeSocketService().sendBatch(dataBatch);
+
                                                         resetRinger();
                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                                             content:
@@ -861,18 +754,32 @@ class _StaffSessionState extends State<StaffSession> {
                                                           callBy ||
                                                           callBy ==
                                                               'Time Order') {
-                                                        await ticketStream.value[0].update({
-                                                          "userAssigned": widget.user.username,
-                                                          "status": "Serving",
-                                                          "stationName": widget.station.stationName,
-                                                          "stationNumber": widget.station.stationNumber,
-                                                          "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                          "timeTaken": timestamp
+
+
+                                                        dataBatch.add({
+                                                          'type': 'updateTicket',
+                                                          'data': {
+                                                            "id": ticketStream.value[0].id,
+                                                            "userAssigned": widget.user.username,
+                                                            "status": "Serving",
+                                                            "stationName": widget.station.stationName,
+                                                            "stationNumber": widget.station.stationNumber,
+                                                            "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                            "timeTaken": timestamp,
+                                                            "timeDone": ""
+                                                          }
                                                         });
 
-                                                        await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
+                                                        dataBatch.add({
+                                                          'type': 'updateStation',
+                                                          'data': {
+                                                            'id': widget.station.id,
+                                                            'codeAndNumber': ticketStream.value[0].codeAndNumber!
+                                                          }
+                                                        });
 
-                                                        channel.sink.add("sink");
+                                                        ticketServingNow = ticketStream.value[0].codeAndNumber!;
+                                                        NodeSocketService().sendBatch(dataBatch);
 
                                                       }
                                                     }  else {
@@ -943,52 +850,78 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                         return ListTile(
                                                                                           title: Text(service.serviceType!),
                                                                                           onTap: () async {
-                                                                                            final timestamp = DateTime.now().toString();
-                                                                                            await servingStream.value!.update({
-                                                                                              'log': "${servingStream.value!.log}, $timestamp: ticket transferred to ${service.serviceType}",
-                                                                                              'status': "Pending",
-                                                                                              'userAssigned': "",
-                                                                                              'stationName': "",
-                                                                                              'stationNumber': "",
-                                                                                              'timeDone' : "",
-                                                                                              'serviceType': "${service.serviceType}",
-                                                                                              'callCheck': 0,
-                                                                                              'blinker': 0
-                                                                                            });
+                                                                                            try {
+                                                                                              List<Map<String, dynamic>> dataBatch = [];
+                                                                                              final timestamp = DateTime.now().toString();
 
-                                                                                            await widget.station.update({
-                                                                                              'ticketServing': ""
-                                                                                            });
+                                                                                              dataBatch.add({
+                                                                                                'type': 'updateTicket',
+                                                                                                'data': {
+                                                                                                  "id": servingStream.value!.id,
+                                                                                                  'log': "${servingStream.value!.log}, $timestamp: ticket transferred to ${service.serviceType}",
+                                                                                                  'status': "Pending",
+                                                                                                  'userAssigned': "",
+                                                                                                  'stationName': "",
+                                                                                                  'stationNumber': "",
+                                                                                                  'timeDone' : "",
+                                                                                                  'serviceType': "${service.serviceType}",
+                                                                                                  'callCheck': 0,
+                                                                                                  'blinker': 0
+                                                                                                }
+                                                                                              });
 
 
-                                                                                            if (ticketStream.value.isNotEmpty) {
-                                                                                              if (ticketStream.value[0]
-                                                                                                  .serviceType! ==
-                                                                                                  callBy ||
-                                                                                                  callBy ==
-                                                                                                      'Time Order') {
-                                                                                                await ticketStream.value[0].update({
-                                                                                                  "userAssigned": widget.user.username,
-                                                                                                  "status": "Serving",
-                                                                                                  "stationName": widget.station.stationName,
-                                                                                                  "stationNumber": widget.station.stationNumber,
-                                                                                                  "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                                                                  "timeTaken": timestamp
+                                                                                              if (ticketStream.value.isNotEmpty) {
+                                                                                                if (ticketStream.value[0]
+                                                                                                    .serviceType! ==
+                                                                                                    callBy ||
+                                                                                                    callBy ==
+                                                                                                        'Time Order') {
+
+                                                                                                  dataBatch.add({
+                                                                                                    'type': 'updateTicket',
+                                                                                                    'data': {
+                                                                                                      "id": ticketStream.value[0].id,
+                                                                                                      "userAssigned": widget.user.username,
+                                                                                                      "status": "Serving",
+                                                                                                      "stationName": widget.station.stationName,
+                                                                                                      "stationNumber": widget.station.stationNumber,
+                                                                                                      "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
+                                                                                                      "timeTaken": timestamp
+                                                                                                    }
+                                                                                                  });
+
+                                                                                                  dataBatch.add({
+                                                                                                    'type': 'updateStation',
+                                                                                                    'data': {
+                                                                                                      'id': widget.station.id,
+                                                                                                      'codeAndNumber': ticketStream.value[0].codeAndNumber!
+                                                                                                    }
+                                                                                                  });
+
+                                                                                                  ticketServingNow = ticketStream.value[0].codeAndNumber!;
+
+                                                                                                  Navigator.pop(context, 1);
+                                                                                                  resetRinger();
+                                                                                                }
+                                                                                              } else {
+                                                                                                dataBatch.add({
+                                                                                                  'type': 'updateStation',
+                                                                                                  'data': {
+                                                                                                    'id': widget.station.id,
+                                                                                                    'codeAndNumber': ""
+                                                                                                  }
                                                                                                 });
 
-                                                                                                await widget.station.update({'ticketServing': ticketStream.value[0].codeAndNumber!});
-
-
-                                                                                                channel.sink.add("sink");
+                                                                                                ticketServingNow = ticketStream.value[0].codeAndNumber!;
 
                                                                                                 Navigator.pop(context, 1);
                                                                                                 resetRinger();
                                                                                               }
-                                                                                            } else {
 
-                                                                                              channel.sink.add("sink");
-                                                                                              Navigator.pop(context, 1);
-                                                                                              resetRinger();
+                                                                                            } catch(e) {
+                                                                                              print(e);
+                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
                                                                                             }
                                                                                           },
                                                                                         );
@@ -1046,65 +979,87 @@ class _StaffSessionState extends State<StaffSession> {
                                                 final timestamp =
                                                     DateTime.now().toString();
 
-                                                if (servingStream.value != null) {
-                                                  if (callAgainCounter < 3) {
-                                                    callAgainCounter += 1;
-                                                    await servingStream.value!.update({
-                                                      'blinker': 0,
-                                                      "callCheck": 0,
-                                                      'log':
+                                                try {
+                                                  List<Map<String, dynamic>> dataBatch = [];
+
+                                                  if (servingStream.value != null) {
+                                                    if (callAgainCounter < 3) {
+                                                      callAgainCounter += 1;
+
+                                                      dataBatch.add({
+                                                        'type': 'updateTicket',
+                                                        'data': {
+                                                          "id": servingStream.value!.id,
+                                                          'blinker': 0,
+                                                          "callCheck": 0,
+                                                          'log':
                                                           "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
-                                                    });
-                                                  } else {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder:
-                                                            (_) =>
-                                                                AlertDialog(
-                                                                  title: Text(
-                                                                      "Release Ticket?"),
-                                                                  content:
-                                                                      Container(
-                                                                    child: Text(
-                                                                        "Ticket has been called a few times."),
-                                                                    height:
-                                                                        40,
-                                                                  ),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                        child: Text(
-                                                                            "Release"),
-                                                                        onPressed:
-                                                                            () async {
-                                                                          await servingStream.value!.update({
+                                                        }
+                                                      });
+
+                                                    } else {
+                                                      showDialog(
+                                                          context: context,
+                                                          builder:
+                                                              (_) =>
+                                                              AlertDialog(
+                                                                title: Text(
+                                                                    "Release Ticket?"),
+                                                                content:
+                                                                Container(
+                                                                  child: Text(
+                                                                      "Ticket has been called a few times."),
+                                                                  height:
+                                                                  40,
+                                                                ),
+                                                                actions: [
+                                                                  TextButton(
+                                                                      child: Text(
+                                                                          "Release"),
+                                                                      onPressed:
+                                                                          () async {
+
+                                                                        dataBatch.add({
+                                                                          'type': 'updateTicket',
+                                                                          'data': {
+                                                                            "id": servingStream.value!.id,
                                                                             "status": 'Released',
                                                                             'log': "${servingStream.value!.log!}, ${DateTime.now()}: Ticket Released",
                                                                             'userAssigned': "",
                                                                             'stationName': "",
                                                                             'stationNumber': "",
-                                                                          });
+                                                                          }
+                                                                        });
 
-                                                                          await widget.station.update({
-                                                                            'ticketServing': ""
-                                                                          });
+                                                                        dataBatch.add({
+                                                                          'type': 'updateStation',
+                                                                          'data': {
+                                                                            'id': widget.station.id,
+                                                                            'codeAndNumber': ""
+                                                                          }
+                                                                        });
 
-                                                                          await updateServingTicketStream();
-                                                                          servingStream.value = null;
+                                                                        ticketServingNow = ticketStream.value[0].codeAndNumber!;
 
-                                                                          Navigator.pop(context);
-                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));
-                                                                          resetRinger();
-                                                                        })
-                                                                  ],
-                                                                ));
+                                                                        Navigator.pop(context);
+                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));
+                                                                        resetRinger();
+                                                                      })
+                                                                ],
+                                                              ));
+                                                    }
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                        context)
+                                                        .showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            "No ticket being served at the moment.")));
                                                   }
-                                                } else {
-                                                  ScaffoldMessenger.of(
-                                                          context)
-                                                      .showSnackBar(SnackBar(
-                                                          content: Text(
-                                                              "No ticket being served at the moment.")));
+
+                                                } catch(e) {
+                                                  print(e);
                                                 }
+
                                               },
                                             ),
                                           ),
@@ -1222,25 +1177,20 @@ class _StaffSessionState extends State<StaffSession> {
                                                             textAlign:
                                                                 TextAlign
                                                                     .center)
-                                                        : FutureBuilder(
-                                                          future: updateTicketStream(),
-                                                          builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
-                                                            return ValueListenableBuilder(
-                                                              valueListenable: ticketStream,
-                                                              builder: (BuildContext context, List<Ticket> value, Widget? child) {
-                                                                return ListView.builder(
-                                                                    scrollDirection: Axis.vertical,
-                                                                    itemCount: ticketStream.value.length,
-                                                                    itemBuilder: (context, i) {
-                                                                      return ListTile(
-                                                                        dense: true,
-                                                                        title: Text("${i + 1}. ${ticketStream.value[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                                                                        subtitle: Text(ticketStream.value[i].priorityType == "Regular" ? "" : ticketStream.value[i].priorityType!.length > 20 ? "(${smartAbbreviate(ticketStream.value[i].priorityType!)})" : ticketStream.value[i].priorityType!, style: TextStyle(fontWeight: FontWeight.bold)),
-                                                                        trailing: ticketStream.value[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
-                                                                      );
-                                                                    });
-                                                              },
-                                                            );
+                                                        : ValueListenableBuilder(
+                                                          valueListenable: ticketStream,
+                                                          builder: (BuildContext context, List<Ticket> value, Widget? child) {
+                                                            return ListView.builder(
+                                                                scrollDirection: Axis.vertical,
+                                                                itemCount: ticketStream.value.length,
+                                                                itemBuilder: (context, i) {
+                                                                  return ListTile(
+                                                                    dense: true,
+                                                                    title: Text("${i + 1}. ${ticketStream.value[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                                                                    subtitle: Text(ticketStream.value[i].priorityType == "Regular" ? "" : ticketStream.value[i].priorityType!.length > 20 ? "(${smartAbbreviate(ticketStream.value[i].priorityType!)})" : ticketStream.value[i].priorityType!, style: TextStyle(fontWeight: FontWeight.bold)),
+                                                                    trailing: ticketStream.value[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
+                                                                  );
+                                                                });
                                                           },
                                                         ),
                                                   ),
@@ -1304,15 +1254,11 @@ class _StaffSessionState extends State<StaffSession> {
     return control ?? 0;
   }
 
-  Future<List<Ticket>> getTicketSQL([String? filtered]) async {
+  List<Ticket> getTicket([String? filtered, List<dynamic>? tickets]) {
     final dateNow = DateTime.now();
 
     try {
-      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php?today=true');
-      final result = await http.get(uri);
-      final List<dynamic> response = jsonDecode(result.body);
-
-      print(result.body);
+      final List<dynamic> response = tickets!;
 
       List<dynamic> sorted = [];
 
@@ -1406,8 +1352,8 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
 
-  updateServingTicketStream() async {
-    List<Ticket> servings = await getServingTicketSQL();
+  updateServingTicketStream(dynamic data) {
+    List<Ticket> servings = getServingTicket(data);
     if (servings.isEmpty) {
       servingStream.value = null;
       return servings;
@@ -1417,11 +1363,9 @@ class _StaffSessionState extends State<StaffSession> {
     }
   }
 
-  getServingTicketSQL() async {
+  getServingTicket(List<dynamic> data) {
     try {
-      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
-      final result = await http.get(uri);
-      final List<dynamic> response = jsonDecode(result.body);
+      final List<dynamic> response = data;
       List<dynamic> sorted = [];
 
       final dateNow = DateTime.now();
@@ -1585,104 +1529,4 @@ class _StaffSessionState extends State<StaffSession> {
   }
 }
 
-
-/*
-
-                                              if (servingStream.value != null) {
-                                                showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (_) => AlertDialog(
-                                                              title: Text(
-                                                                  "Confirm Done?"),
-                                                              content: Container(
-                                                                  child: Text(
-                                                                      "'Done' to complete and 'Call Next' to serve next ticket."),
-                                                                  height: 40),
-                                                              actions: [
-                                                                TextButton(
-                                                                    onPressed: () async {
-                                                                      try {
-                                                                        await servingStream.value!.update({
-                                                                          "status": "Done",
-                                                                          "timeDone": timestamp,
-                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"});
-
-                                                                        await widget.station.update({'ticketServing': ""});
-
-
-
-
-                                                                        Navigator.pop(
-                                                                            context);
-                                                                        resetRinger();
-
-
-
-                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                            content:
-                                                                            Text("Ticket complete.")));
-                                                                      } catch(e) {
-                                                                        print(e);
-                                                                        print("Done in Dialog");
-                                                                      }
-                                                                    },
-                                                                    child: Text(
-                                                                        "Done")),
-                                                                TextButton(
-                                                                    onPressed:
-                                                                        () async {
-
-                                                                      try {
-
-                                                                        final timestamp =
-                                                                        DateTime.now().toString();
-
-                                                                        await servingStream.value!.update({
-                                                                          "status": "Done",
-                                                                          "timeDone": timestamp,
-                                                                          "log": "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
-                                                                        });
-
-                                                                        if (ticketStream.value.isNotEmpty) {
-                                                                          if (ticketStream.value[0].serviceType! == callBy || callBy == 'Time Order') {
-                                                                            await ticketStream.value[0].update({
-                                                                              "userAssigned": widget.user.username,
-                                                                              "status": "Serving",
-                                                                              "stationName": widget.station.stationName,
-                                                                              "stationNumber": widget.station.stationNumber,
-                                                                              "log": "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                                              "timeTaken": timestamp,
-                                                                            });
-
-
-                                                                            await widget.station.update({'ticketServing': "${ticketStream.value[0].codeAndNumber}"});
-                                                                            await updateServingTicketStream();
-                                                                            await updateTicketStream(1);
-
-                                                                            Navigator.pop(context);
-                                                                          }
-                                                                        } else {
-                                                                          await widget
-                                                                              .station
-                                                                              .update({
-                                                                            'ticketServing':
-                                                                            ""
-                                                                          });
-
-                                                                          ScaffoldMessenger.of(context)
-                                                                              .showSnackBar(SnackBar(content: Text("No pending tickets to serve at the moment.")));
-                                                                        }
-                                                                      } catch(e) {
-                                                                        print(e);
-                                                                        print('Call Next in Dialog');
-                                                                      }
-
-                                                                    },
-                                                                    child: Text(
-                                                                        "Call Next"))
-                                                              ],
-                                                            ));
-                                              } else {}
-                                               */
 

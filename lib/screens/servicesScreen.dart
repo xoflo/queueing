@@ -54,7 +54,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   @override
   void initState() {
-    listenNode();
     _resetTimer();
 
     if (!kIsWeb) {
@@ -81,49 +80,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
   int toCut = 0;
 
 
-  listenNode() {
-    final url = 'ws://${site.toString().split(":")[0]}:3000';
-    if (kIsWeb) {
-      channel = WebSocketChannel.connect(Uri.parse(url));
-    } else {
-      channel = IOWebSocketChannel.connect(url);
-    }
-
-    channel.stream.listen((message) async {
-      isConnected = true;
-      if (message.toString().trim() == 'sink') {
-        print('Received sink. Updating...');
-      } else {
-        print('Ignored message: $message');
-      }
-    },
-      onDone: () {
-        isConnected = false;
-        print("❌ Disconnected");
-        tryReconnect();
-      },
-      onError: (err) {
-        isConnected = false;
-        print("⚠️ Error: $err");
-        tryReconnect();
-      },
-      cancelOnError: true,
-    );
-  }
-
-  void tryReconnect() {
-    if (reconnectTimer?.isActive ?? false) return;
-    reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
-      if (!isConnected) {
-        print("🔁 Reconnecting...");
-        listenNode();
-      } else {
-        print("✅ Reconnected");
-        reconnectTimer?.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Reconnected to server.")));
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -895,13 +851,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 1
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
-
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
-        channel.sink.add('sink');
-
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("No Printer Connected.")));

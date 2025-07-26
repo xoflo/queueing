@@ -27,7 +27,7 @@ class Station {
     nameAndNumber = "${stationName}${stationNumber == 0 ? "" : " $stationNumber"}";
   }
 
-  update(dynamic data) async {
+  update(dynamic data, [bool? noTicketServing]) async {
     try {
       final body = {
         'id': data['id'] ?? id,

@@ -30,26 +30,30 @@ class Ticket {
   
   String? servingTime;
 
+  safeConvert(dynamic) {
+    return dynamic.runtimeType == "".runtimeType ? int.parse(dynamic) : dynamic;
+  }
+
   Ticket.fromJson(dynamic data) {
-    this.id = int.parse(data['id']);
+    this.id = safeConvert(data['id']);
     this.timeCreated = data['timeCreated'];
     this.number = data['number'];
     this.serviceCode = data['serviceCode'];
     this.serviceType = data['serviceType'];
     this.userAssigned = data['userAssigned'];
     this.stationName = data['stationName'];
-    this.stationNumber = int.parse(data['stationNumber']);
+    this.stationNumber = safeConvert(data['stationNumber']);
     this.timeTaken = data['timeTaken'] == null || data['timeTaken'] == "" ? null : data['timeTaken'];
     this.timeDone = data['timeDone'] == null || data['timeDone'] == "" ? null : data['timeDone'];
     this.status = data['status'];
     this.log = data['log'];
-    this.priority = int.parse(data['priority']);
+    this.priority = safeConvert(data['priority']);
     this.priorityType = data['priorityType'];
-    this.printStatus = int.parse(data['printStatus']);
-    this.callCheck = int.parse(data['callCheck']);
+    this.printStatus = safeConvert(data['printStatus']);
+    this.callCheck = safeConvert(data['callCheck']);
     this.ticketName = data['ticketName'];
     this.codeAndNumber = "${data['serviceCode']}${data['number']}";
-    this.blinker = int.parse(data['blinker']);
+    this.blinker = safeConvert(data['blinker']);
     this.gender = data['gender'];
 
     this.timeCreatedAsDate = DateTime.parse(data['timeCreated'].toString());
