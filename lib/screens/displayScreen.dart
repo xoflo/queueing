@@ -76,8 +76,16 @@ class _DisplayScreenState extends State<DisplayScreen> {
       if (type == 'updateTicket') {
         _debounceTimer?.cancel();
 
-        _debounceTimer = Timer(Duration(milliseconds: 500), () {
-          updateDisplay();
+        _debounceTimer = Timer(Duration(milliseconds: 500), () async {
+          await updateDisplay();
+        });
+      }
+
+      if (type == 'updateStation') {
+        _debounceTimer?.cancel();
+
+        _debounceTimer = Timer(Duration(milliseconds: 500), () async {
+          await updateDisplay();
         });
       }
     });

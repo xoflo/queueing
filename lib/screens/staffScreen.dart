@@ -343,7 +343,6 @@ class _StaffSessionState extends State<StaffSession> {
 
   ValueNotifier<Ticket?> servingStream = ValueNotifier(null);
   ValueNotifier<List<Ticket>> ticketStream = ValueNotifier([]);
-  String? ticketServingNow;
 
   getUserSQL() async {
     try {
@@ -445,10 +444,6 @@ class _StaffSessionState extends State<StaffSession> {
 
       if (type == 'updateTicket') {
         NodeSocketService().sendMessage('getTicket', {});
-        swap = !swap;
-        widget.station.update({
-          'ticketServing': ticketServingNow
-        });
       }
 
       if (type == 'createTicket') {
@@ -731,8 +726,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                             }
                                                           });
 
-                                                          ticketServingNow = ticketStream.value[0].codeAndNumber!;
-
                                                           NodeSocketService().sendBatch(dataBatch);
                                                           swap = !swap;
                                                         }
@@ -746,7 +739,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                           }
                                                         });
 
-                                                        ticketServingNow = "";
                                                         NodeSocketService().sendBatch(dataBatch);
 
                                                         resetRinger();
@@ -792,7 +784,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                           }
                                                         });
 
-                                                        ticketServingNow = ticketStream.value[0].codeAndNumber!;
                                                         NodeSocketService().sendBatch(dataBatch);
                                                         swap = !swap;
 
@@ -919,8 +910,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                     }
                                                                                                   });
 
-                                                                                                  ticketServingNow = ticketStream.value[0].codeAndNumber!;
-
                                                                                                   NodeSocketService().sendBatch(dataBatch);
                                                                                                   swap = !swap;
 
@@ -938,7 +927,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   }
                                                                                                 });
 
-                                                                                                ticketServingNow = "";
                                                                                                 NodeSocketService().sendBatch(dataBatch);
 
                                                                                                 Navigator.pop(context, 1);
@@ -1023,11 +1011,13 @@ class _StaffSessionState extends State<StaffSession> {
                                                           "timeTaken": timestamp,
                                                           "timeDone" : "",
                                                           "serviceType": servingStream.value!.serviceType,
-                                                          'callCheck': servingStream.value!.callCheck,
-                                                          'blinker': servingStream.value!.blinker,
+                                                          'callCheck': 0,
+                                                          'blinker': 0,
                                                           'log': "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
                                                         }
                                                       });
+
+                                                      NodeSocketService().sendBatch(dataBatch);
 
                                                     } else {
                                                       showDialog(
@@ -1076,7 +1066,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                           }
                                                                         });
 
-                                                                        ticketServingNow = ticketStream.value[0].codeAndNumber!;
+                                                                        NodeSocketService().sendBatch(dataBatch);
 
                                                                         Navigator.pop(context);
                                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));

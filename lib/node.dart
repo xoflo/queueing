@@ -38,7 +38,6 @@ class NodeSocketService {
 
     _broadcast = _channel.stream.asBroadcastStream();
 
-    // 🔥 Stop reconnect timer ASAP
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
 
