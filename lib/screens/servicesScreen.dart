@@ -13,6 +13,7 @@ import 'package:queueing/models/bluetoothprint/usbprint.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/services/serviceGroup.dart';
 import 'package:http/http.dart' as http;
+import 'package:queueing/node.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/bluetoothprint/bluetoothprint.dart';
@@ -855,6 +856,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
+
+        NodeSocketService().sendMessage('createTicket', {});
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("No Printer Connected.")));

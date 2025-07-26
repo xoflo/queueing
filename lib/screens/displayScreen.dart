@@ -65,11 +65,25 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   }
 
+  Timer? _debounceTimer;
+
   @override
   void initState() {
-
-    listenNode();
     super.initState();
+
+    channel.stream.listen((message) {
+      final json = jsonDecode(message);
+      final type = json['type'];
+      final data = json['data'];
+
+      if (type == 'updateTicket') {
+        _debounceTimer?.cancel();
+
+        _debounceTimer = Timer(Duration(milliseconds: 500), () {
+          updateDisplay();
+        });
+      }
+    });
   }
 
   @override
@@ -79,19 +93,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
     super.dispose();
   }
 
-  void tryReconnect() {
-    if (reconnectTimer?.isActive ?? false) return;
-    reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
-      if (!isConnected) {
-        print("🔁 Reconnecting...");
-        listenNode();
-      } else {
-        print("✅ Reconnected");
-        reconnectTimer?.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Reconnected to server.")));
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,40 +176,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
         : Container(height: 30);
   }
 
-
-  listenNode() {
-    final url = 'ws://${site.toString().split(":")[0]}:3000';
-    if (kIsWeb) {
-      channel = WebSocketChannel.connect(Uri.parse(url));
-    } else {
-      channel = IOWebSocketChannel.connect(url);
-    }
-
-    channel.stream.listen((message) async {
-      isConnected = true;
-      if (message.toString().trim() == 'sink') {
-        print('Received sink. Updating...');
-        await updateDisplay();
-      } else {
-        print('Ignored message: $message');
-      }
-    },
-      onDone: () {
-        isConnected = false;
-        print("❌ Disconnected");
-        tryReconnect();
-      },
-      onError: (err) {
-        isConnected = false;
-        print("⚠️ Error: $err");
-        tryReconnect();
-      },
-      cancelOnError: true,
-    );
-
-    channel.sink.add('sink');
-
-  }
 
   updateDisplay() async {
     final List<Ticket> retrieved = await getTicketSQL();

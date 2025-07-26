@@ -450,9 +450,14 @@ class _StaffSessionState extends State<StaffSession> {
 
       if (type == 'updateTicket') {
         NodeSocketService().sendMessage('getTicket', {});
+        swap = !swap;
         widget.station.update({
           'ticketServing': ticketServingNow
         });
+      }
+
+      if (type == 'createTicket') {
+        NodeSocketService().sendMessage('getTicket', {});
       }
     });
 
@@ -1078,7 +1083,7 @@ class _StaffSessionState extends State<StaffSession> {
                                               value: alternate,
                                               onChanged: (value) async {
                                                 alternate = !alternate;
-                                                await updateTicketStream();
+                                                NodeSocketService().sendMessage('getTicket', {});
                                                 setStateCheck((){});
                                               });
                                         },
@@ -1091,7 +1096,8 @@ class _StaffSessionState extends State<StaffSession> {
 
                                       SizedBox(width: 5),
                                       IconButton(onPressed: () async {
-                                        await updateTicketStream(1);
+                                        NodeSocketService().sendMessage('getTicket', {});
+                                        swap = !swap;
                                       }, icon: Icon(Icons.change_circle_outlined))
                                     ],
                                   ),
@@ -1147,7 +1153,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                             title: Text(callByList[i]),
                                                                             onTap: () {
                                                                               callBy = callByList[i];
-                                                                              updateTicketStream();
+                                                                              NodeSocketService().sendMessage('getTicket', {});
                                                                               Navigator.pop(context);
                                                                             },
                                                                           );
