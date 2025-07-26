@@ -25,7 +25,7 @@ class StaffScreen extends StatefulWidget {
 }
 
 class _StaffScreenState extends State<StaffScreen> {
-  late Timer update;
+  Timer? update;
   int stationChanges = 0;
 
   @override
@@ -64,11 +64,6 @@ class _StaffScreenState extends State<StaffScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    update.cancel();
-    super.dispose();
-  }
 
   List<String> servicesSet = [];
   final dialogKey = GlobalKey();
@@ -693,7 +688,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                                 'id': servingStream.value!.id,
                                                                 'status': 'Done',
                                                                 'timeDone': timestamp,
-                                                                'log': "${servingStream.value!.log}, $timestamp: Ticket Session Finished"
+                                                                'log': "${servingStream.value!.log}, $timestamp: Ticket Session Finished",
+                                                                "userAssigned": widget.user.username,
+                                                                "stationName": widget.station.stationName,
+                                                                "stationNumber": widget.station.stationNumber,
+                                                                "timeTaken": servingStream.value!.timeTaken,
+                                                                "serviceType": servingStream.value!.serviceType,
+                                                                "blinker": servingStream.value!.blinker,
+                                                                "callCheck": servingStream.value!.callCheck
                                                               }
                                                            });
 
@@ -708,13 +710,16 @@ class _StaffSessionState extends State<StaffSession> {
                                                             'type': 'updateTicket',
                                                             'data': {
                                                               "id": ticketStream.value[0].id,
+                                                              'status': 'Serving',
+                                                              'timeDone': "",
+                                                              'log': "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                                               "userAssigned": widget.user.username,
-                                                              "status": "Serving",
                                                               "stationName": widget.station.stationName,
                                                               "stationNumber": widget.station.stationNumber,
-                                                              "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                                               "timeTaken": timestamp,
-                                                              "timeDone": ""
+                                                              "serviceType": ticketStream.value[0].serviceType,
+                                                              "blinker": ticketStream.value[0].blinker,
+                                                              "callCheck": ticketStream.value[0].callCheck
                                                             }
                                                           });
 
@@ -766,13 +771,16 @@ class _StaffSessionState extends State<StaffSession> {
                                                           'type': 'updateTicket',
                                                           'data': {
                                                             "id": ticketStream.value[0].id,
+                                                            'status': 'Serving',
+                                                            'timeDone': "",
+                                                            'log': "${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                                             "userAssigned": widget.user.username,
-                                                            "status": "Serving",
                                                             "stationName": widget.station.stationName,
                                                             "stationNumber": widget.station.stationNumber,
-                                                            "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
                                                             "timeTaken": timestamp,
-                                                            "timeDone": ""
+                                                            "serviceType": ticketStream.value[0].serviceType,
+                                                            "blinker": ticketStream.value[0].blinker,
+                                                            "callCheck": ticketStream.value[0].callCheck
                                                           }
                                                         });
 
@@ -870,10 +878,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   'userAssigned': "",
                                                                                                   'stationName': "",
                                                                                                   'stationNumber': "",
+                                                                                                  'timeTaken': servingStream.value!.timeTaken,
                                                                                                   'timeDone' : "",
                                                                                                   'serviceType': "${service.serviceType}",
-                                                                                                  'callCheck': 0,
-                                                                                                  'blinker': 0
+                                                                                                  'callCheck': servingStream.value!.callCheck,
+                                                                                                  'blinker': servingStream.value!.blinker
                                                                                                 }
                                                                                               });
 
@@ -894,7 +903,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                       "stationName": widget.station.stationName,
                                                                                                       "stationNumber": widget.station.stationNumber,
                                                                                                       "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName}${widget.station.stationNumber} by ${widget.user.username}",
-                                                                                                      "timeTaken": timestamp
+                                                                                                      "timeTaken": timestamp,
+                                                                                                      "timeDone" : "",
+                                                                                                      "serviceType": ticketStream.value[0].serviceType,
+                                                                                                      'callCheck': ticketStream.value[0].callCheck,
+                                                                                                      'blinker': ticketStream.value[0].blinker
                                                                                                     }
                                                                                                   });
 
@@ -925,7 +938,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   }
                                                                                                 });
 
-                                                                                                ticketServingNow = ticketStream.value[0].codeAndNumber!;
+                                                                                                ticketServingNow = "";
+                                                                                                NodeSocketService().sendBatch(dataBatch);
 
                                                                                                 Navigator.pop(context, 1);
                                                                                                 resetRinger();
@@ -1002,10 +1016,16 @@ class _StaffSessionState extends State<StaffSession> {
                                                         'type': 'updateTicket',
                                                         'data': {
                                                           "id": servingStream.value!.id,
-                                                          'blinker': 0,
-                                                          "callCheck": 0,
-                                                          'log':
-                                                          "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
+                                                          "userAssigned": widget.user.username,
+                                                          "status": "Serving",
+                                                          "stationName": widget.station.stationName,
+                                                          "stationNumber": widget.station.stationNumber,
+                                                          "timeTaken": timestamp,
+                                                          "timeDone" : "",
+                                                          "serviceType": servingStream.value!.serviceType,
+                                                          'callCheck': servingStream.value!.callCheck,
+                                                          'blinker': servingStream.value!.blinker,
+                                                          'log': "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
                                                         }
                                                       });
 
@@ -1037,9 +1057,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                                             "id": servingStream.value!.id,
                                                                             "status": 'Released',
                                                                             'log': "${servingStream.value!.log!}, ${DateTime.now()}: Ticket Released",
-                                                                            'userAssigned': "",
-                                                                            'stationName': "",
-                                                                            'stationNumber': "",
+                                                                            "userAssigned": widget.user.username,
+                                                                            "stationName": "",
+                                                                            "stationNumber": "",
+                                                                            "timeTaken": timestamp,
+                                                                            "timeDone" : "",
+                                                                            "serviceType": servingStream.value!.serviceType,
+                                                                            'callCheck': servingStream.value!.callCheck,
+                                                                            'blinker': servingStream.value!.blinker,
                                                                           }
                                                                         });
 

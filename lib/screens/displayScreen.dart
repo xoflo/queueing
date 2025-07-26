@@ -81,6 +81,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
         });
       }
     });
+
+    updateDisplay();
   }
 
 

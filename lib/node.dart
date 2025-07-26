@@ -16,14 +16,19 @@ class NodeSocketService {
 
   late WebSocketChannel _channel;
   late Stream _broadcast;
-  WebSocketChannel get channel => _channel;
-  Stream get stream => _broadcast;
-
   bool _isConnected = false;
   Timer? _reconnectTimer;
+
+  WebSocketChannel get channel => _channel;
+  Stream get stream => _broadcast;
   bool get isConnected => _isConnected;
 
   void connect({BuildContext? context}) {
+    if (_isConnected) {
+      print("🛑 Already connected. Skipping connect().");
+      return;
+    }
+
     final url = 'ws://${site.toString().split(":")[0]}:3000';
     print("🔌 Connecting to $url");
 
@@ -31,7 +36,11 @@ class NodeSocketService {
         ? WebSocketChannel.connect(Uri.parse(url))
         : IOWebSocketChannel.connect(url);
 
-    _broadcast = _channel.stream.asBroadcastStream(); // ✅ FIXED
+    _broadcast = _channel.stream.asBroadcastStream();
+
+    // 🔥 Stop reconnect timer ASAP
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
 
     _broadcast.listen(
           (message) {
@@ -62,7 +71,7 @@ class NodeSocketService {
   }
 
   void _tryReconnect([BuildContext? context]) {
-    if (_reconnectTimer?.isActive ?? false) return;
+    if (_reconnectTimer != null) return;
 
     _reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
       if (!_isConnected) {
@@ -73,6 +82,7 @@ class NodeSocketService {
         print("✅ Reconnected");
         if (context != null) _connected(context);
         _reconnectTimer?.cancel();
+        _reconnectTimer = null;
       }
     });
   }

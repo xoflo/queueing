@@ -43,12 +43,12 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.blueGrey),
       ),
       home: Scaffold(
-        body: FutureBuilder(future: ipHandler(context), builder: (context, AsyncSnapshot<int> snapshot) {
-          return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 2) : BootInterface(type: 2) :
+        body: FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapshot) {
+          return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 0) : BootInterface(type: 0) :
           Stack(
             children: [
               imageBackground(context),
-              logoBackground(context, 500, 500),
+              logoBackground(context, MediaQuery.of(context).size.width < 400 ? 350 : 500, MediaQuery.of(context).size.width < 400 ? 350 : 500),
               Center(
                 child: Container(
                   height: 50,
@@ -85,7 +85,7 @@ autoDisplay(BuildContext context, int i) {
 ipHandler([BuildContext? context]) async {
   try {
     final ip = await getIP();
-    NodeSocketService().connect(context: context);
+    NodeSocketService().connect();
     print(ip);
     final List<dynamic> controls = await getSettings();
     if (controls.isEmpty) {
@@ -116,7 +116,7 @@ class _BootInterfaceState extends State<BootInterface> {
     return Stack(
       children: [
         imageBackground(context),
-        logoBackground(context, 500, 500),
+        logoBackground(context, MediaQuery.of(context).size.width < 500 ? 300 : 500, MediaQuery.of(context).size.width < 500 ? 300 : 500),
         Center(
           child: Opacity(
             opacity: 0.7,
