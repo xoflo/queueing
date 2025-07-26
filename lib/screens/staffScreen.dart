@@ -729,6 +729,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                           ticketServingNow = ticketStream.value[0].codeAndNumber!;
 
                                                           NodeSocketService().sendBatch(dataBatch);
+                                                          swap = !swap;
                                                         }
                                                       } else {
 
@@ -785,6 +786,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                         ticketServingNow = ticketStream.value[0].codeAndNumber!;
                                                         NodeSocketService().sendBatch(dataBatch);
+                                                        swap = !swap;
 
                                                       }
                                                     }  else {
@@ -905,6 +907,9 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   });
 
                                                                                                   ticketServingNow = ticketStream.value[0].codeAndNumber!;
+
+                                                                                                  NodeSocketService().sendBatch(dataBatch);
+                                                                                                  swap = !swap;
 
                                                                                                   Navigator.pop(context, 1);
                                                                                                   resetRinger();
