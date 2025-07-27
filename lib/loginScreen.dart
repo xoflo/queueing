@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
 
-        if (user.loggedIn == null || user.loggedIn!.difference(DateTime.now()).inSeconds < -3) {
+        if (user.loggedIn == null || user.loggedIn == "" || user.loggedIn!.difference(DateTime.now()).inSeconds < -3) {
           if (user.userType == 'Admin') {
             Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen(user: user)));
           }

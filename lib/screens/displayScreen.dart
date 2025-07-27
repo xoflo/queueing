@@ -33,6 +33,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   ValueNotifier<List<Station>> stationStream = ValueNotifier([]);
 
+  Timer? _debounceTimer;
+
 
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
@@ -60,7 +62,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   }
 
-  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -71,13 +72,16 @@ class _DisplayScreenState extends State<DisplayScreen> {
       final json = jsonDecode(message);
       final type = json['type'];
 
-      if (type == 'updateStation') {
-        await updateDisplay();
+      if (type == 'updateTicket') {
+        if (_debounceTimer != null) {
+          _debounceTimer!.cancel();
+        }
+
+        _debounceTimer = Timer(Duration(milliseconds: 1000), () async {
+          await updateDisplay();
+        });
       }
 
-      if (type == 'refresh') {
-        await updateDisplay();
-      }
     });
 
     NodeSocketService().sendMessage('refresh', {});
@@ -176,21 +180,31 @@ class _DisplayScreenState extends State<DisplayScreen> {
             (e) => e.callCheck == 0)
         .toList();
 
+    List<Ticket> ticketsToCall = [];
+
     if (toUpdate.isNotEmpty) {
       for (int i = 0; i < toUpdate.length; i++) {
         await toUpdate[i].update({
           "id": toUpdate[i].id,
           "callCheck": 1,
         });
+
+        ticketsToCall.add(toUpdate[i]);
+      }
+
+      for (int i = 0; i < ticketsToCall.length; i++) {
+
         AudioPlayer player = AudioPlayer();
         player
             .play(AssetSource('sound.mp3'));
-        _speak(toUpdate[i].codeAndNumber!, "${toUpdate[i].stationName!}${toUpdate[i].stationNumber! != 0 ? toUpdate[i].stationNumber! : 0}");
-
+        _speak(ticketsToCall[i].codeAndNumber!, "${ticketsToCall[i].stationName!}${ticketsToCall[i].stationNumber! != 0 ? ticketsToCall[i].stationNumber! : 0}");
       }
+
 
       await updateStations();
     }
+
+    return;
   }
 
   slidingTextSpacer(int vqd) {
@@ -412,7 +426,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             Builder(builder: (context) {
 
                                               Ticket ticket = snapshot.data![0];
-
                                               bool show = true;
 
                                               return ticket.blinker == 0 ?

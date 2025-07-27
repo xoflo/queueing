@@ -22,7 +22,7 @@ class User {
     userType = data['userType'];
     serviceType = data['serviceType'] == null ? [] : stringToList(data['serviceType'].toString());
     username = data['username'];
-    loggedIn = data['loggedIn'] == null ? null : DateTime.parse(data['loggedIn']);
+    loggedIn = data['loggedIn'] == null ||  data['loggedIn'].toString().trim() == "" ? null : DateTime.parse(data['loggedIn']);
     servicesSet = data['servicesSet'] != null || data['servicesSet'] != "" || data['serviceType'] != "[]" ? stringToList(data['servicesSet'].toString()) : null;
     assignedStation = data['assignedStation'] != null ? data['assignedStation'].toString().split("_")[0] : "All";
     assignedStationId = data['assignedStation'] != null ? int.parse(data['assignedStation'].toString().split("_")[1]) : 999;

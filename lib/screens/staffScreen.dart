@@ -415,6 +415,7 @@ class _StaffSessionState extends State<StaffSession> {
 
   updateTicketStream([int? i, dynamic data]) {
     List<Ticket> retrievedTickets = getTicket('filtered', data);
+    ticketStream.value = [];
     ticketStream.value = retrievedTickets;
     if (i == 1) {
       swap = !swap;
@@ -441,6 +442,10 @@ class _StaffSessionState extends State<StaffSession> {
       final dynamic data = json['data'];
 
       print(type);
+
+      if (type == 'batchDenied') {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Action denied. Ticket already taken.")));
+      }
 
       if (type == 'getTicket') {
         updateTicketStream(null, data);
@@ -697,10 +702,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                                 "stationNumber": widget.station.stationNumber,
                                                                 "timeTaken": servingStream.value!.timeTaken,
                                                                 "serviceType": servingStream.value!.serviceType,
-                                                                "blinker": servingStream.value!.blinker,
-                                                                "callCheck": servingStream.value!.callCheck
+                                                                "blinker": 1,
+                                                                "callCheck": 1
                                                               }
                                                            });
+
 
                                                       if (ticketStream.value.isNotEmpty) {
                                                         if (ticketStream.value[0]
@@ -785,8 +791,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                             "stationNumber": widget.station.stationNumber!,
                                                             "timeTaken": timestamp,
                                                             "serviceType": ticketStream.value[0].serviceType!,
-                                                            "blinker": ticketStream.value[0].blinker!,
-                                                            "callCheck": ticketStream.value[0].callCheck!
+                                                            "blinker": 0,
+                                                            "callCheck": 0
                                                           }
                                                         });
 
@@ -888,8 +894,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   'timeTaken': servingStream.value!.timeTaken!,
                                                                                                   'timeDone' : "",
                                                                                                   'serviceType': service.serviceType!,
-                                                                                                  'callCheck': servingStream.value!.callCheck!,
-                                                                                                  'blinker': servingStream.value!.blinker!
+                                                                                                  'callCheck': 0,
+                                                                                                  'blinker': 0
                                                                                                 }
                                                                                               });
 
@@ -906,15 +912,15 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                     'data': {
                                                                                                       "id": ticketStream.value[0].id!,
                                                                                                       "userAssigned": widget.user.username!,
-                                                                                                      "status": "Serving",
+                                                                                                      "status": "Pending",
                                                                                                       "stationName": widget.station.stationName!,
                                                                                                       "stationNumber": widget.station.stationNumber!,
                                                                                                       "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
                                                                                                       "timeTaken": timestamp,
                                                                                                       "timeDone" : "",
                                                                                                       "serviceType": ticketStream.value[0].serviceType!,
-                                                                                                      'callCheck': ticketStream.value[0].callCheck!,
-                                                                                                      'blinker': ticketStream.value[0].blinker!
+                                                                                                      'callCheck': 0,
+                                                                                                      'blinker': 0
                                                                                                     }
                                                                                                   });
 
@@ -933,6 +939,8 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                                                                   Navigator.pop(context, 1);
                                                                                                   resetRinger();
+
+
                                                                                                 }
                                                                                               } else {
                                                                                                 dataBatch.add({
@@ -1409,6 +1417,7 @@ class _StaffSessionState extends State<StaffSession> {
       servingStream.value = null;
       return servings;
     } else {
+      servingStream.value = null;
       servingStream.value = servings[0];
       return servings;
     }
