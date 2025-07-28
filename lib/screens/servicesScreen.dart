@@ -90,7 +90,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             spacing: 5,
             children: [
-
+              FloatingActionButton(
+                  child: Icon(Icons.refresh),
+                  onPressed: ()  {
+                    this.setState((){});
+                  }),
               FloatingActionButton(
                   child: Icon(Icons.wifi),
                   onPressed: () async {

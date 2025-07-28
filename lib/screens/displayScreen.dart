@@ -72,7 +72,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
       final json = jsonDecode(message);
       final type = json['type'];
 
-      if (type == 'updateTicket') {
+      if (type == 'updateStation') {
         if (_debounceTimer != null) {
           _debounceTimer!.cancel();
         }
@@ -82,11 +82,18 @@ class _DisplayScreenState extends State<DisplayScreen> {
         });
       }
 
+      if (type == 'refresh') {
+        await updateDisplay();
+      }
+
+
     });
 
     NodeSocketService().sendMessage('refresh', {});
   }
 
+  final refreshKey = GlobalKey();
+  bool showRefresh = false;
 
 
   @override
@@ -95,63 +102,78 @@ class _DisplayScreenState extends State<DisplayScreen> {
     return PopScope(
       onPopInvokedWithResult: (bool, value) async => false,
       child: Scaffold(
-        body: FutureBuilder(
-          future: getSettings(context, 'Video View (TV)'),
-          builder: (BuildContext context, AsyncSnapshot<dynamic> vqd) {
-            return vqd.connectionState == ConnectionState.done
-                ? Stack(
-                    children: [
-                      constraint(context, getBackgroundVideoOverlay()),
-                      vqd.data == 1 ?
-                      Container(
-                          height: MediaQuery.of(context).size.height,
-                          width: MediaQuery.of(context).size.width,
-                          color: Colors.white60) : logoBackground(context),
-                      constraint(context, getRainbowOverlay()),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Column(
-                          children: [
-                            constraint(context, Column(
-                              children: [
-                                topNowServingText(vqd.data),
-                                Builder(
-                                  builder: (BuildContext context) {
+        floatingActionButton: StatefulBuilder(
+            key: refreshKey,
+            builder: (context, setStateRefresh) {
+          return showRefresh == true ?  FloatingActionButton(
+              child: Icon(Icons.refresh),
+              onPressed: () {
+            NodeSocketService().sendMessage('refresh', {});
+          }): SizedBox();
+        }),
+        body: GestureDetector(
+          onLongPress: () {
+            showRefresh = !showRefresh;
+            refreshKey.currentState!.setState(() {});
+          },
+          child: FutureBuilder(
+            future: getSettings(context, 'Video View (TV)'),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> vqd) {
+              return vqd.connectionState == ConnectionState.done
+                  ? Stack(
+                      children: [
+                        constraint(context, getBackgroundVideoOverlay()),
+                        vqd.data == 1 ?
+                        Container(
+                            height: MediaQuery.of(context).size.height,
+                            width: MediaQuery.of(context).size.width,
+                            color: Colors.white60) : logoBackground(context),
+                        constraint(context, getRainbowOverlay()),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Column(
+                            children: [
+                              constraint(context, Column(
+                                children: [
+                                  topNowServingText(vqd.data),
+                                  Builder(
+                                    builder: (BuildContext context) {
 
-                                    return vqd.data == 1
-                                        ? videoDisplayWidget()
-                                        : noVideoDisplayWidget();
-                                  },
-                                ),
-                              ],
-                            )),
+                                      return vqd.data == 1
+                                          ? videoDisplayWidget()
+                                          : noVideoDisplayWidget();
+                                    },
+                                  ),
+                                ],
+                              )),
 
-                            vqd.data != 1
-                                ? Container(
-                              height: 200,
-                              decoration: BoxDecoration(
-                            color: hexBlue.withAlpha(150)),
-                            child: Padding(
-                                padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                                child: slidingTextWidget(),
-                            )
-                            ) : SizedBox(),
-                          ],
+                              vqd.data != 1
+                                  ? Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                              color: hexBlue.withAlpha(150)),
+                              child: Padding(
+                                  padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                                  child: slidingTextWidget(),
+                              )
+                              ) : SizedBox(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : Container(
+                      height: MediaQuery.of(context).size.height,
+                      child: Center(
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          child: CircularProgressIndicator(),
                         ),
                       ),
-                    ],
-                  )
-                : Container(
-                    height: MediaQuery.of(context).size.height,
-                    child: Center(
-                      child: Container(
-                        height: 50,
-                        width: 50,
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                  );
-          },
+                    );
+            },
+          ),
         ),
       ),
     );
@@ -183,12 +205,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
     List<Ticket> ticketsToCall = [];
 
     if (toUpdate.isNotEmpty) {
-      for (int i = 0; i < toUpdate.length; i++) {
-        await toUpdate[i].update({
-          "id": toUpdate[i].id,
-          "callCheck": 1,
-        });
+      await updateStations();
 
+      for (int i = 0; i < toUpdate.length; i++) {
         ticketsToCall.add(toUpdate[i]);
       }
 
@@ -199,9 +218,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
             .play(AssetSource('sound.mp3'));
         _speak(ticketsToCall[i].codeAndNumber!, "${ticketsToCall[i].stationName!}${ticketsToCall[i].stationNumber! != 0 ? ticketsToCall[i].stationNumber! : 0}");
       }
-
-
-      await updateStations();
     }
 
     return;
@@ -420,7 +436,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
                                         return (station.ticketServing != "" || station.ticketServing != null) && station.inSession! == 1 ?
                                         FutureBuilder(
-                                          future: getTicketSQL(station.ticketServing),
+                                          future: getTicketSQL(station.ticketServingId),
                                           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
                                             return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ?
                                             Builder(builder: (context) {
@@ -462,12 +478,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                                   final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
 
                                                                   if (show == true) {
-                                                                    final timer = Timer.periodic(Duration(seconds: 10), (callback) {
+                                                                    final timer = Timer(Duration(seconds: 10), () {
                                                                       show = false;
-                                                                      setStateText((){});
+                                                                      if (mounted) {
+                                                                        setStateText((){});
+                                                                      }
                                                                     });
-
-                                                                    timer.cancel();
                                                                   }
 
                                                                   return show == true ? blink : noBlink;
@@ -647,7 +663,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
                           return (station.ticketServing != ""  || station.ticketServing != null) && station.inSession! == 1 ?
                           FutureBuilder(
-                              future: getTicketSQL(station.ticketServing),
+                              future: getTicketSQL(station.ticketServingId),
                               builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
                                 return snapshot.connectionState == ConnectionState.done ?
                                 snapshot.data!.isNotEmpty ?
@@ -695,12 +711,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                         final blink = Blink(AutoSizeText(station.ticketServing!, style: TextStyle(height: 1.25 ,fontWeight: FontWeight.w700, fontSize: 85)));
 
                                                         if (show == true) {
-                                                          final timer = Timer.periodic(Duration(seconds: 10), (callback) {
+                                                          final timer = Timer(Duration(seconds: 10), () {
                                                             show = false;
-                                                            setStateText((){});
+                                                            if (mounted) {
+                                                              setStateText((){});
+                                                            }
                                                           });
-
-                                                          timer.cancel();
                                                         }
 
                                                         return show == true ? blink : noBlink;
@@ -925,7 +941,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
     }
   }
 
-  getTicketSQL([String? codeAndNumber]) async {
+  getTicketSQL([int? ticketServingId]) async {
     final dateNow = DateTime.now();
 
     try {
@@ -945,8 +961,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
       newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
       newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
-      if (codeAndNumber != null) {
-        newTickets = newTickets.where((e) => e.codeAndNumber! == codeAndNumber).toList();
+      if (ticketServingId != null) {
+        newTickets = newTickets.where((e) => e.id == ticketServingId).toList();
       }
 
       return newTickets;
@@ -959,9 +975,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   Future<void> updateBlinker(Ticket ticket) async {
-    ticket.update({
+    await ticket.update({
       'id': ticket.id!,
-      'blinker': 1
+      'blinker': 1,
+      'callCheck': 1
     });
   }
 

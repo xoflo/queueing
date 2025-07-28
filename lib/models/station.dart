@@ -12,6 +12,7 @@ class Station {
   String? stationName;
   String? sessionPing;
   int? displayIndex;
+  int? ticketServingId;
   String? nameAndNumber;
 
 
@@ -32,6 +33,7 @@ class Station {
     stationName = data['stationName'];
     sessionPing = data['sessionPing'];
     displayIndex = data['displayIndex'] != null ? int.parse(data['displayIndex'].toString()) : data['displayIndex'];
+    ticketServingId = data['ticketServingId'] != null ? int.parse(data['ticketServingId'].toString()) : data['ticketServingId'];
 
     nameAndNumber = "${stationName}${stationNumber == 0 ? "" : " $stationNumber"}";
   }
@@ -69,6 +71,7 @@ class Station {
         'stationName': data['stationName'] ?? stationName,
         'sessionPing': data['sessionPing'] ?? sessionPing,
         'displayIndex' : data['displayIndex'] ?? stationNumber,
+        'ticketServingId' : data['ticketServingId'] ?? ticketServingId,
       };
 
       stationNumber = data['stationNumber'] ?? stationNumber;
@@ -78,6 +81,8 @@ class Station {
       sessionPing = data['sessionPing']  ?? sessionPing;
       displayIndex = data['displayIndex'] ?? displayIndex;
       ticketServing = data['ticketServing'] ?? ticketServing;
+      displayIndex = data['displayIndex'] ?? displayIndex;
+      ticketServingId = data['ticketServingId'] ?? ticketServingId;
 
       nameAndNumber = "${stationName}${stationNumber == 0 ? "" : " $stationNumber"}";
 

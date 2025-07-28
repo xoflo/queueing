@@ -148,7 +148,7 @@ class _BootInterfaceState extends State<BootInterface> {
                         final result = await ipHandler(context);
 
                         if (result == 1) {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 0 ? LoginScreen(debug: 0) : widget.type == 1 ? ServicesScreen() : DisplayScreen()));
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 0 ? LoginScreen(debug: 1) : widget.type == 1 ? ServicesScreen() : DisplayScreen()));
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
                         }

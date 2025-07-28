@@ -450,6 +450,7 @@ class _StaffSessionState extends State<StaffSession> {
       if (type == 'getTicket') {
         updateTicketStream(null, data);
         updateServingTicketStream(data);
+        resetRinger();
       }
 
       if (type == 'updateTicket') {
@@ -736,7 +737,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                             'type': 'updateStation',
                                                             'data': {
                                                               'id': widget.station.id!,
-                                                              'ticketServing': ticketStream.value[0].codeAndNumber!
+                                                              'ticketServing': ticketStream.value[0].codeAndNumber!,
+                                                              'ticketServingId': ticketStream.value[0].id!
                                                             }
                                                           });
 
@@ -752,7 +754,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                           'type': 'updateStation',
                                                           'data': {
                                                             'id': widget.station.id!,
-                                                            'ticketServing': ""
+                                                            'ticketServing': "",
+                                                            'ticketServingId': null,
                                                           }
                                                         });
 
@@ -800,7 +803,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                           'type': 'updateStation',
                                                           'data': {
                                                             'id': widget.station.id!,
-                                                            'ticketServing': ticketStream.value[0].codeAndNumber!
+                                                            'ticketServing': ticketStream.value[0].codeAndNumber!,
+                                                            'ticketServingId': ticketStream.value[0].id!
                                                           }
                                                         });
 
@@ -928,7 +932,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                     'type': 'updateStation',
                                                                                                     'data': {
                                                                                                       'id': widget.station.id!,
-                                                                                                      'ticketServing': ticketStream.value[0].codeAndNumber!
+                                                                                                      'ticketServing': ticketStream.value[0].codeAndNumber!,
+                                                                                                      'ticketServingId': ticketStream.value[0].id!
                                                                                                     }
                                                                                                   });
 
@@ -947,7 +952,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   'type': 'updateStation',
                                                                                                   'data': {
                                                                                                     'id': widget.station.id!,
-                                                                                                    'ticketServing': ""
+                                                                                                    'ticketServing': "",
+                                                                                                    'ticketServingId': null
                                                                                                   }
                                                                                                 });
 
@@ -1044,7 +1050,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                         'type': 'updateStation',
                                                         'data': {
                                                           'id': widget.station.id!,
-                                                          'ticketServing': servingStream.value!.codeAndNumber!
+                                                          'ticketServing': servingStream.value!.codeAndNumber!,
+                                                          'ticketServingId': servingStream.value!.id!
                                                         }
                                                       });
 
@@ -1093,7 +1100,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                           'type': 'updateStation',
                                                                           'data': {
                                                                             'id': widget.station.id!,
-                                                                            'ticketServing': ""
+                                                                            'ticketServing': "",
+                                                                            'ticketServingId': null
                                                                           }
                                                                         });
 
