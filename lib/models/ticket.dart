@@ -60,9 +60,8 @@ class Ticket {
 
 
     if ((data['timeTaken'] != null && data['timeTaken'] != "") && (data['timeDone'] != null && data['timeDone'] != "")) {
-      final timeDifference = DateTime.parse(data['timeDone']).difference(DateTime.parse(data['timeTaken']));
+      final timeDifference = DateTime.parse(data['timeDone'].toString()).difference(DateTime.parse(data['timeTaken'].toString()));
       this.servingTime = "${_printDuration(timeDifference)}";
-      print("servingTime: $servingTime");
     } else {
       this.servingTime = null;
     }

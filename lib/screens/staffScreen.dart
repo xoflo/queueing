@@ -742,6 +742,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                             }
                                                           });
 
+                                                          dataBatch.add({
+                                                            'type': 'updateDisplay',
+                                                            'data': {}
+                                                          });
+
                                                           NodeSocketService().sendBatch(dataBatch);
 
                                                           print(dataBatch);
@@ -757,6 +762,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                             'ticketServing': "",
                                                             'ticketServingId': null,
                                                           }
+                                                        });
+
+                                                        dataBatch.add({
+                                                          'type': 'updateDisplay',
+                                                          'data': {}
                                                         });
 
                                                         NodeSocketService().sendBatch(dataBatch);
@@ -806,6 +816,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                             'ticketServing': ticketStream.value[0].codeAndNumber!,
                                                             'ticketServingId': ticketStream.value[0].id!
                                                           }
+                                                        });
+
+                                                        dataBatch.add({
+                                                          'type': 'updateDisplay',
+                                                          'data': {}
                                                         });
 
                                                         NodeSocketService().sendBatch(dataBatch);
@@ -937,6 +952,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                     }
                                                                                                   });
 
+                                                                                                  dataBatch.add({
+                                                                                                    'type': 'updateDisplay',
+                                                                                                    'data': {}
+                                                                                                  });
+
                                                                                                   NodeSocketService().sendBatch(dataBatch);
                                                                                                   swap = !swap;
 
@@ -955,6 +975,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                     'ticketServing': "",
                                                                                                     'ticketServingId': null
                                                                                                   }
+                                                                                                });
+
+                                                                                                dataBatch.add({
+                                                                                                  'type': 'updateDisplay',
+                                                                                                  'data': {}
                                                                                                 });
 
                                                                                                 NodeSocketService().sendBatch(dataBatch);
@@ -1055,6 +1080,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                         }
                                                       });
 
+                                                      dataBatch.add({
+                                                        'type': 'updateDisplay',
+                                                        'data': {}
+                                                      });
+
                                                       NodeSocketService().sendBatch(dataBatch);
 
                                                     } else {
@@ -1103,6 +1133,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                                             'ticketServing': "",
                                                                             'ticketServingId': null
                                                                           }
+                                                                        });
+
+                                                                        dataBatch.add({
+                                                                          'type': 'updateDisplay',
+                                                                          'data': {}
                                                                         });
 
                                                                         NodeSocketService().sendBatch(dataBatch);

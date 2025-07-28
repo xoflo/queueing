@@ -35,6 +35,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   Timer? _debounceTimer;
 
+  List<Ticket> savedTicket = [];
+
 
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
@@ -71,14 +73,16 @@ class _DisplayScreenState extends State<DisplayScreen> {
     NodeSocketService().stream.listen((message) async {
       final json = jsonDecode(message);
       final type = json['type'];
+      final data = json['data'];
 
-      if (type == 'updateStation') {
+      if (type == 'updateDisplay') {
         if (_debounceTimer != null) {
           _debounceTimer!.cancel();
         }
 
         _debounceTimer = Timer(Duration(milliseconds: 1000), () async {
-          await updateDisplay();
+          print("data $data");
+          await updateDisplayNode(data);
         });
       }
 
@@ -95,6 +99,48 @@ class _DisplayScreenState extends State<DisplayScreen> {
   final refreshKey = GlobalKey();
   bool showRefresh = false;
 
+
+  updateDisplayNode(List<dynamic> data) {
+    final List<dynamic> stations = data[0];
+    final List<dynamic> tickets = data[1];
+
+    List<Ticket> ticketList = [];
+    List<Station> stationList = [];
+
+    for (dynamic ticket in tickets) {
+      ticketList.add(Ticket.fromJson(ticket));
+    }
+
+    for (dynamic station in stations) {
+      stationList.add(Station.fromJson(station));
+    }
+
+    savedTicket = ticketList;
+
+    List<Ticket> toUpdate = ticketList
+        .where(
+            (e) => e.callCheck == 0 && e.status == 'Serving')
+        .toList();
+
+    List<Ticket> ticketsToCall = [];
+
+    if (toUpdate.isNotEmpty) {
+
+      for (int i = 0; i < toUpdate.length; i++) {
+        ticketsToCall.add(toUpdate[i]);
+      }
+
+      for (int i = 0; i < ticketsToCall.length; i++) {
+
+        AudioPlayer player = AudioPlayer();
+        player
+            .play(AssetSource('sound.mp3'));
+        _speak(ticketsToCall[i].codeAndNumber!, "${ticketsToCall[i].stationName!}${ticketsToCall[i].stationNumber! != 0 ? ticketsToCall[i].stationNumber! : 0}");
+      }
+    }
+
+    stationStream.value = stationList;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +251,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
     List<Ticket> ticketsToCall = [];
 
     if (toUpdate.isNotEmpty) {
-      await updateStations();
 
       for (int i = 0; i < toUpdate.length; i++) {
         ticketsToCall.add(toUpdate[i]);
@@ -219,6 +264,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
         _speak(ticketsToCall[i].codeAndNumber!, "${ticketsToCall[i].stationName!}${ticketsToCall[i].stationNumber! != 0 ? ticketsToCall[i].stationNumber! : 0}");
       }
     }
+
+    await updateStations();
 
     return;
   }
@@ -434,9 +481,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                       itemBuilder: (context, i) {
                                         Station station = value[i];
 
-                                        return (station.ticketServing != "" || station.ticketServing != null) && station.inSession! == 1 ?
+                                        return (station.ticketServingId != "" || station.ticketServingId != null) && station.inSession! == 1 ?
                                         FutureBuilder(
-                                          future: getTicketSQL(station.ticketServingId),
+                                          future: getTicketSaved(station.ticketServingId),
                                           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
                                             return snapshot.connectionState == ConnectionState.done ? snapshot.data!.isNotEmpty ?
                                             Builder(builder: (context) {
@@ -661,9 +708,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         itemBuilder: (context, i) {
                           final Station station = value[i];
 
-                          return (station.ticketServing != ""  || station.ticketServing != null) && station.inSession! == 1 ?
+                          return (station.ticketServingId != ""  || station.ticketServingId != null) && station.inSession! == 1 ?
                           FutureBuilder(
-                              future: getTicketSQL(station.ticketServingId),
+                              future: getTicketSaved(station.ticketServingId),
                               builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
                                 return snapshot.connectionState == ConnectionState.done ?
                                 snapshot.data!.isNotEmpty ?
@@ -941,6 +988,28 @@ class _DisplayScreenState extends State<DisplayScreen> {
     }
   }
 
+  Future<List<Ticket>> getTicketSaved([int? ticketServingId]) async {
+    try {
+
+      final dateNow = DateTime.now();
+
+      List<Ticket> newTickets = [];
+
+      newTickets = savedTicket.where((e) => e.status == 'Serving').toList();
+      newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
+      newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
+
+      if (ticketServingId != null) {
+        newTickets = newTickets.where((e) => e.id == ticketServingId).toList();
+      }
+
+      return newTickets;
+    } catch(e) {
+      print(e);
+      return [];
+    }
+  }
+
   getTicketSQL([int? ticketServingId]) async {
     final dateNow = DateTime.now();
 
@@ -957,12 +1026,11 @@ class _DisplayScreenState extends State<DisplayScreen> {
         newTickets.add(Ticket.fromJson(sorted[i]));
       }
 
-
-      newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
-      newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
-
       if (ticketServingId != null) {
         newTickets = newTickets.where((e) => e.id == ticketServingId).toList();
+      } else {
+        newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
+        newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
       }
 
       return newTickets;
