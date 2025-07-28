@@ -86,14 +86,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
         });
       }
 
-      if (type == 'refresh') {
-        await updateDisplay();
-      }
-
-
     });
 
-    NodeSocketService().sendMessage('refresh', {});
+    NodeSocketService().sendMessage('updateDisplay', {});
   }
 
   final refreshKey = GlobalKey();
@@ -154,7 +149,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
           return showRefresh == true ?  FloatingActionButton(
               child: Icon(Icons.refresh),
               onPressed: () {
-            NodeSocketService().sendMessage('refresh', {});
+                NodeSocketService().sendMessage('updateDisplay', {});
           }): SizedBox();
         }),
         body: GestureDetector(
