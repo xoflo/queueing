@@ -443,7 +443,7 @@ class _StaffSessionState extends State<StaffSession> {
 
       print(type);
 
-      if (type == 'batchStatus' && json['status'] == 'denied') {
+      if (type == 'batchDenied') {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Action denied. Ticket already taken.")));
       }
 
