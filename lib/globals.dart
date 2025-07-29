@@ -15,6 +15,9 @@ String? size;
 
 Color hexBlue = Color(0xFF216cb8);
 
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+
 
 updateIP(String ip) {
   site = ip;

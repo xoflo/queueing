@@ -764,7 +764,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
    return result;
   }
 
-  getTicketSQL(String serviceType) async {
+  getTicketSQL(String serviceCode) async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
 
@@ -775,7 +775,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           .where((e) =>
               toDateTime(DateTime.parse(e['timeCreated'])) ==
                   toDateTime(DateTime.now()) &&
-              e['serviceType'] == serviceType)
+              e['serviceCode'] == serviceCode)
           .toList();
       List<Ticket> newTickets = [];
 
@@ -798,7 +798,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender]) async {
     final String timestamp = DateTime.now().toString();
 
-    final List<Ticket> tickets = await getTicketSQL(serviceType);
+    final List<Ticket> tickets = await getTicketSQL(serviceCode);
     final thisDay = tickets.where((e) {
       final eDate =
           "${DateTime.parse(e.timeCreated!).day} ${DateTime.parse(e.timeCreated!).month} ${DateTime.parse(e.timeCreated!).year}";
@@ -852,7 +852,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 1
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));

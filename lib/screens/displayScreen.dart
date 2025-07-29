@@ -37,6 +37,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   List<Ticket> savedTicket = [];
 
+  List<Ticket> ticketsToCall = [];
+  bool isPlaying = false;
 
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
@@ -117,25 +119,42 @@ class _DisplayScreenState extends State<DisplayScreen> {
             (e) => e.callCheck == 0 && e.status == 'Serving')
         .toList();
 
-    List<Ticket> ticketsToCall = [];
 
-    if (toUpdate.isNotEmpty) {
-
-      for (int i = 0; i < toUpdate.length; i++) {
-        ticketsToCall.add(toUpdate[i]);
-      }
-
-      for (int i = 0; i < ticketsToCall.length; i++) {
-
-        AudioPlayer player = AudioPlayer();
-        player
-            .play(AssetSource('sound.mp3'));
-        _speak(ticketsToCall[i].codeAndNumber!, "${ticketsToCall[i].stationName!}${ticketsToCall[i].stationNumber! != 0 ? ticketsToCall[i].stationNumber! : 0}");
+    for (Ticket ticket in toUpdate) {
+      if (!ticketsToCall.any((t) => t.id == ticket.id)) {
+        ticketsToCall.add(ticket);
       }
     }
 
+    _playNextTicket();
+
+
+
     stationStream.value = stationList;
   }
+
+  void _playNextTicket() async {
+    if (isPlaying || ticketsToCall.isEmpty) return;
+
+    isPlaying = true;
+    final ticket = ticketsToCall.removeAt(0); // ← this is the ticket to use
+
+    AudioPlayer player = AudioPlayer();
+    await player.play(AssetSource('sound.mp3'));
+
+    await _speak(
+        ticket.codeAndNumber!,
+        "${ticket.stationName!}${ticket.stationNumber != 0 ? ticket.stationNumber! : 0}"
+    );
+
+    isPlaying = false;
+
+    Future.delayed(Duration(milliseconds: 500), () {
+      _playNextTicket(); // Recursively call to play next
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -51,7 +51,7 @@ class NodeSocketService {
 
         if (type == 'ping') {
           print("📡 Ping: $data");
-          if (context != null) _connected(context);
+          if (context != null) _connected();
         }
       },
       onDone: () {
@@ -81,11 +81,11 @@ class NodeSocketService {
     _reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
       if (!_isConnected) {
         print("🔁 Trying to reconnect...");
-        if (context != null) _reconnecting(context);
+        if (context != null) _reconnecting();
         connect(context: context);
       } else {
         print("✅ Reconnected");
-        if (context != null) _connected(context);
+        if (context != null) _connected();
         _reconnectTimer?.cancel();
         _reconnectTimer = null;
       }
@@ -107,23 +107,25 @@ class NodeSocketService {
     }
   }
 
-  void _connected(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+  void _connected() {
+    scaffoldMessengerKey.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
         backgroundColor: Colors.green,
-        content: Text("Connected to Server."),
-      ),
-    );
+        content: Text("✅ Connected to Server."),
+      ));
   }
 
-  void _reconnecting(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.orangeAccent,
-        content: Text("Connecting to Server..."),
-      ),
-    );
+  void _reconnecting() {
+    scaffoldMessengerKey.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        backgroundColor: Colors.orange,
+        content: Text("🔁 Reconnecting to Server..."),
+      ));
   }
+
+
 
   void dispose() {
     _subscription?.cancel();

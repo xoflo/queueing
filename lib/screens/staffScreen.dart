@@ -42,7 +42,7 @@ class _StaffScreenState extends State<StaffScreen> {
 
 
   initUpdate() {
-    update = Timer.periodic(Duration(seconds: 5), (value) async {
+    update = Timer.periodic(Duration(seconds: 15), (value) async {
       NodeSocketService().sendMessage('checkStationSessions', {});
     });
   }
@@ -438,7 +438,7 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
   initPing() {
-    pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
+    pingTimer = Timer.periodic(Duration(seconds: 1), (timer) async {
       NodeSocketService().sendMessage("stationPing", {
         "id": widget.station.id,
         "sessionPing": DateTime.now().toString(),
@@ -917,9 +917,9 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   NodeSocketService().sendBatch(dataBatch);
                                                                                                   swap = !swap;
 
+                                                                                                  Navigator.pop(context, 1);
                                                                                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
 
-                                                                                                  Navigator.pop(context, 1);
                                                                                                   resetRinger();
 
 

@@ -11,24 +11,27 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:queueing/hiveService.dart';
 import 'globals.dart';
 import 'loginScreen.dart';
+
 import 'models/user.dart';
 import 'models/station.dart';
 
 void main() async {
+
+
   WidgetsFlutterBinding.ensureInitialized();
   await WakelockPlus.enable();
   await Hive.initFlutter();
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+  MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       scrollBehavior: ScrollBehavior().copyWith(dragDevices: {
         PointerDeviceKind.mouse,
         PointerDeviceKind.touch,
@@ -70,7 +73,7 @@ class MyApp extends StatelessWidget {
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 0);
+    return LoginScreen(debug: 1);
   }
 
   if (i == 1) {
