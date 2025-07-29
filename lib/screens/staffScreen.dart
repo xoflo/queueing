@@ -34,34 +34,16 @@ class _StaffScreenState extends State<StaffScreen> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    update?.cancel();
+    super.dispose();
+  }
+
+
   initUpdate() {
-    update = Timer.periodic(Duration(seconds: 2), (value) async {
-      final List<dynamic> result = await getStationSQL();
-      List<dynamic> pingSorted =
-          result.where((e) => e['sessionPing'] != "").toList();
-
-      User user = await thisUser();
-
-      final DateTime newTime = DateTime.now();
-      await user.update({'loggedIn': DateTime.now().toString()});
-
-      if (pingSorted.length != stationChanges) {
-        stationChanges = pingSorted.length;
-        setState(() {});
-      }
-
-      for (int i = 0; i < pingSorted.length; i++) {
-        final station = Station.fromJson(pingSorted[i]);
-        final pingDate = DateTime.parse(station.sessionPing!);
-
-        if (newTime.difference(pingDate).inSeconds > 3) {
-          await station
-              .update({'inSession': 0, 'userInSession': "", 'sessionPing': "", 'ticketServing' : ""});
-
-          setState(() {});
-        }
-
-      }
+    update = Timer.periodic(Duration(seconds: 5), (value) async {
+      NodeSocketService().sendMessage('checkStationSessions', {});
     });
   }
 
@@ -380,34 +362,9 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
   initUpdate() {
-    update = Timer.periodic(Duration(seconds: 2), (value) async {
-      final List<dynamic> result = await getStationSQL();
-      List<dynamic> pingSorted =
-      result.where((e) => e['sessionPing'] != "").toList();
-
-      User user = await thisUser();
-
-      final DateTime newTime = DateTime.now();
-      await user.update({'loggedIn': DateTime.now().toString()});
-
-      if (pingSorted.length != stationChanges) {
-        stationChanges = pingSorted.length;
-      }
-
-      for (int i = 0; i < pingSorted.length; i++) {
-        final station = Station.fromJson(pingSorted[i]);
-        final pingDate = DateTime.parse(station.sessionPing!);
-
-        if (newTime.difference(pingDate).inSeconds > 3) {
-          await station
-              .update({'inSession': 0, 'userInSession': "", 'sessionPing': "", 'ticketServing' : ""});
-        }
-
-      }
-
+    update = Timer.periodic(Duration(seconds: 5), (value) async {
+      NodeSocketService().sendMessage('checkStationSessions', {});
     });
-
-    update?.cancel();
   }
 
 
@@ -472,6 +429,7 @@ class _StaffSessionState extends State<StaffSession> {
   @override
   void dispose() {
     pingTimer.cancel();
+    update?.cancel();
     if (ringTimer != null) {
       ringTimer!.cancel();
       ringTimer = null;
@@ -481,16 +439,12 @@ class _StaffSessionState extends State<StaffSession> {
 
   initPing() {
     pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
-      widget.station.ping({
+      NodeSocketService().sendMessage("stationPing", {
+        "id": widget.station.id,
         "sessionPing": DateTime.now().toString(),
         "inSession": 1,
-        "userInSession": widget.user.username,
+        "userInSession": widget.user.username
       });
-
-      final timeControl = await getInactiveTime();
-      inactiveLength = int.parse(timeControl['other']);
-      inactiveOn = int.parse(timeControl['value']);
-
     });
   }
 
@@ -685,7 +639,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                 ],
                                               ),
                                             ),
-                                            onTap: () async {
+                                            onTap: () {
                                               callAgainCounter = 0;
 
                                               final timestamp = DateTime.now().toString();
@@ -897,7 +851,7 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                                                         return ListTile(
                                                                                           title: Text(service.serviceType!),
-                                                                                          onTap: () async {
+                                                                                          onTap: () {
                                                                                             callAgainCounter = 0;
 
                                                                                             try {
@@ -934,7 +888,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                     'data': {
                                                                                                       "id": ticketStream.value[0].id!,
                                                                                                       "userAssigned": widget.user.username!,
-                                                                                                      "status": "Pending",
+                                                                                                      "status": "Serving",
                                                                                                       "stationName": widget.station.stationName!,
                                                                                                       "stationNumber": widget.station.stationNumber!,
                                                                                                       "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
