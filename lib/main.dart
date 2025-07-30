@@ -58,6 +58,7 @@ class MyApp extends StatelessWidget {
                   width: 50,
                   child: CircularProgressIndicator(),
                 ),
+
               ),
             ],
           );
@@ -73,7 +74,7 @@ class MyApp extends StatelessWidget {
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 1);
+    return LoginScreen(debug: 0);
   }
 
   if (i == 1) {

@@ -34,7 +34,8 @@ class NodeSocketService {
 
     _channel = kIsWeb
         ? WebSocketChannel.connect(Uri.parse(url))
-        : IOWebSocketChannel.connect(url);
+        : IOWebSocketChannel.connect(url,
+      pingInterval: Duration(seconds: 10));
 
     _broadcast = _channel.stream.asBroadcastStream();
 
@@ -109,19 +110,19 @@ class NodeSocketService {
 
   void _connected() {
     scaffoldMessengerKey.currentState
-      ?..hideCurrentSnackBar()
+      !..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
         backgroundColor: Colors.green,
-        content: Text("✅ Connected to Server."),
+        content: Text("Connected to Server."),
       ));
   }
 
   void _reconnecting() {
     scaffoldMessengerKey.currentState
-      ?..hideCurrentSnackBar()
+      !..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
         backgroundColor: Colors.orange,
-        content: Text("🔁 Reconnecting to Server..."),
+        content: Text("Reconnecting to Server..."),
       ));
   }
 

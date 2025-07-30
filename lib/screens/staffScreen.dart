@@ -821,12 +821,12 @@ class _StaffSessionState extends State<StaffSession> {
                                                 ],
                                               ),
                                             ),
-                                            onTap: () async {
+                                            onTap: () {
                                               final timestamp =
                                                   DateTime.now().toString();
 
                                               if (servingStream.value != null) {
-                                                await showDialog(
+                                                showDialog(
                                                     context: context,
                                                     builder:
                                                         (_) => AlertDialog(
@@ -918,6 +918,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   swap = !swap;
 
                                                                                                   Navigator.pop(context, 1);
+
                                                                                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
 
                                                                                                   resetRinger();
@@ -942,6 +943,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                 NodeSocketService().sendBatch(dataBatch);
 
                                                                                                 Navigator.pop(context, 1);
+                                                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
+
                                                                                                 resetRinger();
                                                                                               }
 
@@ -1000,7 +1003,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                   ],
                                                 ),
                                               ),
-                                              onTap: () async {
+                                              onTap: () {
                                                 final timestamp =
                                                     DateTime.now().toString();
 
@@ -1064,7 +1067,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                       child: Text(
                                                                           "Release"),
                                                                       onPressed:
-                                                                          () async {
+                                                                          () {
 
                                                                         dataBatch.add({
                                                                           'type': 'updateTicket',
@@ -1099,8 +1102,10 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                                         NodeSocketService().sendBatch(dataBatch);
 
+
                                                                         Navigator.pop(context);
                                                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));
+
                                                                         resetRinger();
                                                                       })
                                                                 ],

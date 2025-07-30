@@ -42,6 +42,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
+    flutterTts.setVolume(1);
     await flutterTts.speak("$code, $teller");
   }
 
@@ -140,6 +141,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
     final ticket = ticketsToCall.removeAt(0); // ← this is the ticket to use
 
     AudioPlayer player = AudioPlayer();
+    player.setVolume(0.7);
+
     await player.play(AssetSource('sound.mp3'));
 
     await _speak(
@@ -153,6 +156,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
       _playNextTicket(); // Recursively call to play next
     });
   }
+
 
 
 
