@@ -364,10 +364,10 @@ class WebVideoPlayer extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<WebVideoPlayer> createState() => _WebVideoPlayerState();
+  State<WebVideoPlayer> createState() => WebVideoPlayerState();
 }
 
-class _WebVideoPlayerState extends State<WebVideoPlayer> {
+class WebVideoPlayerState extends State<WebVideoPlayer> {
   late VideoPlayerController _controller;
   int _currentVideoIndex = 0;
 
@@ -380,7 +380,12 @@ class _WebVideoPlayerState extends State<WebVideoPlayer> {
   Future<void> _initializeAndPlay(String asset) async {
 
 
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoAssets[_currentVideoIndex]))
+    _controller = VideoPlayerController.networkUrl(
+
+        videoPlayerOptions: VideoPlayerOptions(
+          mixWithOthers: true,
+        ),
+        Uri.parse(widget.videoAssets[_currentVideoIndex]))
       ..initialize().then((_) {
         setState(() {}); // refresh after init
         _controller
@@ -397,6 +402,10 @@ class _WebVideoPlayerState extends State<WebVideoPlayer> {
         !_controller.value.isPlaying) {
       _playNextVideo();
     }
+  }
+
+  play() {
+    _controller.play();
   }
 
   Future<void> _playNextVideo() async {
