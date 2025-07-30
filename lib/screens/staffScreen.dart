@@ -389,6 +389,7 @@ class _StaffSessionState extends State<StaffSession> {
       ringTimer = null;
     }
 
+    getInactiveTime();
     initPing();
     initUpdate();
 
@@ -1312,10 +1313,14 @@ class _StaffSessionState extends State<StaffSession> {
 
     final control = response
         .where((e) => e['controlName'] == 'Staff Inactive Beep')
-        .toList()[0];
+        .toList();
 
+    if (control.isNotEmpty) {
+      inactiveLength = int.parse(control[0]['other'].toString());
+      inactiveOn = int.parse(control[0]['value'].toString());
+    }
 
-    return control ?? 0;
+    return;
   }
 
   List<Ticket> getTicket([String? filtered, List<dynamic>? tickets]) {
@@ -1525,8 +1530,8 @@ class _StaffSessionState extends State<StaffSession> {
                 onTap: () {
                   ringerSound.cancel();
                   _stop();
-                  resetRinger();
                   Navigator.pop(context);
+                  resetRinger();
                 },
                 child: Container(
                   height: 150,
@@ -1565,15 +1570,16 @@ class _StaffSessionState extends State<StaffSession> {
       ringTimer = null;
     }
 
-    if (inactiveLength != null && inactiveOn == 1) {
+
+    if (inactiveOn == 1 && inactiveLength != 0) {
       if (servingStream.value == null && ticketStream.value.isNotEmpty) {
         if (ringTimer == null) {
           ringTimer =
               Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {
-            if (dialogOn == false) {
-              inactiveDialog();
-            }
-          });
+                if (dialogOn == false) {
+                  inactiveDialog();
+                }
+              });
         }
       } else {
         if (ringTimer != null) {
