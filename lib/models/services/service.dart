@@ -10,6 +10,7 @@ class Service {
   String? serviceCode;
   String? assignedGroup;
   String? timeCreated;
+  int? displayIndex;
   DateTime? timeCreatedAsDate;
 
 
@@ -19,6 +20,7 @@ class Service {
     this.serviceCode = data['serviceCode'];
     this.assignedGroup = data['assignedGroup'] == null || data['assignedGroup'] == "" ? null : data['assignedGroup'];
     this.timeCreated = data['timeCreated'];
+    this.displayIndex = int.parse(data['displayIndex']);
     this.timeCreatedAsDate = data['timeCreated'] != null ? DateTime.parse(data['timeCreated']) : data['timeCreated'];
 
   }
@@ -30,6 +32,7 @@ class Service {
         'id': data['id'] ?? this.id,
         'serviceType' : data['serviceType'] ?? this.serviceType,
         'serviceCode': data['serviceCode'] ?? this.serviceCode,
+        'displayIndex': data['displayIndex'] ?? this.displayIndex,
         'assignedGroup': data['assignedGroup'] == null || data['assignedGroup'] == "" ? null : data['assignedGroup'],
       };
 

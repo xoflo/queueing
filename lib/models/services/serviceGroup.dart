@@ -11,6 +11,7 @@ class ServiceGroup {
   String? name;
   String? assignedGroup;
   String? timeCreated;
+  int? displayIndex;
   DateTime? timeCreatedAsDate;
 
 
@@ -19,6 +20,7 @@ class ServiceGroup {
     this.name = data['name'];
     this.assignedGroup = data['assignedGroup'];
     this.timeCreated = data['timeCreated'];
+    this.id = int.parse(data['displayIndex']);
     this.timeCreatedAsDate = data['timeCreated'] != null ? DateTime.parse(data['timeCreated']) : null;
   }
 
@@ -30,6 +32,7 @@ class ServiceGroup {
         'id': data['id'] ?? this.id,
         'name' : data['name'] ?? this.name,
         'assignedGroup': data['assignedGroup'] ?? this.assignedGroup,
+        'displayIndex': data['displayIndex'] ?? this.displayIndex,
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');

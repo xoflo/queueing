@@ -1145,7 +1145,8 @@ class _AdminScreenState extends State<AdminScreen> {
                           child: Row(
                             children: [
                               TextButton(onPressed: () {
-                                assignedGroups = lastAssigned.last;                            lastAssigned.removeLast();
+                                assignedGroups = lastAssigned.last;
+                                lastAssigned.removeLast();
                                 setStateList((){});
                               }, child: Row(
                                 children: [
@@ -1163,7 +1164,7 @@ class _AdminScreenState extends State<AdminScreen> {
                           ? Container(
                         padding: EdgeInsets.all(10),
                         height: MediaQuery.of(context).size.height - 200,
-                        child: ListView.builder(
+                        child: ReorderableListView.builder(
                             itemCount: snapshot.data!.length,
                             itemBuilder: (context, i) {
 
@@ -1228,7 +1229,10 @@ class _AdminScreenState extends State<AdminScreen> {
                                     );
                                   }
                               ) ;
-                            }),
+                            }, onReorder: (int oldIndex, int newIndex) {
+
+
+                        }),
                       )
                           : Container(
                         height: 400,
@@ -1305,12 +1309,11 @@ class _AdminScreenState extends State<AdminScreen> {
 
   serviceExistChecker(String serviceType, String serviceCode) async {
     final List<Service> services = await getServiceSQL();
-    final serviceCodeMatch = services.where((e) => e.serviceCode == serviceCode).toList();
-    final serviceTypeMatch = services.where((e) => e.serviceType == serviceType).toList();
+    final serviceCodeMatch = services.where((e) => e.serviceCode == serviceCode && e.serviceType == serviceType).toList();
 
-    final servicesToReturn = serviceCodeMatch + serviceTypeMatch;
 
-    return servicesToReturn;
+    print("matchLnegth: ${serviceCodeMatch.length}");
+    return serviceCodeMatch;
 
   }
 
@@ -1364,7 +1367,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Service Name & Code are Unique")));
                                   }
                               } else {
-                             if (matchService.isNotEmpty && matchService.length == 1) {
+                             if ((matchService.isNotEmpty && matchService.length == 1 && matchService[0].id == service!.id) || (matchService.isEmpty)) {
                                if (serviceType.text.trim() != "" && serviceCode.text.trim() != "") {
                                  final oldName = service!.serviceType!;
 
@@ -1404,10 +1407,22 @@ class _AdminScreenState extends State<AdminScreen> {
 
   addServiceSQL() async {
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
+
+    final List<dynamic> services = await getServiceGroupSQL();
+
+    int highestId = 0;
+
+    for (int i = 0; i < services.length; i++) {
+      if (int.parse(services[i]['id']) > highestId) {
+        highestId = int.parse(services[i]['id']);
+      }
+    }
+
     final body = jsonEncode({
       'serviceType': serviceType.text,
       'serviceCode': serviceCode.text,
       'assignedGroup' : assignedGroups,
+      'displayIndex': highestId + 1
     });
 
 
