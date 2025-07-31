@@ -30,7 +30,6 @@ class _StaffScreenState extends State<StaffScreen> {
 
   @override
   void initState() {
-    initUpdate();
     super.initState();
   }
 
@@ -38,13 +37,6 @@ class _StaffScreenState extends State<StaffScreen> {
   void dispose() {
     update?.cancel();
     super.dispose();
-  }
-
-
-  initUpdate() {
-    update = Timer.periodic(Duration(seconds: 15), (value) async {
-      NodeSocketService().sendMessage('checkStationSessions', {});
-    });
   }
 
 
@@ -361,12 +353,6 @@ class _StaffSessionState extends State<StaffSession> {
     }
   }
 
-  initUpdate() {
-    update = Timer.periodic(Duration(seconds: 5), (value) async {
-      NodeSocketService().sendMessage('checkStationSessions', {});
-    });
-  }
-
 
   int callAgainCounter = 0;
 
@@ -391,7 +377,6 @@ class _StaffSessionState extends State<StaffSession> {
 
     getInactiveTime();
     initPing();
-    initUpdate();
 
     NodeSocketService().stream.listen((message) async {
 

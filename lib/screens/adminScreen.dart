@@ -1305,14 +1305,12 @@ class _AdminScreenState extends State<AdminScreen> {
 
   serviceExistChecker(String serviceType, String serviceCode) async {
     final List<Service> services = await getServiceSQL();
-    final serviceCodeMatch = services.where((e) => e.serviceCode == serviceCode).toList().length;
-    final serviceTypeMatch = services.where((e) => e.serviceType == serviceType).toList().length;
+    final serviceCodeMatch = services.where((e) => e.serviceCode == serviceCode).toList();
+    final serviceTypeMatch = services.where((e) => e.serviceType == serviceType).toList();
 
-    if (serviceCodeMatch + serviceTypeMatch == 0) {
-      return 1;
-    } else {
-      return 0;
-    }
+    final servicesToReturn = serviceCodeMatch + serviceTypeMatch;
+
+    return servicesToReturn;
 
   }
 
@@ -1357,42 +1355,46 @@ class _AdminScreenState extends State<AdminScreen> {
                   TextButton(onPressed: clearServiceFields, child: Text("Clear")),
                   TextButton(
                       onPressed: () async {
-                        int checkResult = await serviceExistChecker(serviceType.text, serviceCode.text);
+                        List<Service> matchService = await serviceExistChecker(serviceType.text, serviceCode.text);
 
-                        if (checkResult == 1) {
-                          if (i == 0) {
-                            addServiceSQL();
-                          } else {
+                           if (i == 0) {
+                             if (matchService.isEmpty) {
+                                   addServiceSQL();
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Service Name & Code are Unique")));
+                                  }
+                              } else {
+                             if (matchService.isNotEmpty && matchService.length == 1) {
+                               if (serviceType.text.trim() != "" && serviceCode.text.trim() != "") {
+                                 final oldName = service!.serviceType!;
 
-                            if (serviceType.text.trim() != "" && serviceCode.text.trim() != "") {
-                              final oldName = service!.serviceType!;
+                                 service.update({
+                                   'serviceType': serviceType.text.trim(),
+                                   'serviceCode': serviceCode.text.trim(),
+                                   'assignedGroup': service.assignedGroup
+                                 });
 
-                              service.update({
-                                'serviceType': serviceType.text.trim(),
-                                'serviceCode': serviceCode.text.trim(),
-                              });
+                                 final ticket = await getTicketSQL(1);
 
-                              final ticket = await getTicketSQL(1);
+                                 await Future.wait(ticket.where((e) => e.serviceType! == oldName).map((e) async {
+                                   await e.update({
+                                     'serviceType': serviceType.text.trim(),
+                                     'serviceCode': serviceCode.text.trim(),
+                                   });
+                                 }));
 
-                              await Future.wait(ticket.where((e) => e.serviceType! == oldName).map((e) async {
-                                await e.update({
-                                  'serviceType': serviceType.text.trim(),
-                                  'serviceCode': serviceCode.text.trim(),
-                                });
-                              }));
-
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(content: Text("Service Updated")));
-                              setState(() {});
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty.")));
-                            }
-                          }
+                                 Navigator.pop(context);
+                                 ScaffoldMessenger.of(context)
+                                     .showSnackBar(SnackBar(content: Text("Service Updated")));
+                                 setState(() {});
+                               } else {
+                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty.")));
+                               }
+                             } else {
+                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Service Name & Code are Unique")));
+                             }
+                              }
                           clearServiceFields();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Service Name & Code are Unique")));
-                        }
                       },
                       child: Text("${i == 0 ? 'Add' : 'Update'} Service"))
                 ],
@@ -2482,12 +2484,10 @@ class _AdminScreenState extends State<AdminScreen> {
           bt = DateTime.tryParse(b['timeCreated'].toString());
         }
 
-        // Nulls first
         if (at == null && bt != null) return -1;
         if (at != null && bt == null) return 1;
         if (at == null && bt == null) return 0;
 
-        // Oldest to newest
         return at!.compareTo(bt!);
       });
 

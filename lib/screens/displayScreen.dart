@@ -40,14 +40,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
   List<Ticket> ticketsToCall = [];
   bool isPlaying = false;
 
-  final GlobalKey<WebVideoPlayerState> videoKey = GlobalKey<WebVideoPlayerState>();
+  Timer? update;
+
 
 
   Future<void> _speak(String code, String teller) async {
     await Future.delayed(Duration(seconds: 2, milliseconds: 250));
     flutterTts.setVolume(1);
     await flutterTts.speak("$code, $teller");
-    videoKey.currentState?.play();
   }
 
   constraint(BuildContext context, Widget widget) {
@@ -72,9 +72,18 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
 
+  initUpdate() {
+    update = Timer.periodic(Duration(seconds: 5), (value) async {
+      NodeSocketService().sendMessage('checkStationSessions', {});
+    });
+  }
+
+
   @override
   void initState() {
     super.initState();
+
+    initUpdate();
 
     NodeSocketService().stream.listen((message) async {
       final json = jsonDecode(message);
@@ -403,7 +412,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           child: AspectRatio(
                               aspectRatio: 16 / 9,
                               child: WebVideoPlayer(
-                                  key: videoKey,
                                   videoAssets: links, display: 1))),
                     ),
                     SizedBox(height: 10),
