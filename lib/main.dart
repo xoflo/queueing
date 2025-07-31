@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 0);
+    return LoginScreen(debug: 1);
   }
 
   if (i == 1) {
@@ -152,7 +152,7 @@ class _BootInterfaceState extends State<BootInterface> {
                         final result = await ipHandler(context);
 
                         if (result == 1) {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 0 ? LoginScreen(debug: 0) : widget.type == 1 ? ServicesScreen() : DisplayScreen()));
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => widget.type == 0 ? LoginScreen(debug: 1) : widget.type == 1 ? ServicesScreen() : DisplayScreen()));
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
                         }

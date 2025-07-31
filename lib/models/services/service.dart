@@ -29,16 +29,18 @@ class Service {
 
     try {
       final body = {
-        'id': data['id'] ?? this.id,
-        'serviceType' : data['serviceType'] ?? this.serviceType,
-        'serviceCode': data['serviceCode'] ?? this.serviceCode,
-        'displayIndex': data['displayIndex'] ?? this.displayIndex,
+        'id': data['id'] ?? id,
+        'serviceType' : data['serviceType'] ?? serviceType,
+        'serviceCode': data['serviceCode'] ?? serviceCode,
+        'displayIndex': data['displayIndex'] ?? displayIndex,
+        'timeCreated': data['timeCreated'] ?? timeCreated,
         'assignedGroup': data['assignedGroup'] == null || data['assignedGroup'] == "" ? null : data['assignedGroup'],
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_service.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
+      print(response.body);
 
     } catch(e) {
       print(e);

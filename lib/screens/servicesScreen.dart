@@ -949,19 +949,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
         }
       }
 
-      resultsToReturn.sort((a, b) => int.parse(a['id']).compareTo(int.parse(b['id'])));
-
       resultsToReturn.sort((a, b) {
-        final at = b['timeCreated'];
-        final bt = a['timeCreated'];
-
-        if (at == null && bt != null) return 1;  // b before a
-        if (bt == null && at != null) return -1; // a before b
-        if (at != null && bt != null) {
-          return at.compareTo(bt);
-        }
-        return 0;
+        int aIndex = int.tryParse(a['displayIndex'].toString()) ?? 0;
+        int bIndex = int.tryParse(b['displayIndex'].toString()) ?? 0;
+        return aIndex.compareTo(bIndex);
       });
+
 
       return resultsToReturn;
 

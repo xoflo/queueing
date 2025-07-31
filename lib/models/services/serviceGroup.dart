@@ -20,24 +20,25 @@ class ServiceGroup {
     this.name = data['name'];
     this.assignedGroup = data['assignedGroup'];
     this.timeCreated = data['timeCreated'];
-    this.id = int.parse(data['displayIndex']);
+    this.displayIndex = int.parse(data['displayIndex']);
     this.timeCreatedAsDate = data['timeCreated'] != null ? DateTime.parse(data['timeCreated']) : null;
   }
 
   update(dynamic data) async {
-
     try {
-
       final body = {
-        'id': data['id'] ?? this.id,
-        'name' : data['name'] ?? this.name,
-        'assignedGroup': data['assignedGroup'] ?? this.assignedGroup,
-        'displayIndex': data['displayIndex'] ?? this.displayIndex,
+        'id': data['id'] ?? id,
+        'name' : data['name'] ?? name,
+        'assignedGroup': data['assignedGroup'] ?? assignedGroup,
+        'timeCreated': data['timeCreated'] ?? timeCreated,
+        'displayIndex': data['displayIndex'] ?? displayIndex,
       };
 
       final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
 
       final response = await http.put(uri, body: jsonEncode(body));
+
+      print(response.body);
 
     } catch(e) {
       print(e);

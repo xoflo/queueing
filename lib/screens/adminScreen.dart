@@ -1169,6 +1169,7 @@ class _AdminScreenState extends State<AdminScreen> {
                             itemBuilder: (context, i) {
 
                               return snapshot.data![i]['serviceType'] != null ? Builder(
+                                  key: Key('$i'),
                                   builder: (context) {
                                     final service = Service.fromJson(snapshot.data![i]);
                                     return ListTile(
@@ -1199,6 +1200,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     );
                                   }
                               ) : Builder(
+                                key: Key('$i'),
                                   builder: (context) {
                                     final serviceGroup = ServiceGroup.fromJson(snapshot.data![i]);
                                     return ListTile(
@@ -1229,10 +1231,50 @@ class _AdminScreenState extends State<AdminScreen> {
                                     );
                                   }
                               ) ;
-                            }, onReorder: (int oldIndex, int newIndex) {
+                            }, onReorder: (int oldIndex, int newIndex) async {
+                          print("oi: $oldIndex");
+                          print("ni: $newIndex");
+
+                          final items = List<Map<String, dynamic>>.from(snapshot.data!);
+
+                          // Adjust newIndex if dragging down
+                          if (newIndex > oldIndex) {
+                            newIndex -= 1;
+                          }
+
+                          // Move item in the list
+                          final movedItem = items.removeAt(oldIndex);
+                          items.insert(newIndex, movedItem);
+
+                          // Re-assign displayIndex based on new order
+                          for (int i = 0; i < items.length; i++) {
+                            final item = items[i];
+                            if (item['serviceType'] != null) {
+                              final service = Service.fromJson(item);
+                              await service.update({
+                                'displayIndex': i,
+                                'id': service.id!,
+                                'serviceType': service.serviceType!,
+                                'serviceCode': service.serviceCode!,
+                                'timeCreated': service.timeCreated!,
+                                'assignedGroup': service.assignedGroup
+                              });
+                            } else {
+                              final group = ServiceGroup.fromJson(item);
+                              await group.update({
+                                'displayIndex': i,
+                                'name': group.name,
+                                'assignedGroup': group.assignedGroup,
+                                'timeCreated': group.timeCreated,
+                              });
+                            }
+                          }
+
+                          setStateList((){});
+                        },
 
 
-                        }),
+                        ),
                       )
                           : Container(
                         height: 400,
@@ -1358,10 +1400,13 @@ class _AdminScreenState extends State<AdminScreen> {
                   TextButton(onPressed: clearServiceFields, child: Text("Clear")),
                   TextButton(
                       onPressed: () async {
+
+                        print('st: ${serviceType.text} ${serviceCode.text}');
                         List<Service> matchService = await serviceExistChecker(serviceType.text, serviceCode.text);
 
                            if (i == 0) {
                              if (matchService.isEmpty) {
+                               print("matchService is Empty");
                                    addServiceSQL();
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Service Name & Code are Unique")));
@@ -1393,11 +1438,12 @@ class _AdminScreenState extends State<AdminScreen> {
                                } else {
                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty.")));
                                }
+
+                               clearServiceFields();
                              } else {
                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ensure Service Name & Code are Unique")));
                              }
                               }
-                          clearServiceFields();
                       },
                       child: Text("${i == 0 ? 'Add' : 'Update'} Service"))
                 ],
@@ -1406,9 +1452,11 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   addServiceSQL() async {
+    print("addServiceSQL");
+
     final uri = Uri.parse('http://$site/queueing_api/api_service.php');
 
-    final List<dynamic> services = await getServiceGroupSQL();
+    final List<dynamic> services = await getServiceGroups(assignedGroups);
 
     int highestId = 0;
 
@@ -1422,16 +1470,21 @@ class _AdminScreenState extends State<AdminScreen> {
       'serviceType': serviceType.text,
       'serviceCode': serviceCode.text,
       'assignedGroup' : assignedGroups,
-      'displayIndex': highestId + 1
+      'displayIndex': highestId + 1,
+      'timeCreated': DateTime.now().toString()
     });
 
 
     final result = await http.post(uri, body: body);
 
+    print(result.body);
+
     Navigator.pop(context);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Service Added")));
     setState(() {});
+
+    clearServiceFields();
   }
 
   getServiceSQL() async {
@@ -2397,11 +2450,25 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() {});
   }
 
-  addGroup(String name, String assignedGroup) async {
+  addGroup(String name) async {
     final uri = Uri.parse('http://$site/queueing_api/api_serviceGroup.php');
+
+
+    final List<dynamic> services = await getServiceGroups(assignedGroups);
+
+    int highestId = 0;
+
+    for (int i = 0; i < services.length; i++) {
+      if (int.parse(services[i]['id']) > highestId) {
+        highestId = int.parse(services[i]['id']);
+      }
+    }
+
     final body = jsonEncode({
       "name": name,
-      "assignedGroup": assignedGroup
+      "assignedGroup": assignedGroups,
+      "timeCreated": DateTime.now().toString(),
+      "displayIndex": highestId
     });
 
     final result = await http.post(uri, body: body);
@@ -2452,7 +2519,7 @@ class _AdminScreenState extends State<AdminScreen> {
       ),
       actions: [
         TextButton(onPressed: () {
-          addGroup(controller.text, assignedGroups);
+          addGroup(controller.text);
         }, child: Text("Add"))
       ],
     ));
@@ -2483,28 +2550,11 @@ class _AdminScreenState extends State<AdminScreen> {
       }
 
       resultsToReturn.sort((a, b) {
-        DateTime? at;
-        DateTime? bt;
-
-        // Ensure timecreated is a DateTime
-        if (a['timeCreated'] is DateTime) {
-          at = a['timeCreated'];
-        } else if (a['timeCreated'] != null) {
-          at = DateTime.tryParse(a['timeCreated'].toString());
-        }
-
-        if (b['timeCreated'] is DateTime) {
-          bt = b['timeCreated'];
-        } else if (b['timeCreated'] != null) {
-          bt = DateTime.tryParse(b['timeCreated'].toString());
-        }
-
-        if (at == null && bt != null) return -1;
-        if (at != null && bt == null) return 1;
-        if (at == null && bt == null) return 0;
-
-        return at!.compareTo(bt!);
+        int aIndex = int.tryParse(a['displayIndex'].toString()) ?? 0;
+        int bIndex = int.tryParse(b['displayIndex'].toString()) ?? 0;
+        return aIndex.compareTo(bIndex);
       });
+
 
       return resultsToReturn;
 
