@@ -73,10 +73,17 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
   initUpdate() {
-    update = Timer.periodic(Duration(seconds: 5), (value) async {
+    update = Timer.periodic(Duration(seconds: 5), (value) {
       NodeSocketService().sendMessage('checkStationSessions', {});
     });
   }
+
+  @override
+  void dispose() {
+    update!.cancel();
+    super.dispose();
+  }
+
 
 
   @override
@@ -85,7 +92,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
     initUpdate();
 
-    NodeSocketService().stream.listen((message) async {
+    NodeSocketService().stream.listen((message) {
       final json = jsonDecode(message);
       final type = json['type'];
       final data = json['data'];
@@ -95,7 +102,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
           _debounceTimer!.cancel();
         }
 
-        _debounceTimer = Timer(Duration(milliseconds: 1000), () async {
+        _debounceTimer = Timer(Duration(milliseconds: 1000), () {
           print("data $data");
           await updateDisplayNode(data);
         });
