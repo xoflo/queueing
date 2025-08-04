@@ -8,6 +8,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'models/media.dart';
 import 'dart:math' as math;
 import 'package:video_player/video_player.dart';
+import 'package:flutter/services.dart';
 
 String? site;
 String? printer;
@@ -479,6 +480,55 @@ class _BlinkState extends State<Blink> {
     super.dispose();
   }
 }
+
+
+class SimpleBatteryText extends StatefulWidget {
+  const SimpleBatteryText({super.key});
+
+  @override
+  State<SimpleBatteryText> createState() => _SimpleBatteryTextState();
+}
+
+class _SimpleBatteryTextState extends State<SimpleBatteryText> {
+  static const MethodChannel _channel = MethodChannel('battery.channel');
+  int batteryLevel = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _getBatteryLevel();
+  }
+
+  Future<void> _getBatteryLevel() async {
+    try {
+      final result = await _channel.invokeMethod<int>('getBatteryLevel');
+      setState(() {
+        batteryLevel = result ?? -1;
+      });
+    } catch (e) {
+      setState(() {
+        batteryLevel = -1;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 16,
+      right: 16,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        color: Colors.black.withOpacity(0.6),
+        child: Text(
+          batteryLevel == -1 ? 'Battery: ?%' : 'Battery: $batteryLevel%',
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+        ),
+      ),
+    );
+  }
+}
+
 
 
 

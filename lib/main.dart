@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    NodeSocketService().connect(context: context);
     return MaterialApp(
       scaffoldMessengerKey: scaffoldMessengerKey,
       scrollBehavior: ScrollBehavior().copyWith(dragDevices: {
@@ -47,9 +48,10 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         body: FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapshot) {
-          return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 2) : BootInterface(type: 2) :
+          return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 0) : BootInterface(type: 0) :
           Stack(
             children: [
+              imageBackground(context),
               imageBackground(context),
               logoBackground(context, MediaQuery.of(context).size.width < 400 ? 350 : 500, MediaQuery.of(context).size.width < 400 ? 350 : 500),
               Center(

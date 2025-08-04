@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // ✅ Add this
 
 import 'globals.dart';
 
@@ -14,7 +15,7 @@ class NodeSocketService {
 
   late WebSocketChannel _channel;
   late Stream _broadcast;
-  StreamSubscription? _subscription; // ✅ Add this
+  StreamSubscription? _subscription;
   bool _isConnected = false;
   Timer? _reconnectTimer;
 
@@ -23,7 +24,6 @@ class NodeSocketService {
   bool get isConnected => _isConnected;
 
   void connect({BuildContext? context}) {
-    // ❌ Don't rely only on `_isConnected`
     if (_subscription != null) {
       print("🛑 Already listening. Skipping connect().");
       return;
@@ -34,8 +34,7 @@ class NodeSocketService {
 
     _channel = kIsWeb
         ? WebSocketChannel.connect(Uri.parse(url))
-        : IOWebSocketChannel.connect(url,
-      pingInterval: Duration(seconds: 10));
+        : IOWebSocketChannel.connect(url, pingInterval: Duration(seconds: 10));
 
     _broadcast = _channel.stream.asBroadcastStream();
 
@@ -52,7 +51,7 @@ class NodeSocketService {
 
         if (type == 'ping') {
           print("📡 Ping: $data");
-          if (context != null) _connected();
+          _connected(); // 🔄 context no longer needed for this
         }
       },
       onDone: () {
@@ -82,11 +81,11 @@ class NodeSocketService {
     _reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
       if (!_isConnected) {
         print("🔁 Trying to reconnect...");
-        if (context != null) _reconnecting();
+        _reconnecting(); // 🔄 no context needed
         connect(context: context);
       } else {
         print("✅ Reconnected");
-        if (context != null) _connected();
+        _connected();
         _reconnectTimer?.cancel();
         _reconnectTimer = null;
       }
@@ -108,25 +107,28 @@ class NodeSocketService {
     }
   }
 
+  // ✅ Replaced SnackBar with fluttertoast
   void _connected() {
-    scaffoldMessengerKey.currentState
-      !..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text("Connected to Server."),
-      ));
+    Fluttertoast.showToast(
+      msg: "Connected to Server.",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   void _reconnecting() {
-    scaffoldMessengerKey.currentState
-      !..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        backgroundColor: Colors.orange,
-        content: Text("Reconnecting to Server..."),
-      ));
+    Fluttertoast.showToast(
+      msg: "Reconnecting to Server...",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.orange,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
-
-
 
   void dispose() {
     _subscription?.cancel();
@@ -137,4 +139,3 @@ class NodeSocketService {
     _isConnected = false;
   }
 }
-

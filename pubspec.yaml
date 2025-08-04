@@ -55,6 +55,7 @@ dependencies:
   auto_size_text: ^3.0.0
   blinking_text: ^1.0.4
   web_socket_channel: ^3.0.3
+  fluttertoast: ^8.2.12
 
 
 

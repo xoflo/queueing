@@ -88,7 +88,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   @override
   void initState() {
-    super.initState();
 
     initUpdate();
 
@@ -103,14 +102,17 @@ class _DisplayScreenState extends State<DisplayScreen> {
         }
 
         _debounceTimer = Timer(Duration(milliseconds: 1000), () {
-          print("data $data");
-          await updateDisplayNode(data);
+          updateDisplayNode(data);
         });
       }
+
+
 
     });
 
     NodeSocketService().sendMessage('updateDisplay', {});
+
+    super.initState();
   }
 
   final refreshKey = GlobalKey();
@@ -147,8 +149,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
     }
 
     _playNextTicket();
-
-
 
     stationStream.value = stationList;
   }
@@ -191,6 +191,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
           return showRefresh == true ?  FloatingActionButton(
               child: Icon(Icons.refresh),
               onPressed: () {
+                NodeSocketService().connect(context: context);
                 NodeSocketService().sendMessage('updateDisplay', {});
           }): SizedBox();
         }),
