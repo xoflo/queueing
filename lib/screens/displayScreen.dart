@@ -133,6 +133,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
       stationList.add(Station.fromJson(station));
     }
 
+    savedTicket = [];
     savedTicket = ticketList;
 
     List<Ticket> toUpdate = ticketList
@@ -191,6 +192,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
               child: Icon(Icons.refresh),
               onPressed: () async {
                 await clearCache();
+                savedTicket = [];
                 NodeSocketService().connect(context: context);
                 NodeSocketService().sendMessage('updateDisplay', {});
           }): SizedBox();

@@ -108,7 +108,6 @@ class NodeSocketService {
     }
   }
 
-  // ✅ Replaced SnackBar with fluttertoast
   void _connected() {
     Fluttertoast.showToast(
       msg: "Connected to Server.",
