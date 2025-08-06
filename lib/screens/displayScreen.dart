@@ -88,7 +88,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   @override
   void initState() {
-
     initUpdate();
 
     NodeSocketService().stream.listen((message) {
@@ -190,7 +189,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
             builder: (context, setStateRefresh) {
           return showRefresh == true ?  FloatingActionButton(
               child: Icon(Icons.refresh),
-              onPressed: () {
+              onPressed: () async {
+                await clearCache();
                 NodeSocketService().connect(context: context);
                 NodeSocketService().sendMessage('updateDisplay', {});
           }): SizedBox();

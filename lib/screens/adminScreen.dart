@@ -483,16 +483,17 @@ class _AdminScreenState extends State<AdminScreen> {
                                                                     filename: file.name,
                                                                   ));
 
-
-
                                                               List<dynamic> media = await getMedia(context);
                                                               List<dynamic> similar = media.where((e) => e['name'] == file.name).toList();
 
                                                               if (similar.isEmpty) {
-                                                                if (file.size < 524288000) {
-                                                                  final response = await request.send();
+                                                                if (file.size < 2147483648) {
+                                                                  final streamed = await request.send();
+                                                                  final res = await http.Response.fromStream(streamed);
+                                                                  print("Upload response: ${res.body}");
+
                                                                   addMedia(file.name, file.name);
-                                                                  print(response.headers);
+                                                                  print(streamed.headers);
                                                                   setStateList((){});
                                                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${file.name} added to videos")));
                                                                 } else {

@@ -307,6 +307,7 @@ class _StaffSessionState extends State<StaffSession> {
   bool alternate = false;
 
   AudioPlayer player = AudioPlayer();
+  AudioPlayer newplayer = AudioPlayer();
   bool dialogOn = false;
 
   int? inactiveLength;
@@ -360,6 +361,12 @@ class _StaffSessionState extends State<StaffSession> {
     List<Ticket> retrievedTickets = getTicket('filtered', data);
     ticketStream.value = [];
     ticketStream.value = retrievedTickets;
+
+    if (ticketLength != retrievedTickets.length && retrievedTickets.length > ticketLength) {
+      _playNew();
+    }
+
+    ticketLength = retrievedTickets.length;
     if (i == 1) {
       swap = !swap;
     }
@@ -1528,32 +1535,39 @@ class _StaffSessionState extends State<StaffSession> {
     showDialog(
         barrierDismissible: false,
         context: context,
-        builder: (_) => AlertDialog(
-              content: GestureDetector(
-                onTap: () {
-                  ringerSound.cancel();
-                  _stop();
-                  Navigator.pop(context);
-                  resetRinger();
-                },
-                child: Container(
-                  height: 150,
-                  width: 200,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("INACTIVITY DETECTED",
-                          style: TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.w700),
-                          textAlign: TextAlign.center),
-                      Text("Press to Dismiss",
-                          style: TextStyle(fontSize: 15),
-                          textAlign: TextAlign.center),
-                    ],
+        builder: (_) => PopScope(
+          onPopInvokedWithResult: (bool, result) {
+            ringerSound.cancel();
+            _stop();
+            resetRinger();
+          },
+          child: AlertDialog(
+                content: GestureDetector(
+                  onTap: () {
+                    ringerSound.cancel();
+                    _stop();
+                    resetRinger();
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 150,
+                    width: 200,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("INACTIVITY DETECTED",
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.w700),
+                            textAlign: TextAlign.center),
+                        Text("Press to Dismiss",
+                            style: TextStyle(fontSize: 15),
+                            textAlign: TextAlign.center),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ));
+        ));
   }
 
   resetRinger() {
@@ -1596,6 +1610,10 @@ class _StaffSessionState extends State<StaffSession> {
 
   _play() {
     player.play(AssetSource('ringer.mp3'));
+  }
+
+  _playNew() {
+    player.play(AssetSource('newsound.mp3'));
   }
 
   _stop() {

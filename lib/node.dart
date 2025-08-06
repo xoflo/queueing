@@ -78,9 +78,10 @@ class NodeSocketService {
   void _tryReconnect([BuildContext? context]) {
     if (_reconnectTimer != null) return;
 
-    _reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
+    _reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) async {
       if (!_isConnected) {
         print("🔁 Trying to reconnect...");
+        await clearCache();
         _reconnecting(); // 🔄 no context needed
         connect(context: context);
       } else {

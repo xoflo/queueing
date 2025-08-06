@@ -9,6 +9,8 @@ import 'models/media.dart';
 import 'dart:math' as math;
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 String? site;
 String? printer;
@@ -528,6 +530,25 @@ class _SimpleBatteryTextState extends State<SimpleBatteryText> {
     );
   }
 }
+
+
+Future<void> clearCache() async {
+  try {
+    final tempDir = await getTemporaryDirectory();
+
+    if (tempDir.existsSync()) {
+      for (var file in tempDir.listSync()) {
+        try {
+          file.deleteSync(recursive: true);
+        } catch (_) {}
+      }
+      print('✅ Cache cleared.');
+    }
+  } catch (e) {
+    print('❌ Error clearing cache: $e');
+  }
+}
+
 
 
 
