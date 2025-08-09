@@ -1033,12 +1033,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
   Future<List<Ticket>> getTicketSaved([int? ticketServingId]) async {
     try {
 
-      final dateNow = DateTime.now();
-
       List<Ticket> newTickets = [];
 
       newTickets = savedTicket.where((e) => e.status == 'Serving').toList();
-      newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
       newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
       if (ticketServingId != null) {
@@ -1053,7 +1050,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   getTicketSQL([int? ticketServingId]) async {
-    final dateNow = DateTime.now();
 
     try {
 
@@ -1071,7 +1067,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
       if (ticketServingId != null) {
         newTickets = newTickets.where((e) => e.id == ticketServingId).toList();
       } else {
-        newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) && e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1))))).toList();
         newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
       }
 

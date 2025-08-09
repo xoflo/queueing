@@ -92,7 +92,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
             children: [
               FloatingActionButton(
                   child: Icon(Icons.refresh),
-                  onPressed: ()  {
+                  onPressed: () async {
+                    await clearCache();
                     this.setState((){});
                   }),
               FloatingActionButton(
@@ -850,9 +851,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      // value == 1
-
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));

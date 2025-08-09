@@ -12,7 +12,7 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
-String? site;
+String? site = '192.168.110.100:8080';
 String? printer;
 String? size;
 

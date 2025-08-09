@@ -48,7 +48,18 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.blueGrey),
       ),
       home: Scaffold(
-        body: FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapshot) {
+        body: autoDisplay(context, 2),
+      ),
+      // 0: Phone, 1: Kiosk, Display
+      //
+    );
+  }
+
+}
+
+
+/*
+FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapshot) {
           return snapshot.connectionState == ConnectionState.done ? snapshot.data == 1 ? autoDisplay(context, 0) : BootInterface(type: 0) :
           Stack(
             children: [
@@ -65,19 +76,13 @@ class MyApp extends StatelessWidget {
               ),
             ],
           );
-        }),
-      ),
-      // 0: Phone, 1: Kiosk, Display
-      //
-    );
-  }
-
-}
+        })
+ */
 
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 1);
+    return LoginScreen(debug: 0);
   }
 
   if (i == 1) {
