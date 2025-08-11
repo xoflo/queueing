@@ -391,7 +391,7 @@ class _StaffSessionState extends State<StaffSession> {
       final type = json['type'];
       final dynamic data = json['data'];
 
-      print(type);
+
 
       if (type == 'batchStatus') {
         final status = json['status'];

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:fluttertoast/fluttertoast.dart'; // ✅ Add this
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'globals.dart';
 
@@ -24,17 +24,24 @@ class NodeSocketService {
   bool get isConnected => _isConnected;
 
   void connect({BuildContext? context}) {
-    if (_subscription != null) {
-      print("🛑 Already listening. Skipping connect().");
-      return;
-    }
+    // kill any existing subscription and channel before making a new one
+    _subscription?.cancel();
+    _subscription = null;
+    try {
+      _channel.sink.close();
+    } catch (_) {}
+
+    _isConnected = false;
 
     final url = 'ws://${site.toString().split(":")[0]}:3000';
     print("🔌 Connecting to $url");
 
     _channel = kIsWeb
         ? WebSocketChannel.connect(Uri.parse(url))
-        : IOWebSocketChannel.connect(url, pingInterval: Duration(seconds: 10));
+        : IOWebSocketChannel.connect(
+      url,
+      pingInterval: Duration(seconds: 10),
+    );
 
     _broadcast = _channel.stream.asBroadcastStream();
 
@@ -51,7 +58,7 @@ class NodeSocketService {
 
         if (type == 'ping') {
           print("📡 Ping: $data");
-          _connected(); // 🔄 context no longer needed for this
+          _connected();
         }
       },
       onDone: () {
@@ -71,7 +78,10 @@ class NodeSocketService {
     _subscription?.cancel();
     _subscription = null;
 
-    _channel.sink.close();
+    try {
+      _channel.sink.close();
+    } catch (_) {}
+
     _tryReconnect(context);
   }
 
@@ -82,7 +92,7 @@ class NodeSocketService {
       if (!_isConnected) {
         print("🔁 Trying to reconnect...");
         await clearCache();
-        _reconnecting(); // 🔄 no context needed
+        _reconnecting();
         connect(context: context);
       } else {
         print("✅ Reconnected");
@@ -133,7 +143,9 @@ class NodeSocketService {
   void dispose() {
     _subscription?.cancel();
     _subscription = null;
-    _channel.sink.close();
+    try {
+      _channel.sink.close();
+    } catch (_) {}
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
     _isConnected = false;

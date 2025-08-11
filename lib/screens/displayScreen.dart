@@ -105,6 +105,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
         });
       }
 
+      if (type == 'refresh') {
+        setState(() {});
+      }
+
 
 
     });
@@ -164,10 +168,18 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
     await player.play(AssetSource('sound.mp3'));
 
-    await _speak(
-        ticket.codeAndNumber!,
-        "${ticket.stationName!}${ticket.stationNumber != 0 ? ticket.stationNumber! : 0}"
-    );
+    if (ticket.callCheck == 0) {
+      await _speak(
+          ticket.codeAndNumber!,
+          "${ticket.stationName!}${ticket.stationNumber != 0 ? ticket.stationNumber! : 0}"
+      );
+
+      await ticket.update({
+        'id': ticket.id,
+        'callCheck' : 1
+      });
+    }
+
 
     isPlaying = false;
 
@@ -194,6 +206,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                 await clearCache();
                 savedTicket = [];
                 NodeSocketService().connect(context: context);
+                NodeSocketService().sendMessage('refresh', {});
                 NodeSocketService().sendMessage('updateDisplay', {});
           }): SizedBox();
         }),
@@ -523,7 +536,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                       itemBuilder: (context, i) {
                                         Station station = value[i];
 
-                                        return (station.ticketServingId != null && station.ticketServingId != "") && station.inSession == 1 ?
+                                        return station.ticketServingId != null && station.inSession == 1 ?
                                         FutureBuilder(
                                           future: getTicketSaved(station.ticketServingId),
                                           builder: (BuildContext context, AsyncSnapshot<List<Ticket>> snapshot) {
@@ -750,7 +763,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         itemBuilder: (context, i) {
                           final Station station = value[i];
 
-                          return (station.ticketServingId != null && station.ticketServingId != "") && station.inSession == 1 ?
+                          return (station.ticketServingId != null ) && station.inSession == 1 ?
                           FutureBuilder(
                               future: getTicketSaved(station.ticketServingId),
                               builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
@@ -1032,7 +1045,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   Future<List<Ticket>> getTicketSaved([int? ticketServingId]) async {
     try {
-
       List<Ticket> newTickets = [];
 
       newTickets = savedTicket.where((e) => e.status == 'Serving').toList();
@@ -1083,7 +1095,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
     await ticket.update({
       'id': ticket.id!,
       'blinker': 1,
-      'callCheck': 1
     });
   }
 

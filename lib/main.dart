@@ -44,7 +44,6 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Inter',
         colorScheme: ColorScheme.fromSeed(
-
             seedColor: Colors.blueGrey),
       ),
       home: Scaffold(
@@ -54,9 +53,7 @@ class MyApp extends StatelessWidget {
       //
     );
   }
-
 }
-
 
 /*
 FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapshot) {
@@ -78,7 +75,6 @@ FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapsho
           );
         })
  */
-
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {

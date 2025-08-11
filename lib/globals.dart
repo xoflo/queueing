@@ -542,10 +542,8 @@ Future<void> clearCache() async {
           file.deleteSync(recursive: true);
         } catch (_) {}
       }
-      print('✅ Cache cleared.');
     }
   } catch (e) {
-    print('❌ Error clearing cache: $e');
   }
 }
 
