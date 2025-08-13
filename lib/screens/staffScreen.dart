@@ -406,7 +406,7 @@ class _StaffSessionState extends State<StaffSession> {
         resetRinger();
       }
 
-      if (type == 'updateTicket') {
+      if (type == 'updateStation') {
         NodeSocketService().sendMessage('getTicket', {});
       }
 
@@ -443,8 +443,6 @@ class _StaffSessionState extends State<StaffSession> {
 
   @override
   Widget build(BuildContext context) {
-    print("myID: ${widget.station.id}");
-
     return Scaffold(
       body:
           MediaQuery.of(context).size.width < 350 ||
@@ -671,7 +669,6 @@ class _StaffSessionState extends State<StaffSession> {
                                                               }
                                                             });
 
-
                                                             if (ticketStream.value.isNotEmpty) {
                                                               if (ticketStream.value[0]
                                                                   .serviceType! ==
@@ -711,6 +708,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                 });
 
                                                                 NodeSocketService().sendBatch(dataBatch);
+                                                                servingStream.value = null;
 
                                                                 print(dataBatch);
 
@@ -733,6 +731,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                               });
 
                                                               NodeSocketService().sendBatch(dataBatch);
+                                                              servingStream.value = null;
 
                                                               resetRinger();
                                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -926,6 +925,9 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   });
 
                                                                                                   NodeSocketService().sendBatch(dataBatch);
+                                                                                                  servingStream.value = null;
+
+
                                                                                                   swap = !swap;
 
                                                                                                   Navigator.pop(context, 1);
@@ -952,6 +954,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                 });
 
                                                                                                 NodeSocketService().sendBatch(dataBatch);
+                                                                                                servingStream.value = null;
 
                                                                                                 Navigator.pop(context, 1);
                                                                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
@@ -1112,6 +1115,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                         });
 
                                                                         NodeSocketService().sendBatch(dataBatch);
+                                                                        servingStream.value = null;
 
 
                                                                         Navigator.pop(context);

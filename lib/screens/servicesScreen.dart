@@ -211,10 +211,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                               snapshot[i]['serviceType'] !=
                                                 null
                                                 ? Builder(builder: (context) {
-                                              final service =
-                                              Service.fromJson(
-                                                  snapshot
-                                                      [i]);
+                                              final Service service = Service.fromJson(snapshot[i]);
                                               return Padding(
                                                 padding:
                                                 EdgeInsets.all(3),
@@ -801,10 +798,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
     final List<Ticket> tickets = await getTicketSQL(serviceCode);
     final thisDay = tickets.where((e) {
-      final eDate =
-          "${DateTime.parse(e.timeCreated!).day} ${DateTime.parse(e.timeCreated!).month} ${DateTime.parse(e.timeCreated!).year}";
-      final today =
-          "${DateTime.now().day} ${DateTime.now().month} ${DateTime.now().year}";
+      final eDate = toDateTime(e.timeCreatedAsDate!).toString();
+      final today = toDateTime(DateTime.now()).toString();
       return eDate == today;
     }).toList();
 
@@ -851,7 +846,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));

@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.blueGrey),
       ),
       home: Scaffold(
-        body: autoDisplay(context, 2),
+        body: autoDisplay(context, 0),
       ),
       // 0: Phone, 1: Kiosk, Display
       //
@@ -78,7 +78,7 @@ FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapsho
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 0);
+    return LoginScreen(debug: 1);
   }
 
   if (i == 1) {
