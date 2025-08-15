@@ -2594,79 +2594,86 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   Future<List<TicketSession>> getTicketBySession() async {
-    List<Ticket> tickets = await getTicketSQL();
+    List<Ticket> tickets = await getTicketSQL(1);
 
+    // Date filtering
     if (dates.isNotEmpty) {
-      tickets = tickets.where((e) => e.timeCreatedAsDate!.isAfter(dates[0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
+      tickets = tickets.where((e) =>
+      e.timeCreatedAsDate!.isAfter(dates[0]) &&
+          e.timeCreatedAsDate!.isBefore(dates[1])
+      ).toList();
     } else {
-      tickets = tickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(DateTime.now())) && e.timeCreatedAsDate!.isBefore(toDateTime(DateTime.now()).add(Duration(days: 1)))).toList();
+      tickets = tickets.where((e) =>
+      toDateTime(e.timeCreatedAsDate!) == toDateTime(DateTime.now())
+      ).toList();
     }
 
+    // User filter
+    if (users.isNotEmpty) {
+      List<Ticket> userSorted = [];
+      for (final user in users) {
+        userSorted.addAll(tickets.where((e) => e.log!.contains(user)).toList());
+      }
+      tickets = userSorted;
+      print(userSorted.length);
+    }
 
-    if (genders.isNotEmpty) {
+    // Service type filter
+    if (serviceTypes.isNotEmpty) {
+      List<Ticket> serviceSorted = [];
+      for (final type in serviceTypes) {
+        serviceSorted.addAll(tickets.where((e) => e.log!.contains(type)).toList());
+      }
+      tickets = serviceSorted;
+    }
+
+    // Status filter
+    if (statuses.isNotEmpty) {
       List<Ticket> statusSorted = [];
-
-      for (int i = 0; i < genders.length; i++) {
-        statusSorted.addAll(tickets.where((e) => e.status! == genders[i]).toList());
+      for (final status in statuses) {
+        statusSorted.addAll(tickets.where((e) => e.status == status).toList());
       }
       tickets = statusSorted;
     }
 
+    // Gender filter
+    if (genders.isNotEmpty) {
+      List<Ticket> genderSorted = [];
+      for (final gender in genders) {
+        genderSorted.addAll(tickets.where((e) => e.gender == gender).toList());
+      }
+      tickets = genderSorted;
+    }
+
+    // Priority filter
     if (priorities.isNotEmpty) {
       List<Ticket> prioritySorted = [];
-
-      for (int i = 0; i < priorities.length; i++) {
-        prioritySorted.addAll(tickets.where((e) => e.priorityType! == priorities[i]).toList());
+      for (final priority in priorities) {
+        prioritySorted.addAll(tickets.where((e) => e.priorityType == priority).toList());
       }
       tickets = prioritySorted;
     }
 
-    List<TicketSession> sessions = [];
+    // Build sessions with no duplicates
+    final List<TicketSession> sessions = [];
+    final Set<String> seen = {};
 
-    for (int i = 0; i < tickets.length; i++) {
-      sessions.addAll(tickets[i].getSessions());
-    }
-
-    if (users.isNotEmpty) {
-      List<TicketSession> userSorted = [];
-
-      for (int i = 0; i < users.length; i++) {
-        userSorted.addAll(sessions.where((e) => e.staff! == users[i]).toList());
+    for (final ticket in tickets) {
+      for (final session in ticket.getSessions()) {
+        final key = '${session.ticketCodeAndNumber}|'
+            '${session.service}|'
+            '${session.startTime?.toIso8601String()}|'
+            '${session.endTime?.toIso8601String()}|'
+            '${session.staff}';
+        if (seen.add(key)) { // only adds if not in set already
+          sessions.add(session);
+        }
       }
-      sessions = userSorted;
     }
-
-    if (serviceTypes.isNotEmpty) {
-      List<TicketSession> serviceSorted = [];
-
-      for (int i = 0; i < serviceTypes.length; i++) {
-        serviceSorted.addAll(sessions.where((e) => e.service! == serviceTypes[i]).toList());
-      }
-      sessions = serviceSorted;
-    }
-
-    if (statuses.isNotEmpty) {
-      List<TicketSession> statusSorted = [];
-
-      for (int i = 0; i < statuses.length; i++) {
-        statusSorted.addAll(sessions.where((e) => e.status! == statuses[i]).toList());
-      }
-      sessions = statusSorted;
-    }
-
-
-    sessions.forEach((e) {
-      print(e.ticketCodeAndNumber);
-      print(e.service);
-      print(e.duration);
-      print(e.staff);
-      print(e.startTime);
-      print(e.endTime);
-      print("-----");
-    });
 
     return sessions;
   }
+
 
   Future<List<Ticket>> getTicketSQL([int? unsorted]) async {
 
@@ -2725,12 +2732,12 @@ class _AdminScreenState extends State<AdminScreen> {
         }
 
         if (genders.isNotEmpty) {
-          List<Ticket> statusSorted = [];
+          List<Ticket> genderSorted = [];
 
           for (int i = 0; i < genders.length; i++) {
-            statusSorted.addAll(newTickets.where((e) => e.status! == genders[i]).toList());
+            genderSorted.addAll(newTickets.where((e) => e.status! == genders[i]).toList());
           }
-          newTickets = statusSorted;
+          newTickets = genderSorted;
         }
       }
 
@@ -2933,7 +2940,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 setStateArchive((){});
                               }, child: Text("Clear")),
                               TextButton(onPressed: () {
-                                displayServiceTypes = serviceTypes.length > 1 ? "2 Services" : serviceTypes[0];
+                                displayServiceTypes = serviceTypes.length > 1 ? "${serviceTypes.length} Services" : serviceTypes[0];
                                 Navigator.pop(context);
                                 setStateArchive((){});
                               }, child: Text("Filter"))
@@ -3225,7 +3232,8 @@ class _AdminScreenState extends State<AdminScreen> {
                     ),
                   ),
                 ),
-                showBySession == false ? Padding(
+                showBySession == false
+                    ? Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: FutureBuilder(
                     future: getTicketSQL(),
@@ -3310,92 +3318,91 @@ class _AdminScreenState extends State<AdminScreen> {
                       );
                     },
                   ),
-                ) : Padding(
+                )
+                    : Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: FutureBuilder(
-                    future: getTicketBySession(),
-                    builder: (context, AsyncSnapshot<List<TicketSession>> snapshot) {
-                      return snapshot.connectionState != ConnectionState.done ? Container(
-                        height: MediaQuery.of(context).size.height - 200,
-                        child: Center(
-                          child: Container(
-                            height: 50,
-                            width: 50,
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                      ) : snapshot.data!.isEmpty ? Container(
-                        height: 400,
-                        child: Center(
-                          child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
-                        ),
-                      ): Column(
-                        children: [
-                          SizedBox(height: 5),
-                          Row(
+                      child: FutureBuilder(
+                        future: getTicketBySession(),
+                        builder: (context, AsyncSnapshot<List<TicketSession>> snapshot) {
+                          return snapshot.connectionState != ConnectionState.done ? Container(
+                            height: MediaQuery.of(context).size.height - 200,
+                            child: Center(
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                          ) : snapshot.data!.isEmpty ? Container(
+                            height: 400,
+                            child: Center(
+                              child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
+                            ),
+                          ): Column(
                             children: [
-                              Text("Results: ${snapshot.data!.length} Tickets", style: TextStyle(fontWeight: FontWeight.w700)),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Container(
-                            height: MediaQuery.of(context).size.height - 220,
-                            child: ListView.builder(
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (context, i) {
-                                  final TicketSession ticket = snapshot.data![i];
+                              SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Text("Results: ${snapshot.data!.length} Tickets", style: TextStyle(fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: MediaQuery.of(context).size.height - 220,
+                                child: ListView.builder(
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, i) {
+                                      final TicketSession ticket = snapshot.data![i];
 
-                                  print("$i $ticket");
-
-                                  return ListTile(
-                                    title: Row(
-                                      children: [
-                                        statusColorHandler(ticket.status!),
-                                        Text(" | ${ticket.ticketCodeAndNumber} | ${ticket.service!} | ${ticket.staff!}"),
-                                      ],
-                                    ),
-                                    subtitle: Text("Duration: ${ticket.duration}"),
-                                    onTap: () {
-                                      showDialog(context: context, builder: (_) => AlertDialog(
-                                          content: Container(
-                                            height: 350,
-                                            width: 350,
-                                            child: SingleChildScrollView(
-                                              scrollDirection: Axis.vertical,
-                                              child: Column(
-                                                children: [
-                                                  Text("Start: ${ticket.startTime}, End: ${ticket.endTime}", textAlign: TextAlign.center),
-                                                  Text("${ticket.ticketCodeAndNumber} | ${ticket.service}", style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                      return ListTile(
+                                        title: Row(
+                                          children: [
+                                            statusColorHandler(ticket.status!),
+                                            Text(" | ${ticket.ticketCodeAndNumber} | ${ticket.service!} | ${ticket.staff!}"),
+                                          ],
+                                        ),
+                                        subtitle: Text("Duration: ${ticket.duration}"),
+                                        onTap: () {
+                                          showDialog(context: context, builder: (_) => AlertDialog(
+                                              content: Container(
+                                                height: 350,
+                                                width: 350,
+                                                child: SingleChildScrollView(
+                                                  scrollDirection: Axis.vertical,
+                                                  child: Column(
                                                     children: [
-                                                      statusColorHandler(ticket.status!),
-                                                      Text(" | Priority: ${ticket.priorityType}"),
+                                                      Text("Start: ${ticket.startTime}, End: ${ticket.endTime}", textAlign: TextAlign.center),
+                                                      Text("${ticket.ticketCodeAndNumber} | ${ticket.service}", style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: [
+                                                          statusColorHandler(ticket.status!),
+                                                          Text(" | Priority: ${ticket.priorityType}"),
+                                                        ],
+                                                      ),
+                                                      Text("Duration: ${ticket.duration ?? "None"}"),
+                                                      Text("Gender: ${ticket.gender ?? "None"}"),
+                                                      SizedBox(height: 5),
+                                                      Divider(),
+                                                      SizedBox(height: 5),
+                                                      Align(
+                                                          alignment: Alignment.centerLeft,
+                                                          child: Text("Ticket Log:")),
+                                                      SizedBox(height: 5),
+                                                      Text("${ticket.fullLog!.replaceAll(', ', '\n')}")
                                                     ],
                                                   ),
-                                                  Text("Duration: ${ticket.duration ?? "None"}"),
-                                                  Text("Gender: ${ticket.gender ?? "None"}"),
-                                                  SizedBox(height: 5),
-                                                  Divider(),
-                                                  SizedBox(height: 5),
-                                                  Align(
-                                                      alignment: Alignment.centerLeft,
-                                                      child: Text("Ticket Log:")),
-                                                  SizedBox(height: 5),
-                                                  Text("${ticket.fullLog!.replaceAll(', ', '\n')}")
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                      ));
-                                    },
-                                  );
-                                }),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                                                ),
+                                              )
+                                          ));
+                                        },
+                                      );
+                                    }),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                 ) ,
               ],
             );
