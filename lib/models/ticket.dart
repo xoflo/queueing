@@ -52,7 +52,7 @@ class Ticket {
     this.printStatus = safeConvert(data['printStatus']);
     this.callCheck = safeConvert(data['callCheck']);
     this.ticketName = data['ticketName'];
-    this.codeAndNumber = "${data['serviceCode']}${data['number']}";
+    this.codeAndNumber = "${data['serviceCode'] ?? ""}${data['number'] ?? ""}";
     this.blinker = safeConvert(data['blinker']);
     this.gender = data['gender'];
 
@@ -110,3 +110,167 @@ class Ticket {
   }
 
 }
+
+class TicketSession {
+  final String? ticketCodeAndNumber;
+  final String? gender;
+  final String? priorityType;
+  final String? staff;
+  final String? service;
+  final DateTime? startTime;
+  final DateTime? endTime;
+  final String? duration; // hh:mm:ss format
+  final String? status;
+  final String? fullLog; // entire log
+
+
+  TicketSession({
+    this.ticketCodeAndNumber,
+    this.gender,
+    this.priorityType,
+    this.staff,
+    this.service,
+    this.startTime,
+    this.endTime,
+    this.duration,
+    this.status,
+    this.fullLog,
+  });
+}
+
+extension TicketLogParser on Ticket {
+  List<TicketSession> getSessions() {
+    if (log == null || log!.isEmpty) return [];
+
+    final regex = RegExp(
+      r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+): (.+?)(?:,|$)',
+      multiLine: false,
+    );
+
+    final matches = regex.allMatches(log!);
+    List<TicketSession> sessions = [];
+
+    DateTime? ticketGeneratedTime;
+    DateTime? currentStart;
+    String? currentStaff;
+    String? currentStationName;
+    bool hasServing = false;
+
+    String formatDuration(Duration d) {
+      String twoDigits(int n) => n.toString().padLeft(2, '0');
+      return "${twoDigits(d.inHours)}:"
+          "${twoDigits(d.inMinutes % 60)}:"
+          "${twoDigits(d.inSeconds % 60)}";
+    }
+
+    String safeDuration(DateTime? start, DateTime? end) {
+      if (start != null && end != null) {
+        return formatDuration(end.difference(start));
+      }
+      return "00:00:00";
+    }
+
+    void endSession(DateTime endTime, String status, {String? transferredTo}) {
+      sessions.add(TicketSession(
+        ticketCodeAndNumber: codeAndNumber ?? '',
+        gender: gender,
+        priorityType: priorityType,
+        fullLog: log,
+        staff: currentStaff ?? "None",
+        service: serviceType,
+        startTime: currentStart ?? endTime,
+        endTime: endTime,
+        duration: safeDuration(currentStart, endTime),
+        status: status,
+      ));
+      currentStart = null;
+      currentStaff = null;
+      currentStationName = null;
+      hasServing = false;
+    }
+
+    for (final match in matches) {
+      final timestamp = DateTime.tryParse(match.group(1) ?? '');
+      if (timestamp == null) continue;
+      final message = match.group(2) ?? '';
+
+      if (message.startsWith('ticketGenerated')) {
+        ticketGeneratedTime = timestamp;
+        hasServing = false;
+      }
+
+      else if (message.startsWith('serving on')) {
+        final staffMatch = RegExp(r'serving on (.+?) by (.+)').firstMatch(message);
+        if (staffMatch != null) {
+          currentStationName = staffMatch.group(1);
+          currentStaff = staffMatch.group(2);
+        }
+        currentStart = timestamp; // Serving start time
+        hasServing = true;
+      }
+
+      else if (message.startsWith('ticket transferred to')) {
+        final toMatch = RegExp(r'ticket transferred to (.+)').firstMatch(message);
+        final transferredTo = toMatch != null ? toMatch.group(1) : null;
+
+        if (hasServing) {
+          endSession(timestamp, "Done", transferredTo: transferredTo);
+        } else {
+          // No serving before transfer → pending session
+          sessions.add(TicketSession(
+            ticketCodeAndNumber: codeAndNumber ?? '',
+            gender: gender,
+            priorityType: priorityType,
+            fullLog: log,
+            staff: "None",
+            service: serviceType,
+            startTime: ticketGeneratedTime ?? timestamp,
+            endTime: timestamp,
+            duration: "00:00:00",
+            status: "Pending",
+          ));
+        }
+      }
+
+      else if (message.startsWith('Ticket Released')) {
+        if (hasServing) {
+          endSession(timestamp, "Released");
+        }
+      }
+
+      else if (message.startsWith('Ticket Session Finished')) {
+        if (hasServing) {
+          endSession(timestamp, "Done");
+        }
+      }
+    }
+
+    // If nothing else happened → pending
+    if (sessions.isEmpty && !hasServing) {
+      sessions.add(TicketSession(
+        ticketCodeAndNumber: codeAndNumber ?? '',
+        gender: gender,
+        priorityType: priorityType,
+        fullLog: log,
+        staff: "None",
+        service: serviceType,
+        startTime: ticketGeneratedTime ?? DateTime.now(),
+        endTime: null,
+        duration: "00:00:00",
+        status: 'Pending',
+      ));
+    }
+
+    return sessions;
+  }
+}
+
+
+
+
+
+
+
+
+
+

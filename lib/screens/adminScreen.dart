@@ -58,6 +58,9 @@ class _AdminScreenState extends State<AdminScreen> {
   String? displayGender;
   bool log = false;
 
+
+  bool showBySession = false;
+
   // Service
 
   TextEditingController serviceType = TextEditingController();
@@ -2590,6 +2593,81 @@ class _AdminScreenState extends State<AdminScreen> {
 
   }
 
+  Future<List<TicketSession>> getTicketBySession() async {
+    List<Ticket> tickets = await getTicketSQL();
+
+    if (dates.isNotEmpty) {
+      tickets = tickets.where((e) => e.timeCreatedAsDate!.isAfter(dates[0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
+    } else {
+      tickets = tickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(DateTime.now())) && e.timeCreatedAsDate!.isBefore(toDateTime(DateTime.now()).add(Duration(days: 1)))).toList();
+    }
+
+
+    if (genders.isNotEmpty) {
+      List<Ticket> statusSorted = [];
+
+      for (int i = 0; i < genders.length; i++) {
+        statusSorted.addAll(tickets.where((e) => e.status! == genders[i]).toList());
+      }
+      tickets = statusSorted;
+    }
+
+    if (priorities.isNotEmpty) {
+      List<Ticket> prioritySorted = [];
+
+      for (int i = 0; i < priorities.length; i++) {
+        prioritySorted.addAll(tickets.where((e) => e.priorityType! == priorities[i]).toList());
+      }
+      tickets = prioritySorted;
+    }
+
+    List<TicketSession> sessions = [];
+
+    for (int i = 0; i < tickets.length; i++) {
+      sessions.addAll(tickets[i].getSessions());
+    }
+
+    if (users.isNotEmpty) {
+      List<TicketSession> userSorted = [];
+
+      for (int i = 0; i < users.length; i++) {
+        userSorted.addAll(sessions.where((e) => e.staff! == users[i]).toList());
+      }
+      sessions = userSorted;
+    }
+
+    if (serviceTypes.isNotEmpty) {
+      List<TicketSession> serviceSorted = [];
+
+      for (int i = 0; i < serviceTypes.length; i++) {
+        serviceSorted.addAll(sessions.where((e) => e.service! == serviceTypes[i]).toList());
+      }
+      sessions = serviceSorted;
+    }
+
+    if (statuses.isNotEmpty) {
+      List<TicketSession> statusSorted = [];
+
+      for (int i = 0; i < statuses.length; i++) {
+        statusSorted.addAll(sessions.where((e) => e.status! == statuses[i]).toList());
+      }
+      sessions = statusSorted;
+    }
+
+
+    sessions.forEach((e) {
+      print(e.ticketCodeAndNumber);
+      print(e.service);
+      print(e.duration);
+      print(e.staff);
+      print(e.startTime);
+      print(e.endTime);
+      print("-----");
+    });
+
+    return sessions;
+  }
+
   Future<List<Ticket>> getTicketSQL([int? unsorted]) async {
 
     try {
@@ -2605,7 +2683,7 @@ class _AdminScreenState extends State<AdminScreen> {
       if (unsorted == null) {
 
         if (dates.isNotEmpty) {
-          newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(dates![0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
+          newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(dates[0]) && e.timeCreatedAsDate!.isBefore(dates[1])).toList();
         } else {
           newTickets = newTickets.where((e) => e.timeCreatedAsDate!.isAfter(toDateTime(DateTime.now())) && e.timeCreatedAsDate!.isBefore(toDateTime(DateTime.now()).add(Duration(days: 1)))).toList();
         }
@@ -2656,7 +2734,8 @@ class _AdminScreenState extends State<AdminScreen> {
         }
       }
 
-      newTickets.sort((a,b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
+      newTickets.sort((a, b) => b.timeCreatedAsDate!.compareTo(a.timeCreatedAsDate!));
+
 
       return newTickets;
 
@@ -3114,23 +3193,39 @@ class _AdminScreenState extends State<AdminScreen> {
                                           child: Text("Export"),
                                           onPressed: () async {
                                             final tickets = await getTicketSQL();
+                                            final sessions = await getTicketBySession();
 
-                                            if (tickets.isNotEmpty)  {
-                                              if (fileType == '.XLSX') createExcel(tickets);
-                                              if (fileType == '.PDF') createPDF(paperSize, tickets);
+                                            if (showBySession == false) {
+                                              if (tickets.isNotEmpty)  {
+                                                if (fileType == '.XLSX') createExcel(tickets);
+                                                if (fileType == '.PDF') createPDF(paperSize, tickets);
+                                              }
+                                            } else {
+                                              if (tickets.isNotEmpty)  {
+                                                if (fileType == '.XLSX') createExcelSession(sessions);
+                                                if (fileType == '.PDF') createPDFSession(paperSize, sessions);
+                                              }
                                             }
+
 
                                           })
                                     ],
                                   );
                                 },
                               ));
-                            })
+                            }),
+
+                        StatefulBuilder(builder: (context, setState) {
+                          return TextButton(onPressed: () {
+                            showBySession = !showBySession;
+                            setStateArchive((){});
+                          }, child: Text(showBySession == false ? "Tickets View" : "Sessions View"));
+                        })
                       ],
                     ),
                   ),
                 ),
-                Padding(
+                showBySession == false ? Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: FutureBuilder(
                     future: getTicketSQL(),
@@ -3152,7 +3247,11 @@ class _AdminScreenState extends State<AdminScreen> {
                       ): Column(
                         children: [
                           SizedBox(height: 5),
-                          Text("Results: ${snapshot.data!.length} Tickets", style: TextStyle(fontWeight: FontWeight.w700)),
+                          Row(
+                            children: [
+                              Text("Results: ${snapshot.data!.length} Tickets", style: TextStyle(fontWeight: FontWeight.w700)),
+                            ],
+                          ),
                           SizedBox(height: 5),
                           Container(
                             height: MediaQuery.of(context).size.height - 220,
@@ -3211,7 +3310,93 @@ class _AdminScreenState extends State<AdminScreen> {
                       );
                     },
                   ),
-                ),
+                ) : Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: FutureBuilder(
+                    future: getTicketBySession(),
+                    builder: (context, AsyncSnapshot<List<TicketSession>> snapshot) {
+                      return snapshot.connectionState != ConnectionState.done ? Container(
+                        height: MediaQuery.of(context).size.height - 200,
+                        child: Center(
+                          child: Container(
+                            height: 50,
+                            width: 50,
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ) : snapshot.data!.isEmpty ? Container(
+                        height: 400,
+                        child: Center(
+                          child: Text("No Archives found.", style: TextStyle(color: Colors.grey)),
+                        ),
+                      ): Column(
+                        children: [
+                          SizedBox(height: 5),
+                          Row(
+                            children: [
+                              Text("Results: ${snapshot.data!.length} Tickets", style: TextStyle(fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                          SizedBox(height: 5),
+                          Container(
+                            height: MediaQuery.of(context).size.height - 220,
+                            child: ListView.builder(
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context, i) {
+                                  final TicketSession ticket = snapshot.data![i];
+
+                                  print("$i $ticket");
+
+                                  return ListTile(
+                                    title: Row(
+                                      children: [
+                                        statusColorHandler(ticket.status!),
+                                        Text(" | ${ticket.ticketCodeAndNumber} | ${ticket.service!} | ${ticket.staff!}"),
+                                      ],
+                                    ),
+                                    subtitle: Text("Duration: ${ticket.duration}"),
+                                    onTap: () {
+                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                          content: Container(
+                                            height: 350,
+                                            width: 350,
+                                            child: SingleChildScrollView(
+                                              scrollDirection: Axis.vertical,
+                                              child: Column(
+                                                children: [
+                                                  Text("Start: ${ticket.startTime}, End: ${ticket.endTime}", textAlign: TextAlign.center),
+                                                  Text("${ticket.ticketCodeAndNumber} | ${ticket.service}", style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      statusColorHandler(ticket.status!),
+                                                      Text(" | Priority: ${ticket.priorityType}"),
+                                                    ],
+                                                  ),
+                                                  Text("Duration: ${ticket.duration ?? "None"}"),
+                                                  Text("Gender: ${ticket.gender ?? "None"}"),
+                                                  SizedBox(height: 5),
+                                                  Divider(),
+                                                  SizedBox(height: 5),
+                                                  Align(
+                                                      alignment: Alignment.centerLeft,
+                                                      child: Text("Ticket Log:")),
+                                                  SizedBox(height: 5),
+                                                  Text("${ticket.fullLog!.replaceAll(', ', '\n')}")
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                      ));
+                                    },
+                                  );
+                                }),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ) ,
               ],
             );
           },
@@ -3362,7 +3547,7 @@ class _AdminScreenState extends State<AdminScreen> {
     if (displayServiceTypes != null) serviceTypesPdf = serviceTypes.join(', '); else serviceTypesPdf = "All";
     if (displayPriorities != null) prioritiesPdf = priorities.join(', '); else prioritiesPdf = "All";
     if (displayStatus != null) statusesPdf = statuses.join(', '); else statusesPdf = "All";
-   if (displayGender != null) gendersPdf = genders.join(', '); else gendersPdf = "All";
+    if (displayGender != null) gendersPdf = genders.join(', '); else gendersPdf = "All";
 
 
     widgets.addAll([
@@ -3513,6 +3698,317 @@ class _AdminScreenState extends State<AdminScreen> {
         build: (pw.Context context) {
           return widgets; // Center
         }));
+
+    if (!kIsWeb) {
+      final file = File("OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}");
+      await file.writeAsBytes(await pdf.save());
+      Navigator.pop(context);
+
+    } else {
+      var savedFile = await pdf.save();
+      Navigator.pop(context);
+      List<int> fileInts = List.from(savedFile);
+      web.AnchorElement()
+        ..href = "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(fileInts)}"
+        ..setAttribute("download", "OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}.pdf")
+        ..click();
+    }
+  }
+
+
+  createExcelSession(List<TicketSession> tickets) async {
+    loadWidget();
+
+    var excel = Excel.createExcel();
+    Sheet sheet = excel['Sheet1'];
+
+    String? dateXlsx;
+    String? usersXlsx;
+    String? serviceTypesXlsx;
+    String? prioritiesXlsx;
+    String? statusesXlsx;
+    String? gendersXlsx;
+
+    if (displayDate != null) dateXlsx = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else dateXlsx = "${DateFormat.yMMMMd().format(DateTime.now())}";
+    if (displayUsers != null) usersXlsx = users.join(', '); else usersXlsx = "All";
+    if (displayServiceTypes != null) serviceTypesXlsx = serviceTypes.join(', '); else serviceTypesXlsx = "All";
+    if (displayPriorities != null) prioritiesXlsx = priorities.join(', '); else prioritiesXlsx = "All";
+    if (displayStatus != null) statusesXlsx = statuses.join(', '); else statusesXlsx = "All";
+    if (displayGender != null) gendersXlsx = genders.join(', '); else gendersXlsx = "All";
+
+    sheet.appendRow([
+      TextCellValue('Office of the Ombusdman')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Davao City, Philippines')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Queueing App Report')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Queueing App Report')
+    ]);
+    sheet.appendRow([
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Summary Report:')
+    ]);
+    sheet.appendRow([
+      TextCellValue("Date: $dateXlsx"),
+      TextCellValue("Users: $usersXlsx"),
+      TextCellValue("Services: $serviceTypesXlsx"),
+      TextCellValue("Priority: $prioritiesXlsx"),
+      TextCellValue("Status: $statusesXlsx"),
+      TextCellValue("Status: $gendersXlsx"),
+    ]);
+
+    sheet.appendRow([
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Detailed Report:')
+    ]);
+    sheet.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Date'),
+      TextCellValue('Serving Time'),
+      TextCellValue('Code'),
+      TextCellValue('User'),
+      TextCellValue('Service'),
+      TextCellValue('Priority'),
+      TextCellValue('Status'),
+      TextCellValue('Gender'),
+      log == true ? TextCellValue("Log") : null
+    ]);
+
+    for (int i = 0; i < tickets.length; i++) {
+      sheet.appendRow([
+        IntCellValue(i+1),
+        TextCellValue(DateFormat.yMMMMd().format(tickets[i].startTime!)),
+        TextCellValue(tickets[i].duration ?? "00:00:00"),
+        TextCellValue(tickets[i].ticketCodeAndNumber!),
+        TextCellValue(tickets[i].staff!),
+        TextCellValue(tickets[i].service!),
+        TextCellValue(tickets[i].priorityType!),
+        TextCellValue(tickets[i].status!),
+        TextCellValue(tickets[i].gender!),
+        log == true ? TextCellValue(tickets[i].fullLog!) : null
+      ]
+      );
+    }
+
+
+    if (kIsWeb) {
+      var fileBytes = excel.save(fileName: 'OMBReport_${DateTime.now().millisecondsSinceEpoch}.xlsx');
+      Navigator.pop(context);
+    } else {
+      var fileBytes = excel.save();
+      var directory = await getApplicationDocumentsDirectory();
+
+      File(p.join('$directory/OMBReport_${DateTime.now().millisecondsSinceEpoch}.xlsx'))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(fileBytes!);
+      Navigator.pop(context);
+    }
+  }
+
+  createPDFSession(String size, List<TicketSession> tickets) async {
+    loadWidget();
+
+    final pdf = pw.Document();
+    PdfPageFormat? pageFormat;
+
+    final img = await rootBundle.load('assets/images/logo.png');
+    final imageBytes = img.buffer.asUint8List();
+    pw.Image logoImage = pw.Image(pw.MemoryImage(imageBytes));
+
+    if (size == 'A4') pageFormat = PdfPageFormat.a4;
+    if (size == 'Letter') pageFormat = PdfPageFormat.letter;
+    if (size == '8.5 x 13') pageFormat = PdfPageFormat(612, 936);
+
+    String datePdf = "Today";
+    String usersPdf = "All";
+    String serviceTypesPdf = "All";
+    String prioritiesPdf = "All";
+    String statusesPdf = "All";
+    String gendersPdf = "All";
+
+    List<pw.Widget> widgets = [];
+
+
+    contain(pw.Widget widget) {
+      return pw.Container(
+          height: 20,
+          width: 60,
+          child: widget
+      );
+    }
+
+    center(pw.Widget widget){
+      return pw.Center(
+          child: widget
+      );
+    }
+
+    final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
+
+    if (displayDate != null) datePdf = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"; else datePdf = "${DateFormat.yMMMMd().format(DateTime.now())}";
+    if (displayUsers != null) usersPdf = users.join(', '); else usersPdf = "All";
+    if (displayServiceTypes != null) serviceTypesPdf = serviceTypes.join(', '); else serviceTypesPdf = "All";
+    if (displayPriorities != null) prioritiesPdf = priorities.join(', '); else prioritiesPdf = "All";
+    if (displayStatus != null) statusesPdf = statuses.join(', '); else statusesPdf = "All";
+    if (displayGender != null) gendersPdf = genders.join(', '); else gendersPdf = "All";
+
+
+    widgets.addAll([
+      pw.Column(
+        children: [
+          pw.Container(
+              height: 50,
+              child: logoImage
+          ),
+          pw.SizedBox(height: 10),
+          pw.Text("Office of the Ombudsman", style: bold),
+          pw.Text("Davao City, Philippines", style: bold),
+          pw.Text("Queueing App Report", style: bold),
+          pw.SizedBox(height: 10),
+
+
+          pw.Column(
+              children: [
+                pw.Row(
+                    children: [
+                      pw.Text("Summary Report", style: bold),
+                      pw.SizedBox(width: 5),
+                      pw.Expanded(
+                          child: pw.Divider()
+                      )
+                    ]
+                ),
+                pw.SizedBox(height: 5),
+                pw.Row(
+                    children: [
+                      pw.Text(datePdf),
+                    ]
+                ),
+                pw.Row(
+                    children: [
+                      pw.Text("Users: "),
+                      pw.Text(usersPdf),
+                    ]
+                ),
+                pw.Row(
+                    children: [
+                      pw.Text("Services: "),
+                      pw.Text(serviceTypesPdf),
+                    ]
+                ),
+                pw.Row(
+                    children: [
+                      pw.Text("Priority: "),
+                      pw.Text(prioritiesPdf),
+                    ]
+                ),
+                pw.Row(
+                    children: [
+                      pw.Text("Status: "),
+                      pw.Text(statusesPdf),
+                    ]
+                ),
+                pw.Row(
+                    children: [
+                      pw.Text("Gender: "),
+                      pw.Text(gendersPdf),
+                    ]
+                ),
+                pw.Row(
+                    children: [
+                      pw.Text("Total Tickets: ${tickets.length}")
+                    ]
+                )
+              ]
+          ),
+          pw.SizedBox(height: 5),
+          pw.Row(
+              children: [
+                pw.Text("Detailed Report", style: bold),
+                pw.SizedBox(width: 5),
+                pw.Expanded(
+                    child: pw.Divider()
+                )
+              ]
+          ),
+          pw.SizedBox(height: 5),
+          pw.SizedBox(height: 5),
+          pw.Row(
+              children: [
+                center(pw.Text("#  Date", style: bold)),
+                pw.Spacer(),
+                center(pw.Text("Code", style: bold)),
+                pw.Spacer(),
+                center(pw.Text("User Assigned", style: bold)),
+                pw.Spacer(),
+                center(pw.Text("Service", style: bold)),
+                pw.Spacer(),
+                center(pw.Text("Priority", style: bold)),
+                pw.Spacer(),
+                center(pw.Text("Status", style: bold)),
+                pw.Spacer(),
+                center(pw.Text("Gender", style: bold)),
+
+              ]
+          ),
+          pw.SizedBox(height: 5),
+        ],
+      )
+    ]);
+
+    for (int i = 0; i < tickets.length; i++) {
+      widgets.add(
+          pw.Column(
+              children: [
+                pw.Row(
+                    children: [
+                      pw.Container(
+                          height: 30,
+                          child: pw.Text("${i+1}", style: pw.TextStyle(fontSize: 8))
+                      ),
+                      pw.SizedBox(width: 5),
+                      pw.Column(
+                          children: [
+                            contain(pw.Text(DateFormat.yMMMMd().add_jms().format(tickets[i].startTime!), style: pw.TextStyle(fontSize: 9))),
+                            pw.Text("Served: ${tickets[i].duration}", style: pw.TextStyle(fontSize: 7), textAlign: pw.TextAlign.left),
+                            pw.SizedBox(height: 5),
+                          ]
+                      ),
+                      pw.Spacer(),
+                      contain(pw.Text(tickets[i].ticketCodeAndNumber!.length > 20 ? "${tickets[i].ticketCodeAndNumber!.substring(0, 20).toString()}..." : tickets[i].ticketCodeAndNumber!)),
+                      pw.Spacer(),
+                      contain(pw.Text(tickets[i].staff!.length > 20 ? "${tickets[i].staff!.substring(0, 20).toString()}..." : tickets[i].staff!)),
+                      pw.Spacer(),
+                      contain(pw.Text(tickets[i].service!.length > 20 ? "${tickets[i].service!.substring(0, 20).toString()}..." : tickets[i].service!, style: pw.TextStyle(fontSize: 9), textAlign: pw.TextAlign.left, overflow: pw.TextOverflow.clip)),
+                      pw.Spacer(),
+                      contain(pw.Text(tickets[i].priorityType!)),
+                      pw.Spacer(),
+                      contain(pw.Text(tickets[i].status!)),
+                      pw.Spacer(),
+                      contain(pw.Text(tickets[i].gender!)),
+                    ]),
+                pw.SizedBox(height: 1),
+              ]
+          )
+      );
+    }
+
+
+    pdf.addPage(
+        pw.MultiPage(
+            margin: pw.EdgeInsets.all(30),
+            pageFormat: pageFormat ?? PdfPageFormat.a4,
+            build: (pw.Context context) {
+              return widgets; // Center
+            }));
 
     if (!kIsWeb) {
       final file = File("OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}");
