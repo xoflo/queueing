@@ -119,9 +119,9 @@ class TicketSession {
   final String? service;
   final DateTime? startTime;
   final DateTime? endTime;
-  final String? duration; // hh:mm:ss format
+  final String? duration;
   final String? status;
-  final String? fullLog; // entire log
+  final String? fullLog;
 
 
   TicketSession({
@@ -153,6 +153,7 @@ extension TicketLogParser on Ticket {
     DateTime? ticketGeneratedTime;
     DateTime? currentStart;
     String? currentStaff;
+    String? lastService;
     String? currentStationName;
     bool hasServing = false;
 
@@ -170,14 +171,14 @@ extension TicketLogParser on Ticket {
       return "00:00:00";
     }
 
-    void endSession(DateTime endTime, String status, {String? transferredTo}) {
+    void endSession(DateTime endTime, String status) {
       sessions.add(TicketSession(
         ticketCodeAndNumber: codeAndNumber ?? '',
         gender: gender,
         priorityType: priorityType,
         fullLog: log,
         staff: currentStaff ?? "None",
-        service: serviceType,
+        service: lastService,
         startTime: currentStart ?? endTime,
         endTime: endTime,
         duration: safeDuration(currentStart, endTime),
@@ -196,6 +197,12 @@ extension TicketLogParser on Ticket {
 
       if (message.startsWith('ticketGenerated')) {
         ticketGeneratedTime = timestamp;
+        final genMatch = RegExp(r'ticketGenerated (.+)').firstMatch(message);
+        if (genMatch != null) {
+          lastService = genMatch.group(1); // set first service from log
+        } else {
+          lastService = "${serviceCode}";
+        }
         hasServing = false;
       }
 
@@ -211,10 +218,8 @@ extension TicketLogParser on Ticket {
 
       else if (message.startsWith('ticket transferred to')) {
         final toMatch = RegExp(r'ticket transferred to (.+)').firstMatch(message);
-        final transferredTo = toMatch != null ? toMatch.group(1) : null;
-
         if (hasServing) {
-          endSession(timestamp, "Done", transferredTo: transferredTo);
+          endSession(timestamp, "Done");
         } else {
           // No serving before transfer → pending session
           sessions.add(TicketSession(
@@ -223,13 +228,14 @@ extension TicketLogParser on Ticket {
             priorityType: priorityType,
             fullLog: log,
             staff: "None",
-            service: serviceType,
+            service: lastService,
             startTime: ticketGeneratedTime ?? timestamp,
             endTime: timestamp,
             duration: "00:00:00",
             status: "Pending",
           ));
         }
+        lastService = toMatch != null ? toMatch.group(1) : lastService;
       }
 
       else if (message.startsWith('Ticket Released')) {
@@ -253,7 +259,7 @@ extension TicketLogParser on Ticket {
         priorityType: priorityType,
         fullLog: log,
         staff: "None",
-        service: serviceType,
+        service: lastService,
         startTime: ticketGeneratedTime ?? DateTime.now(),
         endTime: null,
         duration: "00:00:00",
@@ -264,6 +270,7 @@ extension TicketLogParser on Ticket {
     return sessions;
   }
 }
+
 
 
 
