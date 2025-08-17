@@ -2590,7 +2590,6 @@ class _AdminScreenState extends State<AdminScreen> {
     });
 
     final response = await http.post(uri, body: body);
-
   }
 
   Future<List<TicketSession>> getTicketBySession() async {

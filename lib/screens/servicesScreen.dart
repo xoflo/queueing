@@ -42,16 +42,41 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Usbprint? usb;
 
   Timer? timer;
+  Timer? activeServiceTimer;
+
+  List<dynamic> services = [];
 
   @override
   void dispose() {
     timer?.cancel();
+    activeServiceTimer?.cancel();
     super.dispose();
   }
 
   @override
   void initState() {
+
+    NodeSocketService().stream.listen((onData) async {
+      final result = jsonDecode(onData);
+      final type = result['type'];
+      final data = result['data'];
+
+      if (type == 'getActiveServices') {
+        services = [];
+        services = data;
+
+        print(data);
+        print(type);
+
+        if (services != data) {
+          setState(() {});
+        }
+      }
+    });
+
+
     _resetTimer();
+    _getActiveServices();
 
     if (!kIsWeb) {
       if (Platform.isAndroid) {
@@ -60,6 +85,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
 
     super.initState();
+  }
+
+  _getActiveServices() {
+
+    activeServiceTimer = Timer.periodic(Duration(seconds: 5), (callback) {
+      NodeSocketService().sendMessage('getActiveServices', {});
+      NodeSocketService().sendMessage('checkStationSessions', {});
+    });
   }
 
   _resetTimer() {
@@ -237,7 +270,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                         'Gender Option')
                                                         .toList()[0]['value']);
 
-                                                    await addTicketDialog(priority, name, gender, service);
+                                                    if (services.contains(service.serviceType!)) {
+                                                      await addTicketDialog(priority, name, gender, service);
+                                                    } else {
+                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("This service is currently closed.")));
+                                                    }
 
                                                   },
                                                   child: Opacity(
