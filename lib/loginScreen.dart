@@ -234,12 +234,38 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen(user: user)));
           }
           if (user.userType == 'Staff') {
+            final List<dynamic> stations = await _getStationSQL();
+
+            final activeStations = stations.where((s) {
+              final int inSession = s['inSession'] is int
+                  ? s['inSession']
+                  : int.parse(s['inSession'].toString());
+
+              final String userInSession = s['userInSession'].toString();
+              final String sessionPing = s['sessionPing'].toString();
+
+              return inSession == 1 &&
+                  userInSession == user.username &&
+                  sessionPing.isNotEmpty;
+            }).toList();
+
+            if (activeStations.isNotEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("This user is already in a session.")));
+              return; // ⛔ stop login here
+            }
+
+            // ✅ Continue normal flow
             if (user.assignedStationId != 999) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
             } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
             }
           }
+
+
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("This user is currently logged-in")));
         }

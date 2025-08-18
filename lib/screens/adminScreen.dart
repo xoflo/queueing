@@ -2658,7 +2658,7 @@ class _AdminScreenState extends State<AdminScreen> {
     final Set<String> seen = {};
 
     for (final ticket in tickets) {
-      for (final session in ticket.getSessions()) {
+      for (final session in ticket.getSessions(filterUsers: users)) {
         final key = '${session.ticketCodeAndNumber}|'
             '${session.service}|'
             '${session.startTime?.toIso8601String()}|'

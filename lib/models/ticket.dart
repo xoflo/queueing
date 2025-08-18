@@ -139,7 +139,7 @@ class TicketSession {
 }
 
 extension TicketLogParser on Ticket {
-  List<TicketSession> getSessions() {
+  List<TicketSession> getSessions({List<String>? filterUsers}) {
     if (log == null || log!.isEmpty) return [];
 
     final regex = RegExp(
@@ -167,29 +167,42 @@ extension TicketLogParser on Ticket {
     String safeDuration(DateTime? start, DateTime? end, {bool cap24h = false}) {
       if (start != null && end != null) {
         final diff = end.difference(start);
-
         if (cap24h && diff.inHours >= 24) {
           return "24:00:00+";
         }
-
         return formatDuration(diff);
       }
       return "00:00:00";
     }
 
+    void addSession({
+      required DateTime start,
+      DateTime? end,
+      required String status,
+    }) {
+      final staffName = currentStaff ?? "None";
+
+      // 👉 Apply filter (only if list is not null/empty)
+      if (filterUsers == null || filterUsers.isEmpty || filterUsers.contains(staffName)) {
+        sessions.add(TicketSession(
+          ticketCodeAndNumber: codeAndNumber ?? '',
+          gender: gender,
+          priorityType: priorityType,
+          fullLog: log,
+          staff: staffName,
+          service: lastService,
+          startTime: start,
+          endTime: end,
+          duration: safeDuration(start, end ?? DateTime.now(), cap24h: true),
+          status: status,
+        ));
+      }
+    }
+
     void endSession(DateTime endTime, String status) {
-      sessions.add(TicketSession(
-        ticketCodeAndNumber: codeAndNumber ?? '',
-        gender: gender,
-        priorityType: priorityType,
-        fullLog: log,
-        staff: currentStaff ?? "None",
-        service: lastService,
-        startTime: currentStart ?? endTime,
-        endTime: endTime,
-        duration: safeDuration(currentStart, endTime, cap24h: true),
-        status: status,
-      ));
+      if (currentStart != null) {
+        addSession(start: currentStart!, end: endTime, status: status);
+      }
       currentStart = null;
       currentStaff = null;
       currentStationName = null;
@@ -223,23 +236,16 @@ extension TicketLogParser on Ticket {
       }
 
       else if (message.startsWith('ticket transferred to')) {
-        final toMatch = RegExp(r'ticket transferred to (.+)').firstMatch(message);
         if (hasServing) {
           endSession(timestamp, "Done");
         } else {
-          sessions.add(TicketSession(
-            ticketCodeAndNumber: codeAndNumber ?? '',
-            gender: gender,
-            priorityType: priorityType,
-            fullLog: log,
-            staff: "None",
-            service: lastService,
-            startTime: ticketGeneratedTime ?? timestamp,
-            endTime: timestamp,
-            duration: "00:00:00",
+          addSession(
+            start: ticketGeneratedTime ?? timestamp,
+            end: timestamp,
             status: "Pending",
-          ));
+          );
         }
+        final toMatch = RegExp(r'ticket transferred to (.+)').firstMatch(message);
         lastService = toMatch != null ? toMatch.group(1) : lastService;
       }
 
@@ -256,40 +262,21 @@ extension TicketLogParser on Ticket {
       }
     }
 
-    // 👇 Handle cases after parsing all logs
+    // 👇 Handle unfinished sessions
     if (hasServing && currentStart != null) {
-      // Still serving → mark as Serving
-      sessions.add(TicketSession(
-        ticketCodeAndNumber: codeAndNumber ?? '',
-        gender: gender,
-        priorityType: priorityType,
-        fullLog: log,
-        staff: currentStaff ?? "None",
-        service: lastService,
-        startTime: currentStart!,
-        endTime: null,
-        duration: safeDuration(currentStart, DateTime.now(), cap24h: true),
-        status: "Serving",
-      ));
+      addSession(start: currentStart!, status: "Serving");
     } else if (sessions.isEmpty) {
-      // Nothing else happened → Pending
-      sessions.add(TicketSession(
-        ticketCodeAndNumber: codeAndNumber ?? '',
-        gender: gender,
-        priorityType: priorityType,
-        fullLog: log,
-        staff: "None",
-        service: lastService,
-        startTime: ticketGeneratedTime ?? DateTime.now(),
-        endTime: null,
-        duration: "00:00:00",
-        status: 'Pending',
-      ));
+      addSession(
+        start: ticketGeneratedTime ?? DateTime.now(),
+        status: "Pending",
+      );
     }
 
     return sessions;
   }
 }
+
+
 
 
 
