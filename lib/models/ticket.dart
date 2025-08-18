@@ -164,9 +164,15 @@ extension TicketLogParser on Ticket {
           "${twoDigits(d.inSeconds % 60)}";
     }
 
-    String safeDuration(DateTime? start, DateTime? end) {
+    String safeDuration(DateTime? start, DateTime? end, {bool cap24h = false}) {
       if (start != null && end != null) {
-        return formatDuration(end.difference(start));
+        final diff = end.difference(start);
+
+        if (cap24h && diff.inHours >= 24) {
+          return "24:00:00+";
+        }
+
+        return formatDuration(diff);
       }
       return "00:00:00";
     }
@@ -181,7 +187,7 @@ extension TicketLogParser on Ticket {
         service: lastService,
         startTime: currentStart ?? endTime,
         endTime: endTime,
-        duration: safeDuration(currentStart, endTime),
+        duration: safeDuration(currentStart, endTime, cap24h: true),
         status: status,
       ));
       currentStart = null;
@@ -199,7 +205,7 @@ extension TicketLogParser on Ticket {
         ticketGeneratedTime = timestamp;
         final genMatch = RegExp(r'ticketGenerated (.+)').firstMatch(message);
         if (genMatch != null) {
-          lastService = genMatch.group(1); // set first service from log
+          lastService = genMatch.group(1);
         } else {
           lastService = "${serviceCode}";
         }
@@ -212,7 +218,7 @@ extension TicketLogParser on Ticket {
           currentStationName = staffMatch.group(1);
           currentStaff = staffMatch.group(2);
         }
-        currentStart = timestamp; // Serving start time
+        currentStart = timestamp;
         hasServing = true;
       }
 
@@ -221,7 +227,6 @@ extension TicketLogParser on Ticket {
         if (hasServing) {
           endSession(timestamp, "Done");
         } else {
-          // No serving before transfer → pending session
           sessions.add(TicketSession(
             ticketCodeAndNumber: codeAndNumber ?? '',
             gender: gender,
@@ -251,8 +256,23 @@ extension TicketLogParser on Ticket {
       }
     }
 
-    // If nothing else happened → pending
-    if (sessions.isEmpty && !hasServing) {
+    // 👇 Handle cases after parsing all logs
+    if (hasServing && currentStart != null) {
+      // Still serving → mark as Serving
+      sessions.add(TicketSession(
+        ticketCodeAndNumber: codeAndNumber ?? '',
+        gender: gender,
+        priorityType: priorityType,
+        fullLog: log,
+        staff: currentStaff ?? "None",
+        service: lastService,
+        startTime: currentStart!,
+        endTime: null,
+        duration: safeDuration(currentStart, DateTime.now(), cap24h: true),
+        status: "Serving",
+      ));
+    } else if (sessions.isEmpty) {
+      // Nothing else happened → Pending
       sessions.add(TicketSession(
         ticketCodeAndNumber: codeAndNumber ?? '',
         gender: gender,
@@ -270,6 +290,8 @@ extension TicketLogParser on Ticket {
     return sessions;
   }
 }
+
+
 
 
 
