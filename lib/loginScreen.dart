@@ -193,6 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ));
                       }, child: Text("Set IP")),
+                      Text("$version", style: TextStyle(color: Colors.grey))
                     ]
                 ),
               ),
