@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:queueing/globals.dart';
+import 'package:queueing/models/controls.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/screens/adminScreen.dart';
 import 'package:queueing/screens/displayScreen.dart';
@@ -235,27 +236,31 @@ class _LoginScreenState extends State<LoginScreen> {
           }
           if (user.userType == 'Staff') {
             final List<dynamic> stations = await _getStationSQL();
+            final List<Control> controls = await _getControls();
 
-            final activeStations = stations.where((s) {
-              final int inSession = s['inSession'] is int
-                  ? s['inSession']
-                  : int.parse(s['inSession'].toString());
+            final value = controls.where((e) => e.controlName == 'One Session per User').toList()[0].value;
 
-              final String userInSession = s['userInSession'].toString();
-              final String sessionPing = s['sessionPing'].toString();
+            if (value == 1) {
+              final activeStations = stations.where((s) {
+                final int inSession = s['inSession'] is int
+                    ? s['inSession']
+                    : int.parse(s['inSession'].toString());
 
-              return inSession == 1 &&
-                  userInSession == user.username &&
-                  sessionPing.isNotEmpty;
-            }).toList();
+                final String userInSession = s['userInSession'].toString();
+                final String sessionPing = s['sessionPing'].toString();
 
-            if (activeStations.isNotEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("This user is already in a session.")));
-              return; // ⛔ stop login here
+                return inSession == 1 &&
+                    userInSession == user.username &&
+                    sessionPing.isNotEmpty;
+              }).toList();
+
+              if (activeStations.isNotEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("This user is already in a session.")));
+                return;
+              }
             }
 
-            // ✅ Continue normal flow
             if (user.assignedStationId != 999) {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
@@ -274,6 +279,26 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch(e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong. (${site == null || site == "" ? "No IP" : site})")));
       print(e);
+    }
+  }
+
+
+  Future<List<Control>> _getControls() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
+      final result = await http.get(uri);
+      final List<dynamic> response = jsonDecode(result.body);
+
+      List<Control> controls = [];
+
+      for (int i = 0; i < response.length; i++) {
+        controls.add(Control.fromJson(response[i]));
+      }
+
+      return controls;
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 

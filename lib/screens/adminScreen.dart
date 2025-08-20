@@ -1104,7 +1104,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                                         }, child: Text("Update"))
                                                   ],
                                                 ));
-                                              }, child: Text("Set Time")) : SizedBox()
+                                              }, child: Text("Set Time")) : SizedBox(),
                                             ],
                                           ),
                                           trailing: Switch(value: control.value! == 1, onChanged: (value) {

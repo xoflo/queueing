@@ -382,6 +382,11 @@ class _StaffSessionState extends State<StaffSession> {
       ringTimer = null;
     }
 
+    NodeSocketService().sendMessage("identify", {
+      "userId": widget.user.id,
+      "userInSession": widget.user.username,
+    });
+
     getInactiveTime();
     initPing();
 
@@ -421,6 +426,11 @@ class _StaffSessionState extends State<StaffSession> {
 
   @override
   void dispose() {
+    NodeSocketService().sendMessage("exit", {
+      "userId": widget.user.id,
+      "userInSession": widget.user.username,
+    });
+
     pingTimer.cancel();
     update?.cancel();
     if (ringTimer != null) {
@@ -431,7 +441,7 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
   initPing() {
-    pingTimer = Timer.periodic(Duration(seconds: 1), (timer) async {
+    pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
       NodeSocketService().sendMessage("stationPing", {
         "id": widget.station.id,
         "sessionPing": DateTime.now().toString(),
