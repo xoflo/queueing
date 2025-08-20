@@ -24,6 +24,7 @@ import '../models/user.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart';
+import '../models/userlog.dart';
 import '../platformHandler/web_stub.dart'
 if (dart.library.html) '../platformHandler/web_real.dart' as web;
 
@@ -50,16 +51,24 @@ class _AdminScreenState extends State<AdminScreen> {
   List<String> statuses = [];
   List<String> genders = [];
 
+
+  List<String> states = [];
+
   String? displayDate;
   String? displayUsers;
   String? displayServiceTypes;
   String? displayPriorities;
   String? displayStatus;
   String? displayGender;
+
+  String? displayStates;
   bool log = false;
 
 
   bool showBySession = false;
+
+
+  ValueNotifier<bool> userLogs = ValueNotifier(false);
 
   // Service
 
@@ -1236,8 +1245,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                   }
                               ) ;
                             }, onReorder: (int oldIndex, int newIndex) async {
-                          print("oi: $oldIndex");
-                          print("ni: $newIndex");
+
 
                           final items = List<Map<String, dynamic>>.from(snapshot.data!);
 
@@ -1538,354 +1546,726 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   usersView() {
-    return Container(
-      child: Column(
-        children: [
-          Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton(
-                  onPressed: () {
-                    addUser();
-                  },
-                  child: Text("+ Add User"))),
-          StatefulBuilder(
-            builder: (BuildContext context, void Function(void Function()) setStateView) {
-              return FutureBuilder(
-                future: getUserSQL('Staff'),
-                builder: (BuildContext context,
-                    AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                  return snapshot.connectionState == ConnectionState.done
-                      ? snapshot.data!.isNotEmpty
-                      ? Container(
-                    padding: EdgeInsets.all(10),
-                    height: MediaQuery.of(context).size.height - 200,
-                    child: ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, i) {
-                          User user = User.fromJson(snapshot.data![i]);
 
-                          return ListTile(
-                            title: Text("${user.username}"),
-                            subtitle: Text(
-                                "${user.userType}${user.serviceType!.isEmpty ? "" : user.serviceType!.length > 3 ? " | ${user.serviceType!.length} Services" : " | Service: ${user.serviceType!.join(', ')}"}"
-                            ,style: TextStyle(color: Colors.grey),
-                            ),
-                            trailing: widget.user.username == user.username ? null : IconButton(
-                                onPressed: () {
-                                  deleteUser(user.id!);
-                                },
-                                icon: Icon(Icons.delete)),
-                            onTap: () {
-                              if (widget.user.username == user.username) {
-                                bool obscure = true;
-                                final userController = TextEditingController();
-                                final oldPassController = TextEditingController();
-                                final passController = TextEditingController();
+    final dateNow = DateTime.now();
 
-                                showDialog(context: context, builder: (_) => StatefulBuilder(builder: (BuildContext context, void Function(void Function()) setState) {
-                                  return AlertDialog(
-                                    title: Text("Set Admin Password"),
-                                    content: Container(
-                                      height: 140,
-                                      width: 200,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          TextField(
-                                            obscureText: obscure,
-                                            decoration: InputDecoration(
-                                                labelText: "Old Password"
-                                            ),
-                                            controller: oldPassController,
-                                          ),
-                                          TextField(
-                                            obscureText: obscure,
-                                            decoration: InputDecoration(
-                                                labelText: "New Password"
-                                            ),
-                                            controller: passController,
-                                          ),
-                                          IconButton(onPressed: () {
-                                            obscure = !obscure;
-                                            setState((){
 
-                                            });
-                                          }, icon: Icon(obscure == false ? Icons.remove_red_eye_rounded : Icons.remove_red_eye_outlined))
-                                        ],
-                                      ),
+    return StatefulBuilder(
+      builder: (BuildContext context, void Function(void Function()) setStateUsers) {
+        return Container(
+          child: Column(
+            children: [
+              Align(
+                  alignment: Alignment.centerLeft,
+                  child: userLogs.value == false ? Row(
+                    spacing: 10,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            addUser();
+                          },
+                          child: Text("+ Add User")),
+                      TextButton(onPressed: () {
+                        userLogs.value = true;
+                        setStateUsers(() {});
+                      }, child: Text("User List"))
+                    ],
+                  ) : Row(
+                    spacing: 10,
+                    children: [
+                      ElevatedButton(
+                          child: Text(dates.isNotEmpty ? "Date: ${displayDate}" : "Date: Today"),
+                          onPressed: () {
+                            showDialog(context: context, builder: (_) => AlertDialog(
+                              title: Text("Filter User"),
+                              content: Container(
+                                height: 380,
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      height: 350,
+                                      width: 350,
+                                      child: CalendarDatePicker2(
+                                          onValueChanged: (values) {
+                                            dates = values;
+                                          },
+                                          value: dates,
+                                          config: CalendarDatePicker2Config(
+                                            calendarType: CalendarDatePicker2Type.range,
+                                            firstDate: DateTime(2000, 1, 1),
+                                            lastDate: DateTime(3000, 1, 1),
+                                            currentDate: dateNow,
+                                            allowSameValueSelection: true,
+                                          )),
                                     ),
-                                    actions: [
-                                      TextButton(onPressed: () async {
-                                        if (oldPassController.text != user.pass) {
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Current Password does not match.")));
-                                        } else {
-                                          await user.update({
-                                            'pass': userController.text
-                                          });
+                                    SizedBox(height: 5),
+                                    Text("Select Date Range to Filter", style: TextStyle(color: Colors.grey)),
+                                    SizedBox(height: 5),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(onPressed: () {
+                                  dates = [];
+                                  setStateUsers(() {});
+                                  Navigator.pop(context);
+                                }, child: Text("Today")),
+                                TextButton(onPressed: () {
+                                  if (dates.length == 1) {
+                                    dates.add(dates[0].add(Duration(days: 1)).subtract(Duration(seconds: 1)));
+                                  } else {
+                                    dates[1].add(Duration(days: 1)).subtract(Duration(seconds: 1));
+                                  }
+                                  displayDate = "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}";
+                                  setStateUsers(() {});
+                                  Navigator.pop(context);
+                                }, child: Text("Filter")),
+                              ],
+                            ));
+                          }),
+                      ElevatedButton(
+                          child: Text(users.isNotEmpty ? "User: $displayUsers" : "User: All"),
+                          onPressed: () {
 
-                                          Navigator.pop(context);
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
-                                          setStateView((){});
-                                        }
-                                      }, child: Text("Update"))
-                                    ],
-                                  );
-                                },));
-                              } else {
+                            final _listViewKey = GlobalKey();
 
-                                bool obscure = true;
-                                final userController = TextEditingController();
-                                final passController = TextEditingController();
+                            showDialog(context: context, builder: (_) => AlertDialog(
+                              title: Text("Filter User"),
+                              content: FutureBuilder(future: getUserSQL("Staff"),
+                                  builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                    return snapshot.connectionState == ConnectionState.done ? Container(
+                                      height: 400,
+                                      width: 400,
+                                      child: StatefulBuilder(
+                                        key: _listViewKey,
+                                        builder: (context, setStateList) {
+                                          return ListView.builder(
+                                              itemCount: snapshot.data!.length,
+                                              itemBuilder: (context, i) {
+                                                final user = User.fromJson(snapshot.data![i]);
 
-                                //region
+                                                return CheckboxListTile(
+                                                  title: Text(user.username!),
+                                                  value: users.contains(user.username!),
+                                                  onChanged: (bool? value) {
+                                                    if (users.contains(user.username!)) {
+                                                      users.remove(user.username!);
+                                                      setStateList((){});
+                                                    } else {
+                                                      users.add(user.username!);
+                                                      setStateList((){});
+                                                    }
+                                                  },
+                                                );
+                                              });
+                                        },
+                                      ),
+                                    ) : Container(
+                                        height: 400,
+                                        child: Center(
+                                          child: Container(
+                                              height: 50,
+                                              width: 50,
+                                              child: CircularProgressIndicator()),
+                                        )
+                                    );
+                                  }),
+                              actions: [
+                                TextButton(onPressed: () {
+                                  users.clear();
+                                  _listViewKey.currentState!.setState(() {});
 
-                                showDialog(context: context, builder: (_) => AlertDialog(
-                                  title: Text("Edit User: ${user.username}"),
+                                  setStateUsers(() {});
+                                }, child: Text("Clear")),
+                                TextButton(onPressed: () {
+                                  displayUsers = users.length > 3 ? "4 Users" : users.sublist(0, users.length).join(', ');
+                                  Navigator.pop(context);
+
+                                  setStateUsers(() {});
+                                }, child: Text("Filter"))
+                              ],
+                            ));
+
+                          }),
+                      ElevatedButton(onPressed: () {
+                        final _listViewKey = GlobalKey();
+                        List<String> stateList = ['Logged In', 'User Exited', 'Connection Lost'];
+
+                        showDialog(context: context, builder: (_) => AlertDialog(
+                          title: Text("Filter State"),
+                          content: Container(
+                            height: 300,
+                            width: 400,
+                            child: StatefulBuilder(
+                              key: _listViewKey,
+                              builder: (context, setStateList) {
+                                return ListView.builder(
+                                    itemCount: stateList.length,
+                                    itemBuilder: (context, i) {
+                                      return CheckboxListTile(
+                                        title: Text(stateList[i]),
+                                        value: states.contains(stateList[i]),
+                                        onChanged: (bool? value) {
+                                          if (states.contains(stateList[i])) {
+                                            states.remove(stateList[i]);
+                                            setStateList((){});
+                                          } else {
+                                            states.add(stateList[i]);
+                                            setStateList((){});
+                                          }
+                                        },
+                                      );
+                                    });
+                              },
+                            ),
+                          ),
+                          actions: [
+                            TextButton(onPressed: () {
+                              states.clear();
+                              _listViewKey.currentState!.setState(() {});
+                              setStateUsers((){});
+                            }, child: Text("Clear")),
+                            TextButton(onPressed: () {
+                              displayStates = states.length > 2 ? "3 States" : states.sublist(0, states.length).join(', ');
+                              Navigator.pop(context);
+                              setStateUsers((){});
+                            }, child: Text("Filter"))
+                          ],
+                        ));
+                      }, child: Text(states.isNotEmpty ? "State: $displayStates" : "State: All")),
+                      TextButton(
+                          child: Row(
+                            children: [
+                              Text("Export", textAlign: TextAlign.center),
+                              SizedBox(width: 10),
+                              Icon(Icons.download),
+                            ],
+                          ),
+                          onPressed: () {
+                            String paperSize = 'A4';
+
+                            showDialog(context: context, builder: (_) => StatefulBuilder(
+                              builder: (BuildContext context, void Function(void Function()) setStateExport) {
+                                return AlertDialog(
+                                  title: Text("Export"),
                                   content: Container(
-                                    height: 180,
+                                    height: 100,
                                     width: 200,
                                     child: Column(
                                       children: [
-                                        ListTile(
-                                          title: Text("Username and Password"),
-                                          onTap: () {
-                                            showDialog(context: context, builder: (_) => StatefulBuilder(builder: (context, setState) {
-                                              return AlertDialog(
-                                                title: Text("Username & Password"),
-                                                content: Container(
-                                                  height: 140,
-                                                  width: 200,
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      TextField(
-                                                        decoration: InputDecoration(
-                                                            labelText: "Username"
-                                                        ),
-                                                        controller: userController,
-                                                      ),
-                                                      SizedBox(
-                                                        width: 180,
-                                                        child: TextField(
-                                                          obscureText: obscure,
-                                                          decoration: InputDecoration(
-                                                              labelText: "Password"
-                                                          ),
-                                                          controller: passController,
-                                                        ),
-                                                      ),
-                                                      IconButton(onPressed: () {
-                                                        obscure = !obscure;
-                                                        setState((){
-
-                                                        });
-                                                      }, icon: Icon(obscure == false ? Icons.remove_red_eye_rounded : Icons.remove_red_eye_outlined))
-                                                    ],
-                                                  ),
-                                                ),
-                                                actions: [
-                                                  TextButton(onPressed: () async {
-                                                    if (userController.text.trim() != "" && passController.text.trim() != "") {
-                                                      final oldName = user.username;
+                                        Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text("Paper Size", style: TextStyle(fontSize: 18))),
+                                        SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            Checkbox(value: paperSize == 'A4',
+                                                onChanged: (value) {
+                                                  if (value == true) paperSize = 'A4';
+                                                  setStateExport((){});
+                                                }),
+                                            Text('A4'),
 
 
-                                                      await user.update({
-                                                        'username': userController.text.trim(),
-                                                        'pass': passController.text.trim()
-                                                      });
+                                            Checkbox(value: paperSize == 'Letter',
+                                                onChanged: (value) {
+                                                  if (value == true) paperSize = 'Letter';
+                                                  setStateExport((){});
+                                                }),
+                                            Text('Letter'),
 
-                                                      final ticket = await getTicketSQL(1);
-
-                                                      await Future.wait(ticket.where((e) => e.userAssigned! == oldName!).map((e) async {
-                                                        await e.update({
-                                                          'userAssigned': userController.text,
-                                                        });
-                                                      }));
-
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
-                                                      setStateView((){});
-                                                    } else {
-                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty")));
-                                                    }
-                                                  }, child: Text("Update"))
-                                                ],
-                                              );
-                                            }));
-                                          },
-                                        ),
-                                        ListTile(
-                                          title: Text("Assigned Services"),
-                                          onTap: () {
-                                            showDialog(context: context, builder: (_) => Builder(
-                                                builder: (context) {
-                                                  List<String> services = [];
-
-                                                  if (user.serviceType!.isNotEmpty) {
-                                                    services = stringToList(user.serviceType.toString());
-                                                  }
-
-                                                  final dialogKey = GlobalKey();
-
-                                                  return AlertDialog(
-                                                    title: Text("Assign Service Types"),
-                                                    content: Container(
-                                                      height: 400,
-                                                      width: 400,
-                                                      child: FutureBuilder(
-                                                          future: getServiceSQL(),
-                                                          builder: (context, AsyncSnapshot<List<Service>> snapshot) {
-                                                            return StatefulBuilder(
-                                                              key: dialogKey,
-                                                              builder: (context, setStateList) {
-                                                                return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
-                                                                    itemCount: snapshot.data!.length,
-                                                                    itemBuilder: (context, i) {
-                                                                      final service = snapshot.data![i];
-
-                                                                      return CheckboxListTile(
-                                                                        title: Text(service.serviceType!),
-                                                                        value: services.contains(service.serviceType!.toString()),
-                                                                        onChanged: (bool? value) {
-                                                                          if (value == true) {
-                                                                            services.add(service.serviceType!);
-                                                                            setStateList((){});
-                                                                          } else {
-                                                                            services.remove(service.serviceType!);
-                                                                            setStateList((){});
-                                                                          }
-                                                                        },
-                                                                      );
-                                                                    }) : Center(
-                                                                  child: Container(
-                                                                    height: 50,
-                                                                    width: 50,
-                                                                    child: CircularProgressIndicator(),
-                                                                  ),
-                                                                );
-                                                              },
-                                                            );
-                                                          }),
-                                                    ),
-                                                    actions: [
-                                                      TextButton(onPressed: () async {
-                                                        services.clear();
-                                                        dialogKey.currentState!.setState(() {});
-                                                      }, child: Text("Clear")),
-                                                      TextButton(onPressed: () async {
-                                                        final List<Service> servicesSQL = await getServiceSQL();
-                                                        services.clear();
-
-                                                        for (int i = 0; i < servicesSQL.length; i++) {
-                                                          services.add(servicesSQL[i].serviceType!);
-                                                        }
-                                                        dialogKey.currentState!.setState(() {});
-                                                      }, child: Text("Select All")),
-                                                      TextButton(onPressed: () async {
-                                                        final servicesSetToAdd = services.length > 3 ? services.sublist(0, 3).toString() : services.isNotEmpty ? services.toString() : null;
-
-                                                        await user.update({
-                                                          'serviceType': services.isEmpty ? null : services.toString(),
-                                                          'servicesSet': services.isEmpty ? null : servicesSetToAdd
-                                                        });
-
-                                                        setStateView(() {});
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
-                                                        Navigator.pop(context);
-                                                      }, child: Text("Update"))
-                                                    ],
-                                                  );
-                                                }
-                                            ));
-                                          },
-                                        ),
-
-                                        //endregion
-
-                                        ListTile(
-                                          title: Text("Assign Station"),
-                                          onTap: () {
-                                            showDialog(context: context, builder: (_) => AlertDialog(
-                                              title: Text("Station: ${user.assignedStationId == 999 ? "Allow Select" : user.assignedStation}"),
-                                              content: Container(
-                                                height: 400,
-                                                width: 400,
-                                                child: FutureBuilder(
-                                                    future: getStationSQL(),
-                                                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                                      return snapshot.connectionState == ConnectionState.done ? ListView.builder(
-                                                          itemCount: snapshot.data!.length,
-                                                          itemBuilder: (context, i) {
-                                                        final Station station = Station.fromJson(snapshot.data![i]);
-                                                        final stationNameAndNumber = "${station.stationName!}${station.stationNumber! == 0 ? "" : " ${station.stationNumber!}"}";
-                                                        final stationId = station.id;
-
-                                                        return ListTile(
-                                                            title: Text("${station.stationName!} ${station.stationNumber! == 0 ? "" : " ${station.stationNumber!}"}"),
-                                                          onTap: () {
-
-                                                            user.update({
-                                                              'assignedStation': "${stationNameAndNumber}_$stationId"
-                                                            });
-
-                                                            Navigator.pop(context);
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Assigned to $stationNameAndNumber")));
-                                                          },
-                                                        );
-                                                      }) : Center(
-                                                        child: Container(
-                                                          height: 50,
-                                                          width: 50,
-                                                          child: CircularProgressIndicator(),
-                                                        ),
-                                                      );
-                                                    }),
-                                              ),
-                                              actions: [
-                                                TextButton(onPressed: () {
-                                                  user.update({
-                                                    'assignedStation': "All_999"
-                                                  });
-                                                  Navigator.pop(context);
-                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Allowed to Select")));
-                                                }, child: Text("Allow User to Select"))
-                                              ],
-                                            ));
-                                          },
+                                            Checkbox(value: paperSize == '8.5 x 13',
+                                                onChanged: (value) {
+                                                  if (value == true) paperSize = '8.5 x 13';
+                                                  setStateExport((){});
+                                                }),
+                                            Text('8.5 x 13'),
+                                          ],
                                         )
                                       ],
                                     ),
                                   ),
-                                ));
-                              };
-                            },
-                          );
-                        }),
-                  )
-                      : Container(
-                    height: 400,
-                    child: Text("No users found",
-                        style: TextStyle(color: Colors.grey)),
-                  )
-                      : Container(
-                    height: MediaQuery.of(context).size.height - 200,
-                        child: Center(
-                                            child: Container(
-                        height: 50,
-                        width: 50,
-                        child: CircularProgressIndicator(
+                                  actions: [
+                                    TextButton(
+                                        child: Text("Export"),
+                                        onPressed: () async {
+                                          final userlogs = await getUserLogs();
 
-                        ),
+                                          createPDFUserlogs(paperSize, userlogs);
+
+                                        })
+                                  ],
+                                );
+                              },
+                            ));
+                          }),
+                      TextButton(onPressed: () {
+                        userLogs.value = false;
+                        setStateUsers(() {});
+                      }, child: Text("User Logs")),
+                    ],
+                  )),
+
+              ValueListenableBuilder(valueListenable: userLogs, builder: (context, value, s) {
+                print("listenValue: $value");
+                return value == false ? StatefulBuilder(
+                  builder: (BuildContext context, void Function(void Function()) setStateView) {
+                    return FutureBuilder(
+                      future: getUserSQL('Staff'),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                        return snapshot.connectionState == ConnectionState.done
+                            ? snapshot.data!.isNotEmpty
+                            ? Container(
+                          padding: EdgeInsets.all(10),
+                          height: MediaQuery.of(context).size.height - 200,
+                          child: ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, i) {
+                                User user = User.fromJson(snapshot.data![i]);
+
+                                return ListTile(
+                                  title: Text("${user.username}"),
+                                  subtitle: Text(
+                                    "${user.userType}${user.serviceType!.isEmpty ? "" : user.serviceType!.length > 3 ? " | ${user.serviceType!.length} Services" : " | Service: ${user.serviceType!.join(', ')}"}"
+                                    ,style: TextStyle(color: Colors.grey),
+                                  ),
+                                  trailing: widget.user.username == user.username ? null : IconButton(
+                                      onPressed: () {
+                                        deleteUser(user.id!);
+                                      },
+                                      icon: Icon(Icons.delete)),
+                                  onTap: () {
+                                    if (widget.user.username == user.username) {
+                                      bool obscure = true;
+                                      final userController = TextEditingController();
+                                      final oldPassController = TextEditingController();
+                                      final passController = TextEditingController();
+
+                                      showDialog(context: context, builder: (_) => StatefulBuilder(builder: (BuildContext context, void Function(void Function()) setState) {
+                                        return AlertDialog(
+                                          title: Text("Set Admin Password"),
+                                          content: Container(
+                                            height: 140,
+                                            width: 200,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                TextField(
+                                                  obscureText: obscure,
+                                                  decoration: InputDecoration(
+                                                      labelText: "Old Password"
+                                                  ),
+                                                  controller: oldPassController,
+                                                ),
+                                                TextField(
+                                                  obscureText: obscure,
+                                                  decoration: InputDecoration(
+                                                      labelText: "New Password"
+                                                  ),
+                                                  controller: passController,
+                                                ),
+                                                IconButton(onPressed: () {
+                                                  obscure = !obscure;
+                                                  setState((){
+
+                                                  });
+                                                }, icon: Icon(obscure == false ? Icons.remove_red_eye_rounded : Icons.remove_red_eye_outlined))
+                                              ],
                                             ),
                                           ),
+                                          actions: [
+                                            TextButton(onPressed: () async {
+                                              if (oldPassController.text != user.pass) {
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Current Password does not match.")));
+                                              } else {
+                                                await user.update({
+                                                  'pass': userController.text
+                                                });
+
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                                setStateView((){});
+                                              }
+                                            }, child: Text("Update"))
+                                          ],
+                                        );
+                                      },));
+                                    } else {
+
+                                      bool obscure = true;
+                                      final userController = TextEditingController();
+                                      final passController = TextEditingController();
+
+                                      //region
+
+                                      showDialog(context: context, builder: (_) => AlertDialog(
+                                        title: Text("Edit User: ${user.username}"),
+                                        content: Container(
+                                          height: 180,
+                                          width: 200,
+                                          child: Column(
+                                            children: [
+                                              ListTile(
+                                                title: Text("Username and Password"),
+                                                onTap: () {
+                                                  showDialog(context: context, builder: (_) => StatefulBuilder(builder: (context, setState) {
+                                                    return AlertDialog(
+                                                      title: Text("Username & Password"),
+                                                      content: Container(
+                                                        height: 140,
+                                                        width: 200,
+                                                        child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: [
+                                                            TextField(
+                                                              decoration: InputDecoration(
+                                                                  labelText: "Username"
+                                                              ),
+                                                              controller: userController,
+                                                            ),
+                                                            SizedBox(
+                                                              width: 180,
+                                                              child: TextField(
+                                                                obscureText: obscure,
+                                                                decoration: InputDecoration(
+                                                                    labelText: "Password"
+                                                                ),
+                                                                controller: passController,
+                                                              ),
+                                                            ),
+                                                            IconButton(onPressed: () {
+                                                              obscure = !obscure;
+                                                              setState((){
+
+                                                              });
+                                                            }, icon: Icon(obscure == false ? Icons.remove_red_eye_rounded : Icons.remove_red_eye_outlined))
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        TextButton(onPressed: () async {
+                                                          if (userController.text.trim() != "" && passController.text.trim() != "") {
+                                                            final oldName = user.username;
+
+
+                                                            await user.update({
+                                                              'username': userController.text.trim(),
+                                                              'pass': passController.text.trim()
+                                                            });
+
+                                                            final ticket = await getTicketSQL(1);
+
+                                                            await Future.wait(ticket.where((e) => e.userAssigned! == oldName!).map((e) async {
+                                                              await e.update({
+                                                                'userAssigned': userController.text,
+                                                              });
+                                                            }));
+
+                                                            Navigator.pop(context);
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                                            setStateView((){});
+                                                          } else {
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Values cannot be empty")));
+                                                          }
+                                                        }, child: Text("Update"))
+                                                      ],
+                                                    );
+                                                  }));
+                                                },
+                                              ),
+                                              ListTile(
+                                                title: Text("Assigned Services"),
+                                                onTap: () {
+                                                  showDialog(context: context, builder: (_) => Builder(
+                                                      builder: (context) {
+                                                        List<String> services = [];
+
+                                                        if (user.serviceType!.isNotEmpty) {
+                                                          services = stringToList(user.serviceType.toString());
+                                                        }
+
+                                                        final dialogKey = GlobalKey();
+
+                                                        return AlertDialog(
+                                                          title: Text("Assign Service Types"),
+                                                          content: Container(
+                                                            height: 400,
+                                                            width: 400,
+                                                            child: FutureBuilder(
+                                                                future: getServiceSQL(),
+                                                                builder: (context, AsyncSnapshot<List<Service>> snapshot) {
+                                                                  return StatefulBuilder(
+                                                                    key: dialogKey,
+                                                                    builder: (context, setStateList) {
+                                                                      return snapshot.connectionState == ConnectionState.done ?  ListView.builder(
+                                                                          itemCount: snapshot.data!.length,
+                                                                          itemBuilder: (context, i) {
+                                                                            final service = snapshot.data![i];
+
+                                                                            return CheckboxListTile(
+                                                                              title: Text(service.serviceType!),
+                                                                              value: services.contains(service.serviceType!.toString()),
+                                                                              onChanged: (bool? value) {
+                                                                                if (value == true) {
+                                                                                  services.add(service.serviceType!);
+                                                                                  setStateList((){});
+                                                                                } else {
+                                                                                  services.remove(service.serviceType!);
+                                                                                  setStateList((){});
+                                                                                }
+                                                                              },
+                                                                            );
+                                                                          }) : Center(
+                                                                        child: Container(
+                                                                          height: 50,
+                                                                          width: 50,
+                                                                          child: CircularProgressIndicator(),
+                                                                        ),
+                                                                      );
+                                                                    },
+                                                                  );
+                                                                }),
+                                                          ),
+                                                          actions: [
+                                                            TextButton(onPressed: () async {
+                                                              services.clear();
+                                                              dialogKey.currentState!.setState(() {});
+                                                            }, child: Text("Clear")),
+                                                            TextButton(onPressed: () async {
+                                                              final List<Service> servicesSQL = await getServiceSQL();
+                                                              services.clear();
+
+                                                              for (int i = 0; i < servicesSQL.length; i++) {
+                                                                services.add(servicesSQL[i].serviceType!);
+                                                              }
+                                                              dialogKey.currentState!.setState(() {});
+                                                            }, child: Text("Select All")),
+                                                            TextButton(onPressed: () async {
+                                                              final servicesSetToAdd = services.length > 3 ? services.sublist(0, 3).toString() : services.isNotEmpty ? services.toString() : null;
+
+                                                              await user.update({
+                                                                'serviceType': services.isEmpty ? null : services.toString(),
+                                                                'servicesSet': services.isEmpty ? null : servicesSetToAdd
+                                                              });
+
+                                                              setStateView(() {});
+                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User updated")));
+                                                              Navigator.pop(context);
+                                                            }, child: Text("Update"))
+                                                          ],
+                                                        );
+                                                      }
+                                                  ));
+                                                },
+                                              ),
+
+                                              //endregion
+
+                                              ListTile(
+                                                title: Text("Assign Station"),
+                                                onTap: () {
+                                                  showDialog(context: context, builder: (_) => AlertDialog(
+                                                    title: Text("Station: ${user.assignedStationId == 999 ? "Allow Select" : user.assignedStation}"),
+                                                    content: Container(
+                                                      height: 400,
+                                                      width: 400,
+                                                      child: FutureBuilder(
+                                                          future: getStationSQL(),
+                                                          builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                            return snapshot.connectionState == ConnectionState.done ? ListView.builder(
+                                                                itemCount: snapshot.data!.length,
+                                                                itemBuilder: (context, i) {
+                                                                  final Station station = Station.fromJson(snapshot.data![i]);
+                                                                  final stationNameAndNumber = "${station.stationName!}${station.stationNumber! == 0 ? "" : " ${station.stationNumber!}"}";
+                                                                  final stationId = station.id;
+
+                                                                  return ListTile(
+                                                                    title: Text("${station.stationName!} ${station.stationNumber! == 0 ? "" : " ${station.stationNumber!}"}"),
+                                                                    onTap: () {
+
+                                                                      user.update({
+                                                                        'assignedStation': "${stationNameAndNumber}_$stationId"
+                                                                      });
+
+                                                                      Navigator.pop(context);
+                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Assigned to $stationNameAndNumber")));
+                                                                    },
+                                                                  );
+                                                                }) : Center(
+                                                              child: Container(
+                                                                height: 50,
+                                                                width: 50,
+                                                                child: CircularProgressIndicator(),
+                                                              ),
+                                                            );
+                                                          }),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(onPressed: () {
+                                                        user.update({
+                                                          'assignedStation': "All_999"
+                                                        });
+                                                        Navigator.pop(context);
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User Allowed to Select")));
+                                                      }, child: Text("Allow User to Select"))
+                                                    ],
+                                                  ));
+                                                },
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ));
+                                    };
+                                  },
+                                );
+                              }),
+                        )
+                            : Container(
+                          height: 400,
+                          child: Text("No users found",
+                              style: TextStyle(color: Colors.grey)),
+                        )
+                            : Container(
+                          height: MediaQuery.of(context).size.height - 200,
+                          child: Center(
+                            child: Container(
+                              height: 50,
+                              width: 50,
+                              child: CircularProgressIndicator(
+
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ) :
+                StatefulBuilder(
+                  builder: (BuildContext context, void Function(void Function()) setState) {
+                    return FutureBuilder(future: getUserLogs(), builder: (BuildContext context, AsyncSnapshot<List<Userlog>> snapshot) {
+                      return snapshot.connectionState == ConnectionState.done ?  snapshot.data!.isNotEmpty ? Container(
+                        height: MediaQuery.of(context).size.height - 200,
+                        child: ListView.builder(
+
+                            padding: EdgeInsets.all(10),
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, i) {
+                              Userlog log = snapshot.data![i];
+
+                             return ListTile(title: Row(
+                                children: [
+                                  Text("${log.user!} | "),
+                                  SizedBox(width: 10),
+                                  handleLogState(log.state!)
+                                ],
+                              ), subtitle: Text(log.timestamp!));
+                            }),
+                      ) : Center(
+                        child: Text("No User Logs", style: TextStyle(color: Colors.grey)),
+                      ) : Center(
+                          child: Container(
+                              height: 50,
+                              width: 50,
+                              child: CircularProgressIndicator()
+                          )
                       );
-                },
-              );
-            },
-          )
-        ],
-      ),
+                    });
+                  },
+                );
+              })
+
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Widget handleLogState(int i) {
+    switch (i) {
+      case 0:
+        return Text("User Exited", style: TextStyle(color: Colors.orange));
+      case 1:
+        return Text("Logged In", style: TextStyle(color: Colors.green));
+      case 3:
+        return Text("Connection Lost", style: TextStyle(color: Colors.red));
+      default:
+        return Text("Unknown", style: TextStyle(color: Colors.grey));
+    }
+  }
+
+
+  Future<List<Userlog>> getUserLogs() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_userlog.php');
+      final result = await http.get(uri);
+      final List<dynamic> response = jsonDecode(result.body);
+
+      List<Userlog> logs = [];
+      
+      for (int i = 0; i < response.length; i++) {
+        logs.add(Userlog.fromJson(response[i]));
+      }
+
+      print(logs);
+
+      if (dates.isNotEmpty) {
+        List<Userlog> datesort = [];
+
+        datesort.addAll(logs.where((e) => DateTime.parse(e.timestamp!).isAfter(dates[0]) && DateTime.parse(e.timestamp!).isBefore(dates[1])).toList());
+
+        logs = datesort;
+      } else {
+        List<Userlog> datesort = [];
+        datesort.addAll(logs.where((e) => toDateTime(DateTime.parse(e.timestamp!)) == toDateTime(DateTime.now())).toList());
+        logs = datesort;
+      }
+      
+      if (users.isNotEmpty) {
+        List<Userlog> usersort = [];
+        
+        for (int i = 0; i < users.length; i++) {
+          usersort.addAll(logs.where((e) => e.user == users[i]).toList());
+        }
+        
+        logs = usersort;
+      }
+
+      if (states.isNotEmpty) {
+        List<Userlog> statesort = [];
+
+        for (int i = 0; i < states.length; i++) {
+
+          int? stateIndex;
+
+          switch (states[i]) {
+            case "User Exited":
+              stateIndex = 0;
+            case "Logged In":
+              stateIndex = 1;
+            case "Connection Lost":
+              stateIndex = 3;
+          }
+
+          statesort.addAll(logs.where((e) => e.state == stateIndex).toList());
+        }
+
+        logs = statesort;
+      }
+
+      print(logs);
+
+      return logs;
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
   }
 
   getUserSQL([String? userType, String? serviceType]) async {
@@ -3710,6 +4090,196 @@ class _AdminScreenState extends State<AdminScreen> {
       await file.writeAsBytes(await pdf.save());
       Navigator.pop(context);
 
+    } else {
+      var savedFile = await pdf.save();
+      Navigator.pop(context);
+      List<int> fileInts = List.from(savedFile);
+      web.AnchorElement()
+        ..href = "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(fileInts)}"
+        ..setAttribute("download", "OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}.pdf")
+        ..click();
+    }
+  }
+
+
+  createPDFUserlogs(String size, List<Userlog> userlog) async {
+    loadWidget(); // show loading indicator
+
+    final pdf = pw.Document();
+    PdfPageFormat? pageFormat;
+
+    // Load logo
+    final img = await rootBundle.load('assets/images/logo.png');
+    final imageBytes = img.buffer.asUint8List();
+    final logoImage = pw.Image(pw.MemoryImage(imageBytes));
+
+    // Set page format
+    if (size == 'A4') pageFormat = PdfPageFormat.a4;
+    if (size == 'Letter') pageFormat = PdfPageFormat.letter;
+    if (size == '8.5 x 13') pageFormat = PdfPageFormat(612, 936);
+
+    // Header info
+    String datePdf = displayDate != null
+        ? "${DateFormat.yMMMMd().format(dates[0])} - ${DateFormat.yMMMMd().format(dates[1])}"
+        : DateFormat.yMMMMd().format(DateTime.now());
+    String usersPdf = displayUsers != null ? users.join(', ') : "All";
+    String statesPdf = displayStates != null ? states.join(', ') : "All";
+
+    final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
+
+    // Prepare log entries
+    final logEntries = userlog.map((u) {
+      return [
+        "${userlog.indexOf(u) + 1}",
+        DateFormat.yMMMMd().add_jms().format(DateTime.parse(u.timestamp!)),
+        u.user ?? "",
+        u.state == 0
+            ? "User Exited"
+            : u.state == 1
+            ? "Logged In"
+            : "Connection Lost"
+      ];
+    }).toList();
+
+    // Pair logs for two-column display
+    final pairedEntries = <List<List<String>>>[];
+    for (int i = 0; i < logEntries.length; i += 2) {
+      final left = logEntries[i];
+      final right = (i + 1 < logEntries.length) ? logEntries[i + 1] : ["", "", "", ""];
+      pairedEntries.add([left, right]);
+    }
+
+    // Helper to make colored text
+    pw.Widget coloredCell(String text) {
+      PdfColor color;
+      if (text == "User Exited") color = PdfColors.orange;
+      else if (text == "Logged In") color = PdfColors.green;
+      else if (text == "Connection Lost") color = PdfColors.red;
+      else color = PdfColors.black;
+      return pw.Text(text, style: pw.TextStyle(color: color, fontSize: 10));
+    }
+
+    // Table headers with padding
+    final headers = [
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("#", style: bold)),
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("Date", style: bold)),
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("User", style: bold)),
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("State", style: bold)),
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("#", style: bold)),
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("Date", style: bold)),
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("User", style: bold)),
+      pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("State", style: bold)),
+    ];
+
+    // Build table rows with padding
+    final tableRows = pairedEntries.map((pair) {
+      return pw.TableRow(
+        children: [
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text(pair[0][0], style: pw.TextStyle(fontSize: 10))),
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text(pair[0][1], style: pw.TextStyle(fontSize: 10))),
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text(pair[0][2], style: pw.TextStyle(fontSize: 10))),
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: coloredCell(pair[0][3])),
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text(pair[1][0], style: pw.TextStyle(fontSize: 10))),
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text(pair[1][1], style: pw.TextStyle(fontSize: 10))),
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text(pair[1][2], style: pw.TextStyle(fontSize: 10))),
+          pw.Padding(padding: pw.EdgeInsets.all(5), child: coloredCell(pair[1][3])),
+        ],
+      );
+    }).toList();
+
+    // Chunk rows into pages, only show headers on first chunk
+    const int rowsPerPage = 25;
+    final pages = <pw.Widget>[];
+    for (int i = 0; i < tableRows.length; i += rowsPerPage) {
+      final chunk = tableRows.sublist(i, (i + rowsPerPage).clamp(0, tableRows.length));
+
+      final tableChildren = [
+        if (i == 0)
+          pw.TableRow(
+            decoration: pw.BoxDecoration(color: PdfColors.grey300),
+            children: headers,
+          ),
+        ...chunk,
+      ];
+
+      final table = pw.Table(
+        border: pw.TableBorder.all(width: 0, color: PdfColors.white),
+        columnWidths: {
+          0: pw.FlexColumnWidth(1),
+          1: pw.FlexColumnWidth(3),
+          2: pw.FlexColumnWidth(2),
+          3: pw.FlexColumnWidth(2),
+          4: pw.FlexColumnWidth(1),
+          5: pw.FlexColumnWidth(3),
+          6: pw.FlexColumnWidth(2),
+          7: pw.FlexColumnWidth(2),
+        },
+        children: tableChildren,
+      );
+
+      pages.add(table);
+      pages.add(pw.SizedBox(height: 10));
+    }
+
+    // Build PDF
+    pdf.addPage(
+      pw.MultiPage(
+        margin: pw.EdgeInsets.all(30),
+        pageFormat: pageFormat ?? PdfPageFormat.a4,
+        build: (context) => [
+          // Centered header
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Center(child: pw.Container(
+                height: 100,
+                width: 100,
+                child: logoImage
+              )),
+              pw.SizedBox(height: 10),
+              pw.Center(child: pw.Text("Office of the Ombudsman", style: bold)),
+              pw.Center(child: pw.Text("Davao City, Philippines", style: bold)),
+              pw.Center(child: pw.Text("Queueing App Report", style: bold)),
+              pw.SizedBox(height: 10),
+            ],
+          ),
+          // Summary info
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Row(
+                children: [
+                  pw.Text("Summary Report", style: bold),
+                  pw.SizedBox(width: 5),
+                  pw.Expanded(child: pw.Divider())
+                ]
+              ),
+              pw.SizedBox(height: 5),
+              pw.Text(datePdf),
+              pw.Text("Users: $usersPdf"),
+              pw.Text("State: $statesPdf"),
+              pw.SizedBox(height: 10),
+              pw.Row(
+                  children: [
+                    pw.Text("Detailed Report", style: bold),
+                    pw.SizedBox(width: 5),
+                    pw.Expanded(child: pw.Divider())
+                  ]
+              ),
+              pw.SizedBox(height: 5),
+            ],
+          ),
+          // All table pages
+          ...pages,
+        ],
+      ),
+    );
+
+    // Save PDF
+    if (!kIsWeb) {
+      final file = File("OMBMindanaoQueueReport_${DateTime.now().millisecondsSinceEpoch}.pdf");
+      await file.writeAsBytes(await pdf.save());
+      Navigator.pop(context);
     } else {
       var savedFile = await pdf.save();
       Navigator.pop(context);

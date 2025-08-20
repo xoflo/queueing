@@ -34,7 +34,7 @@ class NodeSocketService {
     _isConnected = false;
 
     final url = 'ws://${site.toString().split(":")[0]}:3000';
-    print("🔌 Connecting to $url");
+    print("Connecting to $url");
 
     _channel = kIsWeb
         ? WebSocketChannel.connect(Uri.parse(url))
@@ -62,10 +62,10 @@ class NodeSocketService {
         }
       },
       onDone: () {
-        _handleDisconnect(context, reason: "❌ Disconnected");
+        _handleDisconnect(context, reason: "Disconnected");
       },
       onError: (err) {
-        _handleDisconnect(context, reason: "⚠️ Error: $err");
+        _handleDisconnect(context, reason: "Error: $err");
       },
       cancelOnError: true,
     );
@@ -90,12 +90,10 @@ class NodeSocketService {
 
     _reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) async {
       if (!_isConnected) {
-        print("🔁 Trying to reconnect...");
         await clearCache();
         _reconnecting();
         connect(context: context);
       } else {
-        print("✅ Reconnected");
         _connected();
         _reconnectTimer?.cancel();
         _reconnectTimer = null;
