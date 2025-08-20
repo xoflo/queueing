@@ -262,13 +262,20 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             }
 
-            if (user.assignedStationId != 999) {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
+            final v = await _getVersion();
+
+            if (version == v) {
+              if (user.assignedStationId != 999) {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
+              } else {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+              }
             } else {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Old Version. Update Required.")));
             }
+
           }
 
 
@@ -280,6 +287,26 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch(e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong. (${site == null || site == "" ? "No IP" : site})")));
       print(e);
+    }
+  }
+
+
+  _getVersion() async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_version.php');
+      final result = await http.get(uri);
+      final List<dynamic> response = jsonDecode(result.body);
+
+      print(response);
+
+      final ver = response[0]['version'].toString();
+
+      print(ver);
+
+      return ver;
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 
