@@ -164,6 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       //comment
                       SizedBox(height: 10),
+                      /*
+
                       TextButton(onPressed: () async {
                         TextEditingController ip = TextEditingController();
                         ip.text = site ?? "";
@@ -193,6 +195,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ));
                       }, child: Text("Set IP")),
+
+                       */
                       Text("$version", style: TextStyle(color: Colors.grey))
                     ]
                 ),

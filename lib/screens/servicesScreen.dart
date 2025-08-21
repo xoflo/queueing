@@ -129,6 +129,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     await clearCache();
                     this.setState((){});
                   }),
+              /*
               FloatingActionButton(
                   child: Icon(Icons.wifi),
                   onPressed: () async {
@@ -160,6 +161,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       ],
                     ));
                   }),
+
+               */
+
               FloatingActionButton(
                   child: Icon(Icons.print),
                   onPressed: () async {

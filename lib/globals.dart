@@ -13,7 +13,8 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 String? version = "v1.0.3";
-String? site = '192.168.110.100:8080';
+String? site = 'localhost:8080';
+// String? site = '192.168.110.100:8080';
 String? printer;
 String? size;
 
