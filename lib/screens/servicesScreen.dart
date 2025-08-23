@@ -898,7 +898,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
