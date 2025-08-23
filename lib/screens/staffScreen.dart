@@ -431,6 +431,15 @@ class _StaffSessionState extends State<StaffSession> {
       "userInSession": widget.user.username,
     });
 
+    NodeSocketService().sendMessage("stationPing", {
+      "id": widget.station.id,
+      "sessionPing": "",
+      "inSession": 0,
+      "userInSession": ""
+    });
+
+
+
     pingTimer.cancel();
     update?.cancel();
     if (ringTimer != null) {

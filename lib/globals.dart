@@ -37,6 +37,7 @@ updateSize(String size) {
 }
 
 getIP() async {
+  await HiveService.saveIP(site!);
   final String? ip = await HiveService.getIP();
   updateIP(ip ?? "");
   return site;

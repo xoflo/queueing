@@ -59,18 +59,29 @@ class _ServicesScreenState extends State<ServicesScreen> {
     NodeSocketService().stream.listen((onData) async {
       final result = jsonDecode(onData);
       final type = result['type'];
-      final data = result['data'];
+      final List<dynamic> data = result['data'];
+
+      if (type == 'stationPing') {
+        NodeSocketService().sendMessage('getActiveServices', {});
+        NodeSocketService().sendMessage('checkStationSessions', {});
+      }
 
       if (type == 'getActiveServices') {
-        services = [];
-        services = data;
+        List<String> newServices = [];
 
-        print(data);
-        print(type);
-
-        if (services != data) {
-          setState(() {});
+        for (int i = 0; i <data.length; i++ ) {
+          newServices.add(data[i].toString().trim());
         }
+
+        print(services);
+        print(newServices);
+
+        if (newServices != services) {
+          if (services != data) {
+            services = newServices;
+          }
+        }
+
       }
     });
 
@@ -887,7 +898,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
