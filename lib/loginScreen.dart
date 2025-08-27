@@ -215,8 +215,15 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_user.php');
       final result = await http.get(uri);
-      final users = jsonDecode(result.body);
-      final sorted = users.where((e) => e['username'] == username.text.trim() && e['pass'] == pass.text.trim()).toList();
+
+      print(result.body);
+
+      List<User> realUsers = [];
+
+      final List<dynamic> users = jsonDecode(result.body);
+
+      print(users);
+      final List<dynamic> sorted = users.where((e) => e['username'] == username.text.trim() && e['pass'] == pass.text.trim()).toList();
       if (sorted.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user found.")));
       } else {

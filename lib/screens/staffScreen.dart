@@ -362,7 +362,8 @@ class _StaffSessionState extends State<StaffSession> {
     ticketStream.value = [];
     ticketStream.value = retrievedTickets;
 
-    if (ticketLength != retrievedTickets.length && retrievedTickets.length > ticketLength) {
+    if (retrievedTickets.length > ticketLength) {
+      resetRinger();
       _playNew();
     }
 
@@ -377,21 +378,15 @@ class _StaffSessionState extends State<StaffSession> {
   void initState() {
     super.initState();
 
-    if (ringTimer != null) {
-      ringTimer!.cancel();
-      ringTimer = null;
-    }
+    initPing();
 
     NodeSocketService().sendMessage("identify", {
       "userId": widget.user.id,
       "userInSession": widget.user.username,
     });
 
-    getInactiveTime();
-    initPing();
 
     NodeSocketService().stream.listen((message) async {
-
       final json = jsonDecode(message);
       final type = json['type'];
       final dynamic data = json['data'];
@@ -408,7 +403,6 @@ class _StaffSessionState extends State<StaffSession> {
       if (type == 'getTicket') {
         updateTicketStream(null, data);
         updateServingTicketStream(data);
-        resetRinger();
       }
 
       if (type == 'updateStation') {
@@ -417,10 +411,15 @@ class _StaffSessionState extends State<StaffSession> {
 
       if (type == 'createTicket') {
         NodeSocketService().sendMessage('getTicket', {});
+        resetRinger();
       }
     });
 
-    NodeSocketService().sendMessage('getTicket', {});
+
+    getInactiveTime();
+    resetRinger();
+
+
   }
 
 
@@ -444,7 +443,6 @@ class _StaffSessionState extends State<StaffSession> {
     update?.cancel();
     if (ringTimer != null) {
       ringTimer!.cancel();
-      ringTimer = null;
     }
     super.dispose();
   }
@@ -458,10 +456,12 @@ class _StaffSessionState extends State<StaffSession> {
         "userInSession": widget.user.username
       });
     });
+
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       body:
           MediaQuery.of(context).size.width < 350 ||
@@ -473,9 +473,6 @@ class _StaffSessionState extends State<StaffSession> {
                           textAlign: TextAlign.center)),
                 )
               : Listener(
-                  onPointerMove: (value) {
-                    resetRinger();
-                  },
                   onPointerDown: (value) {
                     resetRinger();
                   },
@@ -1278,6 +1275,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                         : ValueListenableBuilder(
                                                           valueListenable: ticketStream,
                                                           builder: (BuildContext context, List<Ticket> value, Widget? child) {
+
                                                             return ListView.builder(
                                                                 scrollDirection: Axis.vertical,
                                                                 itemCount: ticketStream.value.length,
@@ -1352,6 +1350,7 @@ class _StaffSessionState extends State<StaffSession> {
       inactiveLength = int.parse(control[0]['other'].toString());
       inactiveOn = int.parse(control[0]['value'].toString());
     }
+
 
     return;
   }
@@ -1594,6 +1593,7 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
   resetRinger() {
+
     if (ringTimer != null) {
       dialogOn = false;
       ringTimer!.cancel();
@@ -1610,12 +1610,15 @@ class _StaffSessionState extends State<StaffSession> {
       ringTimer = null;
     }
 
-
     if (inactiveOn == 1 && inactiveLength != 0) {
+      print(inactiveLength);
+      print(inactiveOn);
+
       if (servingStream.value == null && ticketStream.value.isNotEmpty) {
+        print("ringer start");
         if (ringTimer == null) {
           ringTimer =
-              Timer.periodic(Duration(seconds: inactiveLength ?? 120), (value) {
+              Timer.periodic(Duration(seconds: inactiveLength ?? 60), (value) {
                 if (dialogOn == false) {
                   inactiveDialog();
                 }
@@ -1626,6 +1629,7 @@ class _StaffSessionState extends State<StaffSession> {
           ringTimer!.cancel();
           ringTimer = null;
         }
+
         print("serving or no pending");
       }
     }
