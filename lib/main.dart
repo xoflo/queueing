@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:queueing/node.dart';
 import 'package:queueing/screens/displayScreen.dart';
 import 'package:queueing/screens/servicesScreen.dart';
@@ -16,8 +17,7 @@ import 'models/user.dart';
 import 'models/station.dart';
 
 void main() async {
-
-
+  await DefaultCacheManager().emptyCache();
   WidgetsFlutterBinding.ensureInitialized();
   await WakelockPlus.enable();
   await Hive.initFlutter();
@@ -78,7 +78,7 @@ FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapsho
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 0);
+    return LoginScreen(debug: 1);
   }
 
   if (i == 1) {

@@ -73,6 +73,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
   initUpdate() {
+    NodeSocketService().sendMessage('updateDisplay', {});
     update = Timer.periodic(Duration(seconds: 5), (value) {
       NodeSocketService().sendMessage('checkStationSessions', {});
     });
@@ -112,8 +113,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
     });
-
-    NodeSocketService().sendMessage('updateDisplay', {});
 
     super.initState();
   }
