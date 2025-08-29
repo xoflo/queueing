@@ -536,6 +536,9 @@ class _SimpleBatteryTextState extends State<SimpleBatteryText> {
 
 
 Future<void> clearCache() async {
+
+  await DefaultCacheManager().emptyCache();
+
   try {
 
     await DefaultCacheManager().emptyCache();
