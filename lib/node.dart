@@ -112,6 +112,7 @@ class NodeSocketService {
     if (_isConnected) {
       final msg = jsonEncode({'batch': data});
       print(msg);
+      print(msg);
       _channel.sink.add(msg);
     }
   }

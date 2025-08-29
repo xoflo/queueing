@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/hiveService.dart';
 import 'package:web_socket_channel/io.dart';
@@ -13,7 +14,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 String? version = "v1.0.4";
-String? site = '192.168.110.100:8080';
+String? site = 'localhost:8080';
 String? printer;
 String? size;
 
@@ -536,6 +537,9 @@ class _SimpleBatteryTextState extends State<SimpleBatteryText> {
 
 Future<void> clearCache() async {
   try {
+
+    await DefaultCacheManager().emptyCache();
+
     final tempDir = await getTemporaryDirectory();
 
     if (tempDir.existsSync()) {
@@ -545,7 +549,10 @@ Future<void> clearCache() async {
         } catch (_) {}
       }
     }
+
+    return;
   } catch (e) {
+    return;
   }
 }
 

@@ -75,6 +75,17 @@ class Ticket {
     return "$negativeSign${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
+  updateOnly(dynamic data) async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
+      final response = await http.put(uri, body: jsonEncode(data));
+      return;
+    } catch(e) {
+      print(e);
+      return;
+    }
+  }
+
   update(dynamic data) async {
 
     try {

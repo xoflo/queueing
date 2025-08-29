@@ -5,14 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
-import 'package:queueing/models/media.dart';
 import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
 import 'package:queueing/node.dart';
-import 'package:web_socket_channel/io.dart';
 import '../models/user.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 
 class StaffScreen extends StatefulWidget {
@@ -363,7 +360,6 @@ class _StaffSessionState extends State<StaffSession> {
     ticketStream.value = retrievedTickets;
 
     if (retrievedTickets.length > ticketLength) {
-      resetRinger();
       _playNew();
     }
 
@@ -378,6 +374,7 @@ class _StaffSessionState extends State<StaffSession> {
   void initState() {
     super.initState();
 
+    NodeSocketService().sendMessage('getTicket', {});
     initPing();
 
     NodeSocketService().sendMessage("identify", {
@@ -387,26 +384,18 @@ class _StaffSessionState extends State<StaffSession> {
 
 
     NodeSocketService().stream.listen((message) async {
+
       final json = jsonDecode(message);
       final type = json['type'];
       final dynamic data = json['data'];
 
-
-
-      if (type == 'batchStatus') {
-        final status = json['status'];
-        if (status == 'denied') {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Action denied. Ticket already taken.")));
-        }
+      if (type == 'updateStation') {
+        NodeSocketService().sendMessage('getTicket', {});
       }
 
       if (type == 'getTicket') {
         updateTicketStream(null, data);
         updateServingTicketStream(data);
-      }
-
-      if (type == 'updateStation') {
-        NodeSocketService().sendMessage('getTicket', {});
       }
 
       if (type == 'createTicket') {
@@ -647,11 +636,11 @@ class _StaffSessionState extends State<StaffSession> {
                                               ),
                                             ),
                                             onTap: () {
+
                                               callAgainCounter = 0;
 
-                                              final timestamp = DateTime.now().toString();
                                                 try {
-                                                  showDialog(context: context, builder: (_) => AlertDialog(
+                                                  showDialog(context: context, builder: (dialogContext) => AlertDialog(
                                                     title: Text("Call Next?"),
                                                     content: Container(
                                                       height: 30,
@@ -663,9 +652,13 @@ class _StaffSessionState extends State<StaffSession> {
                                                       ),
                                                     ),
                                                     actions: [
-                                                      TextButton(child: Text("Confirm", style: TextStyle(fontWeight: FontWeight.w700)), onPressed: () {
+                                                      TextButton(child: Text("Confirm", style: TextStyle(fontWeight: FontWeight.w700)), onPressed: () async {
+
                                                         if (servingStream.value != null) {
                                                           try {
+
+                                                            final timestamp = DateTime.now().toString();
+
                                                             List<Map<String, dynamic>> dataBatch = [];
 
                                                             dataBatch.add({
@@ -686,97 +679,12 @@ class _StaffSessionState extends State<StaffSession> {
                                                             });
 
                                                             if (ticketStream.value.isNotEmpty) {
-                                                              if (ticketStream.value[0]
-                                                                  .serviceType! ==
-                                                                  callBy ||
-                                                                  callBy ==
-                                                                      'Time Order') {
-
-                                                                dataBatch.add({
-                                                                  'type': 'updateTicket',
-                                                                  'data': {
-                                                                    "id": ticketStream.value[0].id!,
-                                                                    'status': 'Serving',
-                                                                    'timeDone': "",
-                                                                    'log': "${ticketStream.value[0].log!}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
-                                                                    "userAssigned": widget.user.username!,
-                                                                    "stationName": widget.station.stationName!,
-                                                                    "stationNumber": widget.station.stationNumber!,
-                                                                    "timeTaken": timestamp,
-                                                                    "serviceType": ticketStream.value[0].serviceType!,
-                                                                    "blinker": 0,
-                                                                    "callCheck": 0
-                                                                  }
-                                                                });
-
-                                                                dataBatch.add({
-                                                                  'type': 'updateStation',
-                                                                  'data': {
-                                                                    'id': widget.station.id!,
-                                                                    'ticketServing': ticketStream.value[0].codeAndNumber!,
-                                                                    'ticketServingId': ticketStream.value[0].id!
-                                                                  }
-                                                                });
-
-                                                                dataBatch.add({
-                                                                  'type': 'updateDisplay',
-                                                                  'data': {}
-                                                                });
-
-                                                                NodeSocketService().sendBatch(dataBatch);
-                                                                servingStream.value = null;
-
-                                                                print(dataBatch);
-
-                                                                swap = !swap;
-                                                              }
-                                                            } else {
-
-                                                              dataBatch.add({
-                                                                'type': 'updateStation',
-                                                                'data': {
-                                                                  'id': widget.station.id!,
-                                                                  'ticketServing': "",
-                                                                  'ticketServingId': null,
-                                                                }
-                                                              });
-
-                                                              dataBatch.add({
-                                                                'type': 'updateDisplay',
-                                                                'data': {}
-                                                              });
-
-                                                              NodeSocketService().sendBatch(dataBatch);
-                                                              servingStream.value = null;
-
-                                                              resetRinger();
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                  content:
-                                                                  Text("Ticket complete.")));
-                                                            }
-
-                                                          } catch(e) {
-                                                            print(e);
-                                                          }
-                                                        }
-                                                        else {
-
-                                                          List<Map<String, dynamic>> dataBatch = [];
-
-                                                          if (ticketStream.value.isNotEmpty) {
-                                                            if (ticketStream.value[0]
-                                                                .serviceType! ==
-                                                                callBy ||
-                                                                callBy ==
-                                                                    'Time Order') {
-
-
                                                               dataBatch.add({
                                                                 'type': 'updateTicket',
                                                                 'data': {
                                                                   "id": ticketStream.value[0].id!,
                                                                   'status': 'Serving',
-                                                                  'timeDone': "",
+                                                                  'timeDone': null,
                                                                   'log': "${ticketStream.value[0].log!}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
                                                                   "userAssigned": widget.user.username!,
                                                                   "stationName": widget.station.stationName!,
@@ -804,8 +712,87 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                               NodeSocketService().sendBatch(dataBatch);
                                                               swap = !swap;
+                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                  content:
+                                                                  Text("Ticket complete.")));
 
+
+                                                            } else {
+
+                                                              dataBatch.add({
+                                                                'type': 'updateStation',
+                                                                'data': {
+                                                                  'id': widget.station.id!,
+                                                                  'ticketServing': "",
+                                                                  'ticketServingId': null,
+                                                                }
+                                                              });
+
+                                                              dataBatch.add({
+                                                                'type': 'updateDisplay',
+                                                                'data': {}
+                                                              });
+
+
+                                                              NodeSocketService().sendBatch(dataBatch);
+                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                  content:
+                                                                  Text("Ticket complete.")));
                                                             }
+
+
+                                                            print(dataBatch);
+
+
+                                                          } catch(e) {
+                                                            print(e);
+                                                          }
+                                                        } else {
+
+                                                          List<Map<String, dynamic>> dataBatch = [];
+
+                                                          if (ticketStream.value.isNotEmpty) {
+
+                                                            final timestamp = DateTime.now().toString();
+
+                                                            dataBatch.add({
+                                                              'type': 'updateTicket',
+                                                              'data': {
+                                                                "id": ticketStream.value[0].id!,
+                                                                'status': 'Serving',
+                                                                'timeDone': null,
+                                                                'log': "${ticketStream.value[0].log!}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
+                                                                "userAssigned": widget.user.username!,
+                                                                "stationName": widget.station.stationName!,
+                                                                "stationNumber": widget.station.stationNumber!,
+                                                                "timeTaken": timestamp,
+                                                                "serviceType": ticketStream.value[0].serviceType!,
+                                                                "blinker": 0,
+                                                                "callCheck": 0
+                                                              }
+                                                            });
+
+                                                            dataBatch.add({
+                                                              'type': 'updateStation',
+                                                              'data': {
+                                                                'id': widget.station.id!,
+                                                                'ticketServing': ticketStream.value[0].codeAndNumber!,
+                                                                'ticketServingId': ticketStream.value[0].id!
+                                                              }
+                                                            });
+
+                                                            dataBatch.add({
+                                                              'type': 'updateDisplay',
+                                                              'data': {}
+                                                            });
+
+
+                                                            NodeSocketService().sendBatch(dataBatch);
+                                                            swap = !swap;
+                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                content:
+                                                                Text("Ticket complete.")));
+
                                                           }  else {
 
                                                             ScaffoldMessenger.of(
@@ -815,15 +802,17 @@ class _StaffSessionState extends State<StaffSession> {
                                                                     "No pending tickets to serve at the moment.")));
                                                           }
                                                         }
-                                                        Navigator.pop(context);
                                                       })
                                                     ],
                                                   ));
+
+
 
                                                 } catch(e) {
                                                   print(e);
                                                   print("Call Next no Dialog");
                                                 }
+
 
 
                                             },
@@ -847,7 +836,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                 ],
                                               ),
                                             ),
-                                            onTap: () {
+                                            onTap: () async {
                                               final timestamp =
                                                   DateTime.now().toString();
 
@@ -855,7 +844,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                 showDialog(
                                                     context: context,
                                                     builder:
-                                                        (_) => AlertDialog(
+                                                        (dialogContext) => AlertDialog(
                                                               title: Text(
                                                                   "Select Station to Transfer"),
                                                               content:
@@ -893,67 +882,53 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   'userAssigned': "",
                                                                                                   'stationName': "",
                                                                                                   'stationNumber': "",
-                                                                                                  'timeTaken': servingStream.value!.timeTaken!,
-                                                                                                  'timeDone' : "",
+                                                                                                  'timeTaken': servingStream.value!.timeTaken,
+                                                                                                  'timeDone' : null,
                                                                                                   'serviceType': service.serviceType!,
                                                                                                   'callCheck': 0,
                                                                                                   'blinker': 0
                                                                                                 }
                                                                                               });
 
-
                                                                                               if (ticketStream.value.isNotEmpty) {
-                                                                                                if (ticketStream.value[0]
-                                                                                                    .serviceType! ==
-                                                                                                    callBy ||
-                                                                                                    callBy ==
-                                                                                                        'Time Order') {
 
-                                                                                                  dataBatch.add({
-                                                                                                    'type': 'updateTicket',
-                                                                                                    'data': {
-                                                                                                      "id": ticketStream.value[0].id!,
-                                                                                                      "userAssigned": widget.user.username!,
-                                                                                                      "status": "Serving",
-                                                                                                      "stationName": widget.station.stationName!,
-                                                                                                      "stationNumber": widget.station.stationNumber!,
-                                                                                                      "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
-                                                                                                      "timeTaken": timestamp,
-                                                                                                      "timeDone" : "",
-                                                                                                      "serviceType": ticketStream.value[0].serviceType!,
-                                                                                                      'callCheck': 0,
-                                                                                                      'blinker': 0
-                                                                                                    }
-                                                                                                  });
+                                                                                                dataBatch.add({
+                                                                                                  'type': 'updateTicket',
+                                                                                                  'data': {
+                                                                                                    "id": ticketStream.value[0].id!,
+                                                                                                    "userAssigned": widget.user.username!,
+                                                                                                    "status": "Serving",
+                                                                                                    "stationName": widget.station.stationName!,
+                                                                                                    "stationNumber": widget.station.stationNumber!,
+                                                                                                    "log":"${ticketStream.value[0].log}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
+                                                                                                    "timeTaken": timestamp,
+                                                                                                    "timeDone" : null,
+                                                                                                    "serviceType": ticketStream.value[0].serviceType!,
+                                                                                                    'callCheck': 0,
+                                                                                                    'blinker': 0
+                                                                                                  }
+                                                                                                });
 
-                                                                                                  dataBatch.add({
-                                                                                                    'type': 'updateStation',
-                                                                                                    'data': {
-                                                                                                      'id': widget.station.id!,
-                                                                                                      'ticketServing': ticketStream.value[0].codeAndNumber!,
-                                                                                                      'ticketServingId': ticketStream.value[0].id!
-                                                                                                    }
-                                                                                                  });
+                                                                                                dataBatch.add({
+                                                                                                  'type': 'updateStation',
+                                                                                                  'data': {
+                                                                                                    'id': widget.station.id!,
+                                                                                                    'ticketServing': ticketStream.value[0].codeAndNumber!,
+                                                                                                    'ticketServingId': ticketStream.value[0].id!
+                                                                                                  }
+                                                                                                });
 
-                                                                                                  dataBatch.add({
-                                                                                                    'type': 'updateDisplay',
-                                                                                                    'data': {}
-                                                                                                  });
-
-                                                                                                  NodeSocketService().sendBatch(dataBatch);
-                                                                                                  servingStream.value = null;
+                                                                                                dataBatch.add({
+                                                                                                  'type': 'updateDisplay',
+                                                                                                  'data': {}
+                                                                                                });
 
 
-                                                                                                  swap = !swap;
-
-                                                                                                  Navigator.pop(context, 1);
-
-                                                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
-
-                                                                                                  resetRinger();
+                                                                                                NodeSocketService().sendBatch(dataBatch);
+                                                                                                swap = !swap;
+                                                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
 
 
-                                                                                                }
                                                                                               } else {
                                                                                                 dataBatch.add({
                                                                                                   'type': 'updateStation',
@@ -969,19 +944,19 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                   'data': {}
                                                                                                 });
 
-                                                                                                NodeSocketService().sendBatch(dataBatch);
-                                                                                                servingStream.value = null;
 
-                                                                                                Navigator.pop(context, 1);
+                                                                                                NodeSocketService().sendBatch(dataBatch);
                                                                                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
 
-                                                                                                resetRinger();
+                                                                                                return;
                                                                                               }
+
 
                                                                                             } catch(e) {
                                                                                               print(e);
                                                                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
                                                                                             }
+
                                                                                           },
                                                                                         );
                                                                                       })
@@ -1053,7 +1028,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                           "stationName": widget.station.stationName!,
                                                           "stationNumber": widget.station.stationNumber!,
                                                           "timeTaken": timestamp,
-                                                          "timeDone" : "",
+                                                          "timeDone" : null,
                                                           "serviceType": servingStream.value!.serviceType!,
                                                           'callCheck': 0,
                                                           'blinker': 0,
@@ -1076,12 +1051,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                       });
 
                                                       NodeSocketService().sendBatch(dataBatch);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text("Ticket called again.")));
 
                                                     } else {
                                                       showDialog(
                                                           context: context,
                                                           builder:
-                                                              (_) =>
+                                                              (dialogContext) =>
                                                               AlertDialog(
                                                                 title: Text(
                                                                     "Release Ticket?"),
@@ -1109,12 +1086,14 @@ class _StaffSessionState extends State<StaffSession> {
                                                                             "stationName": "",
                                                                             "stationNumber": "",
                                                                             "timeTaken": timestamp,
-                                                                            "timeDone" : "",
+                                                                            "timeDone" : null,
                                                                             "serviceType": servingStream.value!.serviceType!,
                                                                             'callCheck': servingStream.value!.callCheck!,
                                                                             'blinker': servingStream.value!.blinker!,
                                                                           }
                                                                         });
+
+                                                                        servingStream.value = null;
 
                                                                         dataBatch.add({
                                                                           'type': 'updateStation',
@@ -1131,13 +1110,11 @@ class _StaffSessionState extends State<StaffSession> {
                                                                         });
 
                                                                         NodeSocketService().sendBatch(dataBatch);
-                                                                        servingStream.value = null;
+                                                                        Navigator.pop(dialogContext);
+                                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                                        SnackBar(content: Text("Ticket released.")),
+                                                                        );
 
-
-                                                                        Navigator.pop(context);
-                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Released")));
-
-                                                                        resetRinger();
                                                                       })
                                                                 ],
                                                               ));
@@ -1454,13 +1431,16 @@ class _StaffSessionState extends State<StaffSession> {
 
 
   updateServingTicketStream(dynamic data) {
+    servingStream.value = null;
     List<Ticket> servings = getServingTicket(data);
     if (servings.isEmpty) {
       servingStream.value = null;
+      resetRinger();
       return servings;
     } else {
       servingStream.value = null;
       servingStream.value = servings[0];
+      resetRinger();
       return servings;
     }
   }

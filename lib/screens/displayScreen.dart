@@ -3,17 +3,12 @@ import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-import 'package:hive/hive.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
-import 'package:queueing/models/media.dart';
 import 'package:queueing/node.dart';
-import 'package:video_player/video_player.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/station.dart';
 import '../models/ticket.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -35,9 +30,11 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   Timer? _debounceTimer;
 
+  Set<int> playedTickets = {};
   List<Ticket> savedTicket = [];
-
   List<Ticket> ticketsToCall = [];
+
+
   bool isPlaying = false;
 
   Timer? update;
@@ -73,6 +70,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
   initUpdate() {
+
     update = Timer.periodic(Duration(seconds: 5), (value) {
       NodeSocketService().sendMessage('checkStationSessions', {});
     });
@@ -113,8 +111,6 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
     });
 
-    NodeSocketService().sendMessage('updateDisplay', {});
-
     super.initState();
   }
 
@@ -137,56 +133,48 @@ class _DisplayScreenState extends State<DisplayScreen> {
       stationList.add(Station.fromJson(station));
     }
 
-    savedTicket = [];
-    savedTicket = ticketList;
 
     List<Ticket> toUpdate = ticketList
-        .where(
-            (e) => e.callCheck == 0 && e.status == 'Serving')
+        .where((e) => e.callCheck == 0 && e.status == 'Serving' && !playedTickets.contains(e.id))
         .toList();
 
-
     for (Ticket ticket in toUpdate) {
-      if (!ticketsToCall.any((t) => t.id == ticket.id)) {
-        ticketsToCall.add(ticket);
-      }
+      ticketsToCall.add(ticket);
+      playedTickets.add(ticket.id!);
+      savedTicket.add(ticket);
     }
 
     _playNextTicket();
 
     stationStream.value = stationList;
+
+    print(stationStream.value);
   }
 
   void _playNextTicket() async {
-    if (isPlaying || ticketsToCall.isEmpty) return;
+    if (isPlaying) return;
 
     isPlaying = true;
-    final ticket = ticketsToCall.removeAt(0); // ← this is the ticket to use
 
-    AudioPlayer player = AudioPlayer();
-    player.setVolume(0.7);
+    while (ticketsToCall.isNotEmpty) {
+      final ticket = ticketsToCall.removeAt(0);
 
-    await player.play(AssetSource('sound.mp3'));
+      AudioPlayer player = AudioPlayer();
+      player.setVolume(0.7);
+      await player.play(AssetSource('sound.mp3'));
 
-    if (ticket.callCheck == 0) {
-      await _speak(
-          ticket.codeAndNumber!,
-          "${ticket.stationName!}${ticket.stationNumber != 0 ? ticket.stationNumber! : 0}"
-      );
+      if (ticket.callCheck == 0) {
+        await _speak(ticket.codeAndNumber!,
+            "${ticket.stationName!}${ticket.stationNumber != 0 ? ticket.stationNumber! : 0}");
+        await ticket.updateOnly({'id': ticket.id, 'callCheck': 1});
+      }
 
-      await ticket.update({
-        'id': ticket.id,
-        'callCheck' : 1
-      });
+      await Future.delayed(Duration(milliseconds: 500));
     }
 
-
     isPlaying = false;
-
-    Future.delayed(Duration(milliseconds: 500), () {
-      _playNextTicket(); // Recursively call to play next
-    });
   }
+
 
 
 
@@ -204,10 +192,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
               child: Icon(Icons.refresh),
               onPressed: () async {
                 await clearCache();
-                savedTicket = [];
                 NodeSocketService().connect(context: context);
                 NodeSocketService().sendMessage('refresh', {});
-                NodeSocketService().sendMessage('updateDisplay', {});
           }): SizedBox();
         }),
         body: GestureDetector(
@@ -534,7 +520,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                           crossAxisCount: 2),
                                       itemCount: value.length,
                                       itemBuilder: (context, i) {
+
+                                        print(value.length);
                                         Station station = value[i];
+                                        print(station.ticketServingId);
 
                                         return station.ticketServingId != null && station.inSession == 1 ?
                                         FutureBuilder(
@@ -723,6 +712,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   updateStations() async {
     List<Station> stations = await getStationSQL();
+    print(stations.length);
+    for (int i =0; i < stations.length; i++) {
+      print(stations[i].ticketServingId);
+    }
     stationStream.value = stations;
     return stations;
   }
@@ -761,9 +754,9 @@ class _DisplayScreenState extends State<DisplayScreen> {
                             crossAxisCount: 5),
                         itemCount: value.length,
                         itemBuilder: (context, i) {
-                          final Station station = value[i];
+                          final Station? station = value[i];
 
-                          return (station.ticketServingId != null ) && station.inSession == 1 ?
+                          return (station!.ticketServingId != null ) && station.inSession == 1 ?
                           FutureBuilder(
                               future: getTicketSaved(station.ticketServingId),
                               builder: (context, AsyncSnapshot<List<Ticket>> snapshot) {
@@ -1092,7 +1085,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   Future<void> updateBlinker(Ticket ticket) async {
-    await ticket.update({
+    await ticket.updateOnly({
       'id': ticket.id!,
       'blinker': 1,
     });

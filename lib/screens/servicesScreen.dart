@@ -14,8 +14,6 @@ import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/services/serviceGroup.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/node.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/bluetoothprint/bluetoothprint.dart';
 import '../models/controls.dart';
 import '../models/priority.dart';
@@ -59,11 +57,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
     NodeSocketService().stream.listen((onData) async {
       final result = jsonDecode(onData);
       final type = result['type'];
-      final List<dynamic> data = result['data'];
+      final data = result['data'];
 
       if (type == 'stationPing') {
         NodeSocketService().sendMessage('getActiveServices', {});
-        NodeSocketService().sendMessage('checkStationSessions', {});
       }
 
       if (type == 'getActiveServices') {
@@ -102,7 +99,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
     activeServiceTimer = Timer.periodic(Duration(seconds: 5), (callback) {
       NodeSocketService().sendMessage('getActiveServices', {});
-      NodeSocketService().sendMessage('checkStationSessions', {});
     });
   }
 
@@ -898,7 +894,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
