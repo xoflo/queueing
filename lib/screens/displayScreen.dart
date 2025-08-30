@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -9,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:queueing/globals.dart';
 import 'package:queueing/node.dart';
+import '../models/controls.dart';
 import '../models/station.dart';
 import '../models/ticket.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -104,7 +107,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
       }
 
       if (type == 'refresh') {
-        setState(() {});
+        this.setState(() {});
       }
 
 
@@ -179,6 +182,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
 
+
   @override
   Widget build(BuildContext context) {
     containerColor = Theme.of(context).cardTheme.color;
@@ -188,13 +192,25 @@ class _DisplayScreenState extends State<DisplayScreen> {
         floatingActionButton: StatefulBuilder(
             key: refreshKey,
             builder: (context, setStateRefresh) {
-          return showRefresh == true ?  FloatingActionButton(
-              child: Icon(Icons.refresh),
-              onPressed: () async {
-                await clearCache();
-                NodeSocketService().connect(context: context);
-                NodeSocketService().sendMessage('refresh', {});
-          }): SizedBox();
+          return showRefresh == true ?  Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            spacing: 5,
+            children: [
+              FloatingActionButton(
+                  child: Icon(Icons.refresh),
+                  onPressed: () async {
+                    await clearCache();
+                    this.setState(() {});
+                    NodeSocketService().connect(context: context);
+                    NodeSocketService().sendMessage('refresh', {});
+              }),
+              FloatingActionButton(
+                  child: Icon(Icons.lock_open),
+                  onPressed: () async {
+                    await settingSecurityPin();
+                  })
+            ],
+          ): SizedBox();
         }),
         body: GestureDetector(
           onLongPress: () {
@@ -262,6 +278,89 @@ class _DisplayScreenState extends State<DisplayScreen> {
         ),
       ),
     );
+  }
+
+
+  settingSecurityPin() async {
+
+    final Control kioskControl = await getKioskControl();
+    TextEditingController pass = TextEditingController();
+    bool obscure = true;
+
+    if (kioskControl.value! == 1) {
+      showDialog(context: context, builder: (_) => AlertDialog(
+        title: Text("Unlock Pin"),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              height: 120,
+              child: Column(
+                children: [
+                  TextField(
+                    onSubmitted: (value) {
+                      if (pass.text == kioskControl.other!) {
+                        final intent = AndroidIntent(
+                          action: 'android.settings.HOME_SETTINGS',
+                          flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+                        );
+                        intent.launch();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password Incorrect")));
+                      }
+                    },
+                    controller: pass,
+                    obscureText: obscure,
+                    decoration: InputDecoration(
+                        labelText: 'Kiosk Password'
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Row(
+                      children: [
+                        IconButton(onPressed: () {
+                          obscure = !obscure;
+                          setState((){});
+                        }, icon: obscure == true ? Icon(Icons.remove_red_eye_outlined) : Icon(Icons.remove_red_eye)),
+                        TextButton(onPressed: () {
+                          if (pass.text == kioskControl.other!) {
+                            final intent = AndroidIntent(
+                              action: 'android.settings.HOME_SETTINGS',
+                              flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password Incorrect")));
+                          }
+                        }, child: Text("Access")),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        ),
+      ));
+    } else {
+      final intent = AndroidIntent(
+        action: 'android.settings.HOME_SETTINGS',
+        flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+      );
+      intent.launch();
+    }
+  }
+
+
+  getKioskControl() async {
+    try {
+      final List<dynamic> controls = await getSettings(context);
+      final result = controls.where((e) => e['controlName'] == "Kiosk Password").toList()[0];
+      final Control kioskControl = Control.fromJson(result);
+      return kioskControl;
+    } catch(e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("For security, server connection required.")));
+      print(e);
+    }
   }
 
   topNowServingText(int vqd) {

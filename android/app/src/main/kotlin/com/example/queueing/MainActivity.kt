@@ -55,7 +55,9 @@ class MainActivity : FlutterActivity() {
 
     override fun onResume() {
         super.onResume()
-        startLockTaskIfAllowed()
+        window.decorView.postDelayed({
+            startLockTaskIfAllowed()
+        }, 1000)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

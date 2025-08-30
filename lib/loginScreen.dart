@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:queueing/deviceInfo.dart';
 import 'package:queueing/globals.dart';
 import 'package:queueing/models/controls.dart';
 import 'package:queueing/models/station.dart';
@@ -45,10 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned(
-              top: 0,
-              left: 0,
-              child: SimpleBatteryText()),
           Container(
             height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
@@ -62,6 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      BatteryWidget(),
                       SizedBox(height: 25),
                       Container(
                         height: MediaQuery.of(context).size.width < 400 ? 150 : 300,
@@ -200,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                        */
 
 
-                      Text("$version", style: TextStyle(color: Colors.grey))
+                      Text("$version", style: TextStyle(color: Colors.grey)),
                     ]
                 ),
               ),

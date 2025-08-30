@@ -118,6 +118,7 @@ class NodeSocketService {
   }
 
   void _connected() {
+    NodeSocketService().sendMessage('refresh', {});
     Fluttertoast.showToast(
       msg: "Connected to Server.",
       toastLength: Toast.LENGTH_SHORT,

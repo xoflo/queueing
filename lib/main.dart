@@ -17,8 +17,8 @@ import 'models/user.dart';
 import 'models/station.dart';
 
 void main() async {
-  await DefaultCacheManager().emptyCache();
   WidgetsFlutterBinding.ensureInitialized();
+  await DefaultCacheManager().emptyCache();
   await WakelockPlus.enable();
   await Hive.initFlutter();
   runApp(MyApp());
@@ -77,7 +77,7 @@ FutureBuilder(future: ipHandler(), builder: (context, AsyncSnapshot<int> snapsho
 
 autoDisplay(BuildContext context, int i) {
   if (i == 0) {
-    return LoginScreen(debug: 1);
+    return LoginScreen(debug: 0);
   }
 
   if (i == 1) {

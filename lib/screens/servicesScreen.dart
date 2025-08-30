@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/foundation.dart';
@@ -176,6 +178,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   onPressed: () async {
                     await settingSecurity();
                   }),
+
+              FloatingActionButton(
+                  child: Icon(Icons.lock_open),
+                  onPressed: () async {
+                    await settingSecurityPin();
+              })
             ],
           ) : SizedBox();
         }),
@@ -894,7 +902,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
@@ -1157,10 +1165,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   getKioskControl() async {
-    final List<dynamic> controls = await getSettings(context);
-    final result = controls.where((e) => e['controlName'] == "Kiosk Password").toList()[0];
-    final Control kioskControl = Control.fromJson(result);
-    return kioskControl;
+    try {
+      final List<dynamic> controls = await getSettings(context);
+      final result = controls.where((e) => e['controlName'] == "Kiosk Password").toList()[0];
+      final Control kioskControl = Control.fromJson(result);
+      return kioskControl;
+    } catch(e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("For security, server connection required.")));
+      print(e);
+    }
+
   }
 
   printerSettingDialog() {
@@ -1378,6 +1392,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     TextEditingController pass = TextEditingController();
     bool obscure = true;
 
+
     if (kioskControl.value! == 1) {
       showDialog(context: context, builder: (_) => AlertDialog(
         title: Text("Printer Settings"),
@@ -1429,6 +1444,76 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ));
     } else {
       printerSettingDialog();
+    }
+  }
+
+
+  settingSecurityPin() async {
+
+    final Control kioskControl = await getKioskControl();
+    TextEditingController pass = TextEditingController();
+    bool obscure = true;
+
+    if (kioskControl.value! == 1) {
+      showDialog(context: context, builder: (_) => AlertDialog(
+        title: Text("Unlock Pin"),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              height: 120,
+              child: Column(
+                children: [
+                  TextField(
+                    onSubmitted: (value) {
+                      if (pass.text == kioskControl.other!) {
+                        final intent = AndroidIntent(
+                          action: 'android.settings.HOME_SETTINGS',
+                          flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+                        );
+                        intent.launch();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password Incorrect")));
+                      }
+                    },
+                    controller: pass,
+                    obscureText: obscure,
+                    decoration: InputDecoration(
+                        labelText: 'Kiosk Password'
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Row(
+                      children: [
+                        IconButton(onPressed: () {
+                          obscure = !obscure;
+                          setState((){});
+                        }, icon: obscure == true ? Icon(Icons.remove_red_eye_outlined) : Icon(Icons.remove_red_eye)),
+                        TextButton(onPressed: () {
+                          if (pass.text == kioskControl.other!) {
+                            final intent = AndroidIntent(
+                              action: 'android.settings.HOME_SETTINGS',
+                              flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password Incorrect")));
+                          }
+                        }, child: Text("Access")),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        ),
+      ));
+    } else {
+      final intent = AndroidIntent(
+        action: 'android.settings.HOME_SETTINGS',
+        flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+      );
+      intent.launch();
     }
   }
 
