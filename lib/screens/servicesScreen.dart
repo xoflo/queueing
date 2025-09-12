@@ -290,8 +290,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                         'Gender Option')
                                                         .toList()[0]['value']);
 
+                                                    // name, gender
+
                                                     if (services.contains(service.serviceType!)) {
-                                                      await addTicketDialog(priority, name, gender, service);
+                                                      await addTicketDialog(priority, 1, 1, service);
                                                     } else {
                                                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("This service is currently closed.")));
                                                     }
@@ -903,7 +905,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 0) {
+      // value == 0 to generate Tickets without printer.
+
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
@@ -1211,7 +1215,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 showDialog(
                                     context: context,
                                     builder: (_) =>
-                                        usb?.interface());
+                                    usb?.interface());
                               } else {
                                 ScaffoldMessenger.of(
                                     context)

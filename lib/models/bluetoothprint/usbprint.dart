@@ -18,9 +18,6 @@ class Usbprint {
 
 
   interface() {
-
-
-
     return AlertDialog(
       content: FutureBuilder(
         future: getPrinter(),

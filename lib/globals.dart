@@ -16,8 +16,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String? version = "v1.0.7";
-String? site = '192.168.110.100:8080';
-// String? site = 'localhost:8080';
+// String? site = '192.168.110.100:8080';
+String? site = 'localhost:8080';
 String? printer;
 String? size;
 

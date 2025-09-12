@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         body: autoDisplay(context, 0),
       ),
-      // 0: Phone, 1: Kiosk, Display
+      // 0: Phone, 1: Kiosk, 2: Display build
       //
     );
   }
