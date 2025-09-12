@@ -30,24 +30,73 @@ class _DisplayScreenState extends State<DisplayScreen> {
   final FlutterTts flutterTts = FlutterTts();
 
   ValueNotifier<List<Station>> stationStream = ValueNotifier([]);
+  List<Ticket> displayTicketList = [];
 
   Timer? _debounceTimer;
 
-  Set<int> playedTickets = {};
-  List<Ticket> savedTicket = [];
+  Timer? clearCacheTimer;
+
   List<Ticket> ticketsToCall = [];
 
 
   bool isPlaying = false;
 
   Timer? update;
+  bool _isProcessing = false;
 
 
+  Map<int, DateTime> lastQueuedAt = {};
+  Duration requeueCooldown = const Duration(seconds: 2);
 
   Future<void> _speak(String code, String teller) async {
-    await Future.delayed(Duration(seconds: 2, milliseconds: 250));
+    await Future.delayed(Duration(milliseconds: 500));
     flutterTts.setVolume(1);
     await flutterTts.speak("$code, $teller");
+  }
+
+  void _enqueueTicket(Ticket ticket) {
+    ticketsToCall.add(ticket);
+    if (!_isProcessing) {
+      _processQueue();
+    }
+  }
+
+  Future<void> _processQueue() async {
+    _isProcessing = true;
+
+    flutterTts.setCompletionHandler(() {
+      isPlaying = false;
+    });
+
+    while (ticketsToCall.isNotEmpty) {
+      final Ticket ticket = ticketsToCall.removeAt(0);
+
+      // ding
+      AudioPlayer player = AudioPlayer();
+      player.setVolume(0.7);
+      await player.play(AssetSource('sound.mp3'));
+
+      if (ticket.callCheck == 0) {
+        isPlaying = true;
+
+        // speak
+        await _speak(
+          ticket.codeAndNumber!,
+          "${ticket.stationName!}${ticket.stationNumber != 0 ? ticket.stationNumber! : 0}",
+        );
+
+        // wait until TTS finishes
+        while (isPlaying) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+
+      }
+
+      // small gap before next ticket
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
+    _isProcessing = false;
   }
 
   constraint(BuildContext context, Widget widget) {
@@ -73,25 +122,62 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
   initUpdate() {
-
     update = Timer.periodic(Duration(seconds: 5), (value) {
       NodeSocketService().sendMessage('checkStationSessions', {});
+    });
+
+    clearCacheTimer = Timer.periodic(Duration(minutes: 5), (value) async {
+      NodeSocketService().sendMessage('refresh', {});
     });
   }
 
   @override
   void dispose() {
+    clearCacheTimer!.cancel();
     update!.cancel();
     super.dispose();
   }
 
+
+  void _resetAppState() {
+    // Clear in-memory lists
+    displayTicketList = [];
+    ticketsToCall = [];
+    stationStream.value = [];
+
+    // Cancel and restart timers
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+
+    clearCacheTimer?.cancel();
+    clearCacheTimer = null;
+
+    update?.cancel();
+    update = null;
+
+    // Restart timers fresh
+    initUpdate();
+
+    // Reconnect WebSocket
+    NodeSocketService().dispose();
+    NodeSocketService().connect(context: context);
+
+    // Request fresh data
+    NodeSocketService().sendMessage('updateDisplay', {});
+
+    // Trigger rebuild
+    if (mounted) {
+      this.setState(() {});
+    }
+
+  }
 
 
   @override
   void initState() {
     initUpdate();
 
-    NodeSocketService().stream.listen((message) {
+    NodeSocketService().stream.listen((message) async {
       final json = jsonDecode(message);
       final type = json['type'];
       final data = json['data'];
@@ -101,18 +187,15 @@ class _DisplayScreenState extends State<DisplayScreen> {
           _debounceTimer!.cancel();
         }
 
-        _debounceTimer = Timer(Duration(milliseconds: 1000), () {
-          updateDisplayNode(data);
+        _debounceTimer = Timer(Duration(milliseconds: 1000), () async {
+          await updateDisplayNode(data);
         });
       }
 
-      if (type == 'refresh') {
-        this.setState(() {});
-      }
+    },
 
-
-
-    });
+      cancelOnError: false,
+    );
 
     super.initState();
   }
@@ -121,7 +204,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
   bool showRefresh = false;
 
 
-  updateDisplayNode(List<dynamic> data) {
+  updateDisplayNode(List<dynamic> data) async {
+
     final List<dynamic> stations = data[0];
     final List<dynamic> tickets = data[1];
 
@@ -138,30 +222,27 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
 
     List<Ticket> toUpdate = ticketList
-        .where((e) => e.callCheck == 0 && e.status == 'Serving' && !playedTickets.contains(e.id))
+        .where((e) => e.callCheck! == 0)
         .toList();
 
     for (Ticket ticket in toUpdate) {
-      ticketsToCall.add(ticket);
-      playedTickets.add(ticket.id!);
-      savedTicket.add(ticket);
+      try {
+        await ticket.updateOnly({'id': ticket.id, 'callCheck': 1});
+      } catch (e) {
+        print(e);
+      }
+      _enqueueTicket(ticket);
     }
 
-    _playNextTicket();
-
+    displayTicketList = ticketList;
     stationStream.value = stationList;
-
-    print(stationStream.value);
   }
 
   void _playNextTicket() async {
-    if (isPlaying) return;
-
-    isPlaying = true;
 
     while (ticketsToCall.isNotEmpty) {
-      final ticket = ticketsToCall.removeAt(0);
 
+      final Ticket ticket = ticketsToCall[0];
       AudioPlayer player = AudioPlayer();
       player.setVolume(0.7);
       await player.play(AssetSource('sound.mp3'));
@@ -169,17 +250,18 @@ class _DisplayScreenState extends State<DisplayScreen> {
       if (ticket.callCheck == 0) {
         await _speak(ticket.codeAndNumber!,
             "${ticket.stationName!}${ticket.stationNumber != 0 ? ticket.stationNumber! : 0}");
-        await ticket.updateOnly({'id': ticket.id, 'callCheck': 1});
+        try {
+          await ticket.updateOnly({'id': ticket.id, 'callCheck': 1});
+        } catch(e) {
+          print(e);
+        }
       }
 
+      ticketsToCall.removeAt(0);
       await Future.delayed(Duration(milliseconds: 500));
     }
 
-    isPlaying = false;
   }
-
-
-
 
 
 
@@ -200,9 +282,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                   child: Icon(Icons.refresh),
                   onPressed: () async {
                     await clearCache();
-                    this.setState(() {});
-                    NodeSocketService().connect(context: context);
-                    NodeSocketService().sendMessage('refresh', {});
+                    _resetAppState();
               }),
               FloatingActionButton(
                   child: Icon(Icons.lock_open),
@@ -234,6 +314,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                           scrollDirection: Axis.vertical,
                           child: Column(
                             children: [
+
                               constraint(context, Column(
                                 children: [
                                   topNowServingText(vqd.data),
@@ -386,7 +467,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
             (e) => e.callCheck == 0)
         .toList();
 
-    List<Ticket> ticketsToCall = [];
+
 
     if (toUpdate.isNotEmpty) {
 
@@ -486,7 +567,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         .data!
                         .length;
                 i++) {
-                  links.add("http://$site/queueing_api/videos/${snapshotMedia.data![i]['link']}");
+                  links.add("http://192.168.110.100:8080/queueing_api/videos/${snapshotMedia.data![i]['link']}");
                 }
 
                 return Column(
@@ -640,7 +721,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                                       begin: Colors.red,
                                                       end: Theme.of(context).cardColor.withAlpha(200)
                                                   ),
-                                                  duration: Duration(seconds: 180),
+                                                  duration: Duration(seconds: 10),
                                                   builder: (BuildContext context, color, Widget? child) {
                                                     updateBlinker(ticket);
                                                     return Padding(
@@ -872,7 +953,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                                             begin: Colors.red,
                                             end: Theme.of(context).cardColor.withAlpha(200)
                                         ),
-                                        duration: Duration(seconds: 180),
+                                        duration: Duration(seconds: 10),
                                         builder: (BuildContext context, color, Widget? child) {
                                           updateBlinker(ticket);
                                           return Opacity(
@@ -1096,7 +1177,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
                     for (int i = 0; i < mediabg.length; i++) {
                       try {
-                        links.add("http://$site/queueing_api/bgvideos/${mediabg[i]['link']}");
+                        links.add("http://192.168.110.100:8080/queueing_api/bgvideos/${mediabg[i]['link']}");
                       } catch(e) {
                         print('file not found, has record on server');
                       }
@@ -1139,7 +1220,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
     try {
       List<Ticket> newTickets = [];
 
-      newTickets = savedTicket.where((e) => e.status == 'Serving').toList();
+      newTickets = displayTicketList;
       newTickets.sort((a, b) => DateTime.parse(b.timeTaken!).compareTo(DateTime.parse(a.timeTaken!)));
 
       if (ticketServingId != null) {
@@ -1184,10 +1265,14 @@ class _DisplayScreenState extends State<DisplayScreen> {
   }
 
   Future<void> updateBlinker(Ticket ticket) async {
-    await ticket.updateOnly({
-      'id': ticket.id!,
-      'blinker': 1,
-    });
+    try {
+      await ticket.updateOnly({
+        'id': ticket.id!,
+        'blinker': 1,
+      });
+    } catch(e) {
+      print(e);
+    }
   }
 
 

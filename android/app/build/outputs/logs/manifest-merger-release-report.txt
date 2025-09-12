@@ -1,7 +1,7 @@
 -- Merging decision tree log ---
 application
-INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:6:5-76:19
-INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:6:5-76:19
+INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:6:5-77:19
+INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:6:5-77:19
 MERGED from [androidx.window:window:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\8859fd2468ade3ef2655d1f63d6737f2\transformed\jetified-window-1.2.0\AndroidManifest.xml:22:5-29:19
 MERGED from [androidx.window:window:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\8859fd2468ade3ef2655d1f63d6737f2\transformed\jetified-window-1.2.0\AndroidManifest.xml:22:5-29:19
 MERGED from [androidx.emoji2:emoji2:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\c8a87f73b286ed646aad63ec076596dc\transformed\jetified-emoji2-1.0.0\AndroidManifest.xml:25:5-35:19
@@ -36,10 +36,10 @@ MERGED from [com.journeyapps:zxing-android-embedded:3.6.0] C:\Users\flo\.gradle\
 		INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml
 		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:10:9-42
 manifest
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-88:12
-INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-88:12
-INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-88:12
-INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-88:12
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-89:12
+INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-89:12
+INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-89:12
+INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:1:1-89:12
 MERGED from [:android_intent_plus] C:\Users\flo\StudioProjects\queueing\build\android_intent_plus\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
 MERGED from [:audioplayers_android] C:\Users\flo\StudioProjects\queueing\build\audioplayers_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
 MERGED from [:blue_thermal_printer] C:\Users\flo\StudioProjects\queueing\build\blue_thermal_printer\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-33:12
@@ -53,8 +53,10 @@ MERGED from [:wakelock_plus] C:\Users\flo\StudioProjects\queueing\build\wakelock
 MERGED from [:package_info_plus] C:\Users\flo\StudioProjects\queueing\build\package_info_plus\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
 MERGED from [:path_provider_android] C:\Users\flo\StudioProjects\queueing\build\path_provider_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
 MERGED from [:permission_handler_android] C:\Users\flo\StudioProjects\queueing\build\permission_handler_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
+MERGED from [:shared_preferences_android] C:\Users\flo\StudioProjects\queueing\build\shared_preferences_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
 MERGED from [:sqflite_android] C:\Users\flo\StudioProjects\queueing\build\sqflite_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
 MERGED from [:video_player_android] C:\Users\flo\StudioProjects\queueing\build\video_player_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.preference:preference:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\047aa7ddff6241681155a5178fa0e58d\transformed\preference-1.2.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.appcompat:appcompat:1.4.2] C:\Users\flo\.gradle\caches\transforms-3\a2223addc9c781268d0669cb53b9e231\transformed\appcompat-1.4.2\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.media3:media3-extractor:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\0c1e74314e2e2fac66666c2d6213ef92\transformed\jetified-media3-extractor-1.4.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.media3:media3-container:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\755276042b4bf42d417e74e6e24571c4\transformed\jetified-media3-container-1.4.1\AndroidManifest.xml:17:1-22:12
@@ -67,25 +69,38 @@ MERGED from [androidx.media3:media3-exoplayer-dash:1.4.1] C:\Users\flo\.gradle\c
 MERGED from [androidx.media3:media3-exoplayer-rtsp:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\fe8b171bf181c63f18ad0e371afa3a1d\transformed\jetified-media3-exoplayer-rtsp-1.4.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.media3:media3-exoplayer-smoothstreaming:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\b41869c3b0e78fa42685142a5fa3303b\transformed\jetified-media3-exoplayer-smoothstreaming-1.4.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.media3:media3-exoplayer:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\d61e896a1291a8958fc90251d79de4b7\transformed\jetified-media3-exoplayer-1.4.1\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.recyclerview:recyclerview:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\9005ab99f1717e9b0608d9f5ab54ff23\transformed\recyclerview-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\88664bc4898591af2b748d514fde3782\transformed\legacy-support-core-ui-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\a499fa3c34a38edcfdea6b351554e382\transformed\slidingpanelayout-1.2.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.window:window:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\8859fd2468ade3ef2655d1f63d6737f2\transformed\jetified-window-1.2.0\AndroidManifest.xml:17:1-31:12
 MERGED from [androidx.window:window-java:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\8a650b2c5ea333036303d473a939db42\transformed\jetified-window-java-1.2.0\AndroidManifest.xml:17:1-21:12
 MERGED from [androidx.appcompat:appcompat-resources:1.4.2] C:\Users\flo\.gradle\caches\transforms-3\eaa41eef5a98632347e41f25f7a327b5\transformed\jetified-appcompat-resources-1.4.2\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\2c20b5293e22728da7046407170ca5c0\transformed\drawerlayout-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.emoji2:emoji2-views-helper:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\ba38415411b60482d379e829e743b8dc\transformed\jetified-emoji2-views-helper-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.emoji2:emoji2:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\c8a87f73b286ed646aad63ec076596dc\transformed\jetified-emoji2-1.0.0\AndroidManifest.xml:17:1-37:12
+MERGED from [androidx.fragment:fragment-ktx:1.7.1] C:\Users\flo\.gradle\caches\transforms-3\8ab227ca6d562dab86394f7a2b42fe97\transformed\jetified-fragment-ktx-1.7.1\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.fragment:fragment:1.7.1] C:\Users\flo\.gradle\caches\transforms-3\ca4d40f38b71d4c621d36eba6fe2f4a4\transformed\fragment-1.7.1\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.activity:activity-ktx:1.8.1] C:\Users\flo\.gradle\caches\transforms-3\0efada588904821f11adf7ec39ee67b0\transformed\jetified-activity-ktx-1.8.1\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.activity:activity:1.8.1] C:\Users\flo\.gradle\caches\transforms-3\90da4fa7ab29bed17775e89b3905b1f1\transformed\jetified-activity-1.8.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\248c2ee92a3eff0f51bd645d25837450\transformed\legacy-support-core-utils-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\a818e414c52385021f1d9677e7b7ca4e\transformed\loader-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\aa0545052c10d03c17d2b473348f6ff3\transformed\viewpager-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\34e9e272fefd16ac66a87408accf94b7\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\4059a61bdad93a189cb4807e89b6c4ef\transformed\vectordrawable-1.1.0\AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.customview:customview:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\b7628ca872f328f23c9ec7c9909fb8a5\transformed\customview-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\334f77f688c510e4c631ba2daaab7ec9\transformed\coordinatorlayout-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.customview:customview:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\43df30f2af92cd091715649462883cab\transformed\customview-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.transition:transition:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\8e926d88adc6ec4405f4b01d4e9b1bad\transformed\transition-1.4.1\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\6204f3b987160f01c2c219f45e0d137b\transformed\swiperefreshlayout-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\56d32690194daba5731f9179db6d47c0\transformed\asynclayoutinflater-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.core:core:1.15.0] C:\Users\flo\.gradle\caches\transforms-3\3a9218c482a8db210f4e6f89a5c1d643\transformed\core-1.15.0\AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\eb30b97cf0c123a3aa78bfba9082ceea\transformed\jetified-savedstate-ktx-1.2.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\40a45e686cd0e99ac2a33b1453f47939\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\77c666060c5c276fd3dd2d51cd9c0fd4\transformed\jetified-lifecycle-livedata-core-ktx-2.8.7\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\e8c8d464f037a6adb12aaf8948de54e7\transformed\jetified-lifecycle-runtime-ktx-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\bb1619b68bf19fe00eedcc476c3ae653\transformed\lifecycle-viewmodel-2.8.7\AndroidManifest.xml:2:1-5:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\3a2206a514d821f44852813022b58618\transformed\jetified-lifecycle-viewmodel-release\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-livedata:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\beea99ff5746980e6f61db30304a9d12\transformed\lifecycle-livedata-2.8.7\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\77c666060c5c276fd3dd2d51cd9c0fd4\transformed\jetified-lifecycle-livedata-core-ktx-2.8.7\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\a20b5361a7600665bef5f95380c32552\transformed\jetified-lifecycle-viewmodel-ktx-2.8.7\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\db6910200720416070ca7600a2f683fc\transformed\jetified-lifecycle-process-2.8.7\AndroidManifest.xml:17:1-35:12
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\a342bc443617ebfc584aa0e11ab1a146\transformed\lifecycle-livedata-core-2.8.7\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-runtime-android:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\ea336517c1159d3e6eacc47ba2b1fe6d\transformed\jetified-lifecycle-runtime-release\AndroidManifest.xml:17:1-22:12
@@ -97,9 +112,15 @@ MERGED from [androidx.tracing:tracing:1.2.0] C:\Users\flo\.gradle\caches\transfo
 MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\ac364ab66752097bb4779d5aeb5f3ac7\transformed\cursoradapter-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\1122d081a937e71194adcd50d186ca4f\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\flo\.gradle\caches\transforms-3\d21e37b6169caa7895fc002c1192b0f1\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.datastore:datastore-core-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\e066f98655f1455a1140912311a34f0d\transformed\jetified-datastore-core-release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\05f0f5bac33a554f70bb00c44aed0318\transformed\jetified-datastore-preferences-release\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.datastore:datastore-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\5078db51dda9483ea086ca5bb7d61476\transformed\jetified-datastore-release\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] C:\Users\flo\.gradle\caches\transforms-3\d78b31ff9dbfed0a316af7ddfd7746a3\transformed\exifinterface-1.3.6\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\flo\.gradle\caches\transforms-3\3cccf64d8e44a1ff0116ea6b8bd8d8e9\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.window.extensions.core:core:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\61fbac9cdc1a22c54aa04ec76334a907\transformed\jetified-core-1.0.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\aa45ff664a4fe5a6d06833e16afb125c\transformed\documentfile-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\5c2f866ed92dccb171acdbd21a39b9a6\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.print:print:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\c956c3ff78f47134a13fc36ef46fb31f\transformed\print-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.annotation:annotation-experimental:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\c1158440e5b75df6a72fbf32a08d003c\transformed\jetified-annotation-experimental-1.4.1\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.multidex:multidex:2.0.0] C:\Users\flo\.gradle\caches\transforms-3\862b81fa29498d3eb15a472dbc22c9ad\transformed\multidex-2.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [com.journeyapps:zxing-android-embedded:3.6.0] C:\Users\flo\.gradle\caches\transforms-3\240e38a0d5cc779b20b02dc6b9bf3cd6\transformed\jetified-zxing-android-embedded-3.6.0\AndroidManifest.xml:17:1-56:12
@@ -130,19 +151,19 @@ ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidMani
 	android:name
 		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:5:22-78
 queries
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:82:5-87:15
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:83:5-88:15
 MERGED from [:file_picker] C:\Users\flo\StudioProjects\queueing\build\file_picker\intermediates\merged_manifest\release\AndroidManifest.xml:7:5-13:15
 MERGED from [:file_picker] C:\Users\flo\StudioProjects\queueing\build\file_picker\intermediates\merged_manifest\release\AndroidManifest.xml:7:5-13:15
 intent#action:name:android.intent.action.PROCESS_TEXT+data:mimeType:text/plain
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:83:9-86:18
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:84:9-87:18
 action#android.intent.action.PROCESS_TEXT
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:84:13-72
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:85:13-72
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:84:21-70
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:85:21-70
 data
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:85:13-50
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:86:13-50
 	android:mimeType
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:85:19-48
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:86:19-48
 receiver#com.example.queueing.BootReceiver
 ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:14:9-18:20
 	android:enabled
@@ -194,11 +215,9 @@ ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidMani
 	android:name
 		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:38:25-87
 activity#com.example.queueing.MainActivity
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:43:9-70:20
-	android:screenOrientation
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:52:13-49
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:43:9-71:20
 	android:lockTaskMode
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:53:13-50
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:52:13-50
 	android:launchMode
 		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:46:13-44
 	android:hardwareAccelerated
@@ -216,35 +235,35 @@ ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidMani
 	android:name
 		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:44:13-41
 meta-data#io.flutter.embedding.android.NormalTheme
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:59:13-62:17
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:60:13-63:17
 	android:resource
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:61:15-52
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:62:15-52
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:60:15-70
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:61:15-70
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.DEFAULT+category:name:android.intent.category.HOME+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:64:13-69:29
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:65:13-70:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:65:17-69
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:66:17-69
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:65:25-66
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:66:25-66
 category#android.intent.category.HOME
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:66:17-73
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:67:17-73
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:66:27-70
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:67:27-70
 category#android.intent.category.DEFAULT
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:67:17-76
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:68:17-76
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:67:27-73
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:68:27-73
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:68:17-77
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:69:17-77
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:68:27-74
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:69:27-74
 meta-data#flutterEmbedding
-ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:73:9-75:33
+ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:74:9-76:33
 	android:value
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:75:13-30
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:76:13-30
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:74:13-44
+		ADDED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml:75:13-44
 uses-sdk
 INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\flo\StudioProjects\queueing\android\app\src\main\AndroidManifest.xml
@@ -275,10 +294,14 @@ MERGED from [:path_provider_android] C:\Users\flo\StudioProjects\queueing\build\
 MERGED from [:path_provider_android] C:\Users\flo\StudioProjects\queueing\build\path_provider_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
 MERGED from [:permission_handler_android] C:\Users\flo\StudioProjects\queueing\build\permission_handler_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
 MERGED from [:permission_handler_android] C:\Users\flo\StudioProjects\queueing\build\permission_handler_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
+MERGED from [:shared_preferences_android] C:\Users\flo\StudioProjects\queueing\build\shared_preferences_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
+MERGED from [:shared_preferences_android] C:\Users\flo\StudioProjects\queueing\build\shared_preferences_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
 MERGED from [:sqflite_android] C:\Users\flo\StudioProjects\queueing\build\sqflite_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
 MERGED from [:sqflite_android] C:\Users\flo\StudioProjects\queueing\build\sqflite_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
 MERGED from [:video_player_android] C:\Users\flo\StudioProjects\queueing\build\video_player_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
 MERGED from [:video_player_android] C:\Users\flo\StudioProjects\queueing\build\video_player_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.preference:preference:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\047aa7ddff6241681155a5178fa0e58d\transformed\preference-1.2.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.preference:preference:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\047aa7ddff6241681155a5178fa0e58d\transformed\preference-1.2.1\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.appcompat:appcompat:1.4.2] C:\Users\flo\.gradle\caches\transforms-3\a2223addc9c781268d0669cb53b9e231\transformed\appcompat-1.4.2\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.appcompat:appcompat:1.4.2] C:\Users\flo\.gradle\caches\transforms-3\a2223addc9c781268d0669cb53b9e231\transformed\appcompat-1.4.2\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.media3:media3-extractor:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\0c1e74314e2e2fac66666c2d6213ef92\transformed\jetified-media3-extractor-1.4.1\AndroidManifest.xml:20:5-44
@@ -303,6 +326,12 @@ MERGED from [androidx.media3:media3-exoplayer-smoothstreaming:1.4.1] C:\Users\fl
 MERGED from [androidx.media3:media3-exoplayer-smoothstreaming:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\b41869c3b0e78fa42685142a5fa3303b\transformed\jetified-media3-exoplayer-smoothstreaming-1.4.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.media3:media3-exoplayer:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\d61e896a1291a8958fc90251d79de4b7\transformed\jetified-media3-exoplayer-1.4.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.media3:media3-exoplayer:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\d61e896a1291a8958fc90251d79de4b7\transformed\jetified-media3-exoplayer-1.4.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.recyclerview:recyclerview:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\9005ab99f1717e9b0608d9f5ab54ff23\transformed\recyclerview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.recyclerview:recyclerview:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\9005ab99f1717e9b0608d9f5ab54ff23\transformed\recyclerview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\88664bc4898591af2b748d514fde3782\transformed\legacy-support-core-ui-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\88664bc4898591af2b748d514fde3782\transformed\legacy-support-core-ui-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\a499fa3c34a38edcfdea6b351554e382\transformed\slidingpanelayout-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\a499fa3c34a38edcfdea6b351554e382\transformed\slidingpanelayout-1.2.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.window:window:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\8859fd2468ade3ef2655d1f63d6737f2\transformed\jetified-window-1.2.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.window:window:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\8859fd2468ade3ef2655d1f63d6737f2\transformed\jetified-window-1.2.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.window:window-java:1.2.0] C:\Users\flo\.gradle\caches\transforms-3\8a650b2c5ea333036303d473a939db42\transformed\jetified-window-java-1.2.0\AndroidManifest.xml:19:5-44
@@ -315,10 +344,16 @@ MERGED from [androidx.emoji2:emoji2-views-helper:1.0.0] C:\Users\flo\.gradle\cac
 MERGED from [androidx.emoji2:emoji2-views-helper:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\ba38415411b60482d379e829e743b8dc\transformed\jetified-emoji2-views-helper-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.emoji2:emoji2:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\c8a87f73b286ed646aad63ec076596dc\transformed\jetified-emoji2-1.0.0\AndroidManifest.xml:21:5-23:41
 MERGED from [androidx.emoji2:emoji2:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\c8a87f73b286ed646aad63ec076596dc\transformed\jetified-emoji2-1.0.0\AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.fragment:fragment-ktx:1.7.1] C:\Users\flo\.gradle\caches\transforms-3\8ab227ca6d562dab86394f7a2b42fe97\transformed\jetified-fragment-ktx-1.7.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.fragment:fragment-ktx:1.7.1] C:\Users\flo\.gradle\caches\transforms-3\8ab227ca6d562dab86394f7a2b42fe97\transformed\jetified-fragment-ktx-1.7.1\AndroidManifest.xml:5:5-44
 MERGED from [androidx.fragment:fragment:1.7.1] C:\Users\flo\.gradle\caches\transforms-3\ca4d40f38b71d4c621d36eba6fe2f4a4\transformed\fragment-1.7.1\AndroidManifest.xml:5:5-44
 MERGED from [androidx.fragment:fragment:1.7.1] C:\Users\flo\.gradle\caches\transforms-3\ca4d40f38b71d4c621d36eba6fe2f4a4\transformed\fragment-1.7.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-ktx:1.8.1] C:\Users\flo\.gradle\caches\transforms-3\0efada588904821f11adf7ec39ee67b0\transformed\jetified-activity-ktx-1.8.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-ktx:1.8.1] C:\Users\flo\.gradle\caches\transforms-3\0efada588904821f11adf7ec39ee67b0\transformed\jetified-activity-ktx-1.8.1\AndroidManifest.xml:5:5-44
 MERGED from [androidx.activity:activity:1.8.1] C:\Users\flo\.gradle\caches\transforms-3\90da4fa7ab29bed17775e89b3905b1f1\transformed\jetified-activity-1.8.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.activity:activity:1.8.1] C:\Users\flo\.gradle\caches\transforms-3\90da4fa7ab29bed17775e89b3905b1f1\transformed\jetified-activity-1.8.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\248c2ee92a3eff0f51bd645d25837450\transformed\legacy-support-core-utils-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\248c2ee92a3eff0f51bd645d25837450\transformed\legacy-support-core-utils-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\a818e414c52385021f1d9677e7b7ca4e\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\a818e414c52385021f1d9677e7b7ca4e\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\aa0545052c10d03c17d2b473348f6ff3\transformed\viewpager-1.0.0\AndroidManifest.xml:20:5-44
@@ -327,20 +362,34 @@ MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\flo
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\34e9e272fefd16ac66a87408accf94b7\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\4059a61bdad93a189cb4807e89b6c4ef\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\4059a61bdad93a189cb4807e89b6c4ef\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.customview:customview:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\b7628ca872f328f23c9ec7c9909fb8a5\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
-MERGED from [androidx.customview:customview:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\b7628ca872f328f23c9ec7c9909fb8a5\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\334f77f688c510e4c631ba2daaab7ec9\transformed\coordinatorlayout-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\334f77f688c510e4c631ba2daaab7ec9\transformed\coordinatorlayout-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\43df30f2af92cd091715649462883cab\transformed\customview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.customview:customview:1.1.0] C:\Users\flo\.gradle\caches\transforms-3\43df30f2af92cd091715649462883cab\transformed\customview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\8e926d88adc6ec4405f4b01d4e9b1bad\transformed\transition-1.4.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\8e926d88adc6ec4405f4b01d4e9b1bad\transformed\transition-1.4.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\6204f3b987160f01c2c219f45e0d137b\transformed\swiperefreshlayout-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\6204f3b987160f01c2c219f45e0d137b\transformed\swiperefreshlayout-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\56d32690194daba5731f9179db6d47c0\transformed\asynclayoutinflater-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\56d32690194daba5731f9179db6d47c0\transformed\asynclayoutinflater-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.core:core:1.15.0] C:\Users\flo\.gradle\caches\transforms-3\3a9218c482a8db210f4e6f89a5c1d643\transformed\core-1.15.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.core:core:1.15.0] C:\Users\flo\.gradle\caches\transforms-3\3a9218c482a8db210f4e6f89a5c1d643\transformed\core-1.15.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\eb30b97cf0c123a3aa78bfba9082ceea\transformed\jetified-savedstate-ktx-1.2.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\eb30b97cf0c123a3aa78bfba9082ceea\transformed\jetified-savedstate-ktx-1.2.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\40a45e686cd0e99ac2a33b1453f47939\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\flo\.gradle\caches\transforms-3\40a45e686cd0e99ac2a33b1453f47939\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\77c666060c5c276fd3dd2d51cd9c0fd4\transformed\jetified-lifecycle-livedata-core-ktx-2.8.7\AndroidManifest.xml:5:5-44
-MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\77c666060c5c276fd3dd2d51cd9c0fd4\transformed\jetified-lifecycle-livedata-core-ktx-2.8.7\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\e8c8d464f037a6adb12aaf8948de54e7\transformed\jetified-lifecycle-runtime-ktx-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\e8c8d464f037a6adb12aaf8948de54e7\transformed\jetified-lifecycle-runtime-ktx-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\bb1619b68bf19fe00eedcc476c3ae653\transformed\lifecycle-viewmodel-2.8.7\AndroidManifest.xml:4:5-43
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\bb1619b68bf19fe00eedcc476c3ae653\transformed\lifecycle-viewmodel-2.8.7\AndroidManifest.xml:4:5-43
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\3a2206a514d821f44852813022b58618\transformed\jetified-lifecycle-viewmodel-release\AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\3a2206a514d821f44852813022b58618\transformed\jetified-lifecycle-viewmodel-release\AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\beea99ff5746980e6f61db30304a9d12\transformed\lifecycle-livedata-2.8.7\AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\beea99ff5746980e6f61db30304a9d12\transformed\lifecycle-livedata-2.8.7\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\77c666060c5c276fd3dd2d51cd9c0fd4\transformed\jetified-lifecycle-livedata-core-ktx-2.8.7\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\77c666060c5c276fd3dd2d51cd9c0fd4\transformed\jetified-lifecycle-livedata-core-ktx-2.8.7\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\a20b5361a7600665bef5f95380c32552\transformed\jetified-lifecycle-viewmodel-ktx-2.8.7\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\a20b5361a7600665bef5f95380c32552\transformed\jetified-lifecycle-viewmodel-ktx-2.8.7\AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\db6910200720416070ca7600a2f683fc\transformed\jetified-lifecycle-process-2.8.7\AndroidManifest.xml:21:5-44
 MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\db6910200720416070ca7600a2f683fc\transformed\jetified-lifecycle-process-2.8.7\AndroidManifest.xml:21:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.7] C:\Users\flo\.gradle\caches\transforms-3\a342bc443617ebfc584aa0e11ab1a146\transformed\lifecycle-livedata-core-2.8.7\AndroidManifest.xml:20:5-44
@@ -363,12 +412,24 @@ MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\flo\.gradle\cach
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\1122d081a937e71194adcd50d186ca4f\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\flo\.gradle\caches\transforms-3\d21e37b6169caa7895fc002c1192b0f1\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\flo\.gradle\caches\transforms-3\d21e37b6169caa7895fc002c1192b0f1\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.datastore:datastore-core-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\e066f98655f1455a1140912311a34f0d\transformed\jetified-datastore-core-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-core-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\e066f98655f1455a1140912311a34f0d\transformed\jetified-datastore-core-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\05f0f5bac33a554f70bb00c44aed0318\transformed\jetified-datastore-preferences-release\AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\05f0f5bac33a554f70bb00c44aed0318\transformed\jetified-datastore-preferences-release\AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\5078db51dda9483ea086ca5bb7d61476\transformed\jetified-datastore-release\AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-android:1.1.3] C:\Users\flo\.gradle\caches\transforms-3\5078db51dda9483ea086ca5bb7d61476\transformed\jetified-datastore-release\AndroidManifest.xml:20:5-44
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] C:\Users\flo\.gradle\caches\transforms-3\d78b31ff9dbfed0a316af7ddfd7746a3\transformed\exifinterface-1.3.6\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] C:\Users\flo\.gradle\caches\transforms-3\d78b31ff9dbfed0a316af7ddfd7746a3\transformed\exifinterface-1.3.6\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\flo\.gradle\caches\transforms-3\3cccf64d8e44a1ff0116ea6b8bd8d8e9\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\flo\.gradle\caches\transforms-3\3cccf64d8e44a1ff0116ea6b8bd8d8e9\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.window.extensions.core:core:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\61fbac9cdc1a22c54aa04ec76334a907\transformed\jetified-core-1.0.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.window.extensions.core:core:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\61fbac9cdc1a22c54aa04ec76334a907\transformed\jetified-core-1.0.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\aa45ff664a4fe5a6d06833e16afb125c\transformed\documentfile-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\aa45ff664a4fe5a6d06833e16afb125c\transformed\documentfile-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\5c2f866ed92dccb171acdbd21a39b9a6\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\5c2f866ed92dccb171acdbd21a39b9a6\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\c956c3ff78f47134a13fc36ef46fb31f\transformed\print-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] C:\Users\flo\.gradle\caches\transforms-3\c956c3ff78f47134a13fc36ef46fb31f\transformed\print-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\c1158440e5b75df6a72fbf32a08d003c\transformed\jetified-annotation-experimental-1.4.1\AndroidManifest.xml:5:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.1] C:\Users\flo\.gradle\caches\transforms-3\c1158440e5b75df6a72fbf32a08d003c\transformed\jetified-annotation-experimental-1.4.1\AndroidManifest.xml:5:5-44
 MERGED from [androidx.multidex:multidex:2.0.0] C:\Users\flo\.gradle\caches\transforms-3\862b81fa29498d3eb15a472dbc22c9ad\transformed\multidex-2.0.0\AndroidManifest.xml:20:5-43

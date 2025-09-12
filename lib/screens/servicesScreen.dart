@@ -55,6 +55,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   @override
   void initState() {
+    NodeSocketService().connect(context: context);
 
     NodeSocketService().stream.listen((onData) async {
       final result = jsonDecode(onData);
@@ -902,7 +903,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       }
 
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));

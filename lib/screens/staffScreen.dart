@@ -9,6 +9,7 @@ import 'package:queueing/models/services/service.dart';
 import 'package:queueing/models/station.dart';
 import 'package:queueing/models/ticket.dart';
 import 'package:queueing/node.dart';
+import '../deviceInfo.dart';
 import '../models/user.dart';
 
 
@@ -299,6 +300,7 @@ class _StaffSessionState extends State<StaffSession> {
   Timer? update;
 
   int ticketLength = 0;
+  Set<int> knownIds = {};
 
   String callBy = "Time Order";
   bool alternate = false;
@@ -309,6 +311,7 @@ class _StaffSessionState extends State<StaffSession> {
 
   int? inactiveLength;
   int? inactiveOn;
+  bool ringOn = false;
 
   bool swap = false;
 
@@ -351,19 +354,21 @@ class _StaffSessionState extends State<StaffSession> {
     }
   }
 
-
   int callAgainCounter = 0;
 
   updateTicketStream([int? i, dynamic data]) {
     List<Ticket> retrievedTickets = getTicket('filtered', data);
-    ticketStream.value = [];
     ticketStream.value = retrievedTickets;
 
-    if (retrievedTickets.length > ticketLength) {
-      _playNew();
+    for (var t in retrievedTickets) {
+      if (!knownIds.contains(t.id)) {
+        _playNew();
+        break;
+      }
     }
 
-    ticketLength = retrievedTickets.length;
+    knownIds = retrievedTickets.map((t) => t.id!).toSet();
+
     if (i == 1) {
       swap = !swap;
     }
@@ -373,6 +378,8 @@ class _StaffSessionState extends State<StaffSession> {
   @override
   void initState() {
     super.initState();
+
+
 
     NodeSocketService().sendMessage('getTicket', {});
     initPing();
@@ -384,6 +391,7 @@ class _StaffSessionState extends State<StaffSession> {
 
 
     NodeSocketService().stream.listen((message) async {
+      if (!mounted) return;
 
       final json = jsonDecode(message);
       final type = json['type'];
@@ -400,15 +408,12 @@ class _StaffSessionState extends State<StaffSession> {
 
       if (type == 'createTicket') {
         NodeSocketService().sendMessage('getTicket', {});
-        resetRinger();
       }
-    });
+    },
+    );
 
 
     getInactiveTime();
-    resetRinger();
-
-
   }
 
 
@@ -427,16 +432,26 @@ class _StaffSessionState extends State<StaffSession> {
     });
 
 
-
     pingTimer.cancel();
     update?.cancel();
     if (ringTimer != null) {
       ringTimer!.cancel();
     }
+
+    inactiveOn = 0;
+    initRinger();
+
     super.dispose();
   }
 
   initPing() {
+    NodeSocketService().sendMessage("stationPing", {
+      "id": widget.station.id,
+      "sessionPing": DateTime.now().toString(),
+      "inSession": 1,
+      "userInSession": widget.user.username
+    });
+
     pingTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
       NodeSocketService().sendMessage("stationPing", {
         "id": widget.station.id,
@@ -476,6 +491,7 @@ class _StaffSessionState extends State<StaffSession> {
                               scrollDirection: Axis.vertical,
                               child: Column(
                                 children: [
+                                  BatteryWidget(),
                                   Align(
                                       alignment: Alignment.centerLeft,
                                       child: IconButton(
@@ -710,6 +726,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                                 'data': {}
                                                               });
 
+                                                              Navigator.pop(dialogContext);
                                                               NodeSocketService().sendBatch(dataBatch);
                                                               swap = !swap;
                                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -734,6 +751,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                               });
 
 
+                                                              Navigator.pop(dialogContext);
                                                               NodeSocketService().sendBatch(dataBatch);
                                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                                                   content:
@@ -787,6 +805,7 @@ class _StaffSessionState extends State<StaffSession> {
                                                             });
 
 
+                                                            Navigator.pop(dialogContext);
                                                             NodeSocketService().sendBatch(dataBatch);
                                                             swap = !swap;
                                                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -890,6 +909,8 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                 }
                                                                                               });
 
+
+                                                                                              /*
                                                                                               if (ticketStream.value.isNotEmpty) {
 
                                                                                                 dataBatch.add({
@@ -951,6 +972,26 @@ class _StaffSessionState extends State<StaffSession> {
                                                                                                 return;
                                                                                               }
 
+                                                                                               */
+
+                                                                                              dataBatch.add({
+                                                                                                'type': 'updateStation',
+                                                                                                'data': {
+                                                                                                  'id': widget.station.id!,
+                                                                                                  'ticketServing': "",
+                                                                                                  'ticketServingId': null
+                                                                                                }
+                                                                                              });
+
+                                                                                              dataBatch.add({
+                                                                                                'type': 'updateDisplay',
+                                                                                                'data': {}
+                                                                                              });
+
+
+                                                                                              Navigator.pop(dialogContext);
+                                                                                              NodeSocketService().sendBatch(dataBatch);
+                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
 
                                                                                             } catch(e) {
                                                                                               print(e);
@@ -1070,6 +1111,43 @@ class _StaffSessionState extends State<StaffSession> {
                                                                   40,
                                                                 ),
                                                                 actions: [
+                                                                  TextButton(onPressed: () {
+
+                                                                    dataBatch.add({
+                                                                      'type': 'updateTicket',
+                                                                      'data': {
+                                                                        "id": servingStream.value!.id,
+                                                                        "userAssigned": widget.user.username!,
+                                                                        "status": "Serving",
+                                                                        "stationName": widget.station.stationName!,
+                                                                        "stationNumber": widget.station.stationNumber!,
+                                                                        "timeTaken": timestamp,
+                                                                        "timeDone" : null,
+                                                                        "serviceType": servingStream.value!.serviceType!,
+                                                                        'callCheck': 0,
+                                                                        'blinker': 0,
+                                                                        'log': "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
+                                                                      }
+                                                                    });
+
+                                                                    dataBatch.add({
+                                                                      'type': 'updateStation',
+                                                                      'data': {
+                                                                        'id': widget.station.id!,
+                                                                        'ticketServing': servingStream.value!.codeAndNumber!,
+                                                                        'ticketServingId': servingStream.value!.id!
+                                                                      }
+                                                                    });
+
+                                                                    dataBatch.add({
+                                                                      'type': 'updateDisplay',
+                                                                      'data': {}
+                                                                    });
+
+                                                                    NodeSocketService().sendBatch(dataBatch);
+                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                        SnackBar(content: Text("Ticket called again.")));
+                                                                  }, child: Text("Call Again")),
                                                                   TextButton(
                                                                       child: Text(
                                                                           "Release"),
@@ -1429,18 +1507,34 @@ class _StaffSessionState extends State<StaffSession> {
     return alternatedList;
   }
 
+  checkRingerStatus() {
+    if (inactiveOn == 1 && inactiveLength != 0) {
+      if (servingStream.value == null && ticketStream.value.isNotEmpty) {
+        if (ringOn == false) {
+          resetRinger();
+          ringOn =  true;
+        }
+      } else {
+        if (ringOn == true) {
+          resetRinger();
+          ringOn = false;
+        }
+      }
+    }
+  }
+
 
   updateServingTicketStream(dynamic data) {
     servingStream.value = null;
     List<Ticket> servings = getServingTicket(data);
     if (servings.isEmpty) {
       servingStream.value = null;
-      resetRinger();
+      checkRingerStatus();
       return servings;
     } else {
       servingStream.value = null;
       servingStream.value = servings[0];
-      resetRinger();
+      checkRingerStatus();
       return servings;
     }
   }
@@ -1528,8 +1622,10 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
   inactiveDialog() {
+    if (!mounted) return;
     dialogOn = true;
     _play();
+
     final ringerSound = Timer.periodic(Duration(seconds: 5), (callback) {
       _play();
     });
@@ -1546,6 +1642,7 @@ class _StaffSessionState extends State<StaffSession> {
           child: AlertDialog(
                 content: GestureDetector(
                   onTap: () {
+                    dialogOn = false;
                     ringerSound.cancel();
                     _stop();
                     resetRinger();
@@ -1573,7 +1670,6 @@ class _StaffSessionState extends State<StaffSession> {
   }
 
   resetRinger() {
-
     if (ringTimer != null) {
       dialogOn = false;
       ringTimer!.cancel();
@@ -1595,12 +1691,15 @@ class _StaffSessionState extends State<StaffSession> {
       print(inactiveOn);
 
       if (servingStream.value == null && ticketStream.value.isNotEmpty) {
+
         print("ringer start");
         if (ringTimer == null) {
           ringTimer =
               Timer.periodic(Duration(seconds: inactiveLength ?? 60), (value) {
                 if (dialogOn == false) {
-                  inactiveDialog();
+                  if (inactiveOn == 1) {
+                    inactiveDialog();
+                  }
                 }
               });
         }

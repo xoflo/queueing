@@ -24,7 +24,6 @@ class NodeSocketService {
   bool get isConnected => _isConnected;
 
   void connect({BuildContext? context}) {
-    // kill any existing subscription and channel before making a new one
     _subscription?.cancel();
     _subscription = null;
     try {
@@ -111,8 +110,6 @@ class NodeSocketService {
   void sendBatch(List<Map<String, dynamic>> data) {
     if (_isConnected) {
       final msg = jsonEncode({'batch': data});
-      print(msg);
-      print(msg);
       _channel.sink.add(msg);
     }
   }

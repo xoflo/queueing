@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
@@ -12,9 +13,11 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-String? version = "v1.0.5";
+String? version = "v1.0.7";
 String? site = '192.168.110.100:8080';
+// String? site = 'localhost:8080';
 String? printer;
 String? size;
 
@@ -487,30 +490,29 @@ class _BlinkState extends State<Blink> {
 }
 
 
-
 Future<void> clearCache() async {
-
-  await DefaultCacheManager().emptyCache();
-
   try {
+    if (!kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
 
-    await DefaultCacheManager().emptyCache();
+      final tempDir = await getTemporaryDirectory();
 
-    final tempDir = await getTemporaryDirectory();
+      final dirs = [tempDir];
 
-    if (tempDir.existsSync()) {
-      for (var file in tempDir.listSync()) {
-        try {
-          file.deleteSync(recursive: true);
-        } catch (_) {}
+      for (var dir in dirs) {
+        if (await dir.exists()) {
+          try {
+            await dir.delete(recursive: true);
+          } catch (_) {}
+        }
       }
     }
-
-    return;
   } catch (e) {
-    return;
+    print("Error clearing app data: $e");
   }
 }
+
 
 
 
