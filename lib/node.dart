@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'globals.dart';
@@ -13,21 +13,20 @@ class NodeSocketService {
   factory NodeSocketService() => _instance;
   NodeSocketService._internal();
 
-  late WebSocketChannel _channel;
-  late Stream _broadcast;
+  WebSocketChannel? _channel;
   StreamSubscription? _subscription;
-  bool _isConnected = false;
   Timer? _reconnectTimer;
+  bool _isConnected = false;
 
-  WebSocketChannel get channel => _channel;
-  Stream get stream => _broadcast;
+  // 🔑 Persistent broadcast controller
+  final StreamController<String> _controller = StreamController<String>.broadcast();
+  Stream<String> get stream => _controller.stream;
   bool get isConnected => _isConnected;
 
   void connect({BuildContext? context}) {
     _subscription?.cancel();
-    _subscription = null;
     try {
-      _channel.sink.close();
+      _channel?.sink.close();
     } catch (_) {}
 
     _isConnected = false;
@@ -39,25 +38,25 @@ class NodeSocketService {
         ? WebSocketChannel.connect(Uri.parse(url))
         : IOWebSocketChannel.connect(
       url,
-      pingInterval: Duration(seconds: 10),
+      pingInterval: const Duration(seconds: 10),
     );
-
-    _broadcast = _channel.stream.asBroadcastStream();
 
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
 
-    _subscription = _broadcast.listen(
+    _subscription = _channel!.stream.listen(
           (message) {
         _isConnected = true;
+        _controller.add(message); // ✅ push into broadcast
 
-        final json = jsonDecode(message);
-        final type = json['type'];
-        final data = json['data'];
-
-        if (type == 'ping') {
-          print("📡 Ping: $data");
-          _connected();
+        try {
+          final json = jsonDecode(message);
+          if (json['type'] == 'ping') {
+            print("📡 Ping: ${json['data']}");
+            _connected();
+          }
+        } catch (e) {
+          print("JSON parse error: $e");
         }
       },
       onDone: () {
@@ -78,7 +77,7 @@ class NodeSocketService {
     _subscription = null;
 
     try {
-      _channel.sink.close();
+      _channel?.sink.close();
     } catch (_) {}
 
     _tryReconnect(context);
@@ -87,9 +86,8 @@ class NodeSocketService {
   void _tryReconnect([BuildContext? context]) {
     if (_reconnectTimer != null) return;
 
-    _reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) async {
+    _reconnectTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!_isConnected) {
-        await clearCache();
         _reconnecting();
         connect(context: context);
       } else {
@@ -101,21 +99,21 @@ class NodeSocketService {
   }
 
   void sendMessage(String type, dynamic data) {
-    if (_isConnected) {
+    if (_isConnected && _channel != null) {
       final msg = jsonEncode({'type': type, 'data': data});
-      _channel.sink.add(msg);
+      _channel!.sink.add(msg);
     }
   }
 
   void sendBatch(List<Map<String, dynamic>> data) {
-    if (_isConnected) {
+    if (_isConnected && _channel != null) {
       final msg = jsonEncode({'batch': data});
-      _channel.sink.add(msg);
+      _channel!.sink.add(msg);
     }
   }
 
   void _connected() {
-    NodeSocketService().sendMessage('refresh', {});
+    sendMessage('refresh', {});
     Fluttertoast.showToast(
       msg: "Connected to Server.",
       toastLength: Toast.LENGTH_SHORT,
@@ -141,7 +139,7 @@ class NodeSocketService {
     _subscription?.cancel();
     _subscription = null;
     try {
-      _channel.sink.close();
+      _channel?.sink.close();
     } catch (_) {}
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
