@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.blueGrey),
       ),
       home: Scaffold(
-        body: autoDisplay(context, 0),
+        body: autoDisplay(context, 1),
       ),
       // 0: Phone, 1: Kiosk, 2: Display build
       //
