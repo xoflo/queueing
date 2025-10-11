@@ -293,7 +293,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                                     // name, gender
 
                                                     if (services.contains(service.serviceType!)) {
-                                                      await addTicketDialog(priority, 1, 1, service);
+                                                      await addTicketDialog(priority, name, gender, service);
                                                     } else {
                                                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("This service is currently closed.")));
                                                     }

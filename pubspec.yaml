@@ -37,7 +37,6 @@ dependencies:
   http: ^1.4.0
   audioplayers: ^6.4.0
   marquee: ^2.3.0
-  flick_video_player: ^0.9.0
   permission_handler: ^12.0.0+1
   blue_thermal_printer: ^1.2.3
   image_picker_web: ^4.0.0
@@ -59,6 +58,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   android_intent_plus: ^5.3.1
   shared_preferences: ^2.5.3
+  flick_video_player: ^0.9.0
 
 
 
@@ -86,6 +86,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+
+  uses-material-design: true
   fonts:
     - family: Inter
       fonts:
@@ -103,7 +105,6 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
   assets:
