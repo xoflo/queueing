@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:queueing/deviceInfo.dart';
@@ -243,15 +244,17 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
 
-        if (user.loggedIn == null || user.loggedIn == "" || user.loggedIn!.difference(DateTime.now()).inSeconds < -3) {
+
           if (user.userType == 'Admin') {
             Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen(user: user)));
           }
+
           if (user.userType == 'Staff') {
             final List<dynamic> stations = await _getStationSQL();
             final List<Control> controls = await _getControls();
 
             final value = controls.where((e) => e.controlName == 'One Session per User').toList()[0].value;
+
 
             if (value == 1) {
               final activeStations = stations.where((s) {
@@ -262,15 +265,43 @@ class _LoginScreenState extends State<LoginScreen> {
                 final String userInSession = s['userInSession'].toString();
                 final String sessionPing = s['sessionPing'].toString();
 
+                print('session: $sessionPing');
+
+
                 return inSession == 1 &&
                     userInSession == user.username &&
                     sessionPing.isNotEmpty;
               }).toList();
 
               if (activeStations.isNotEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("This user is already in a session.")));
-                return;
+                final timestamp = DateTime.parse(activeStations[0]['sessionPing']);
+                final now = DateTime.now();
+
+                if (now.difference(timestamp).inSeconds > 5) {
+
+                  print("diffSec: ${now.difference(timestamp).inSeconds}");
+
+                  final v = await _getVersion();
+
+                  if (version == v) {
+                    if (user.assignedStationId != 999) {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
+                    } else {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Old Version. Update Required.")));
+                  }
+
+                } else {
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("This user is already in a session.")));
+                  return;
+                }
+
               }
             }
 
@@ -291,9 +322,6 @@ class _LoginScreenState extends State<LoginScreen> {
           }
 
 
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("This user is currently logged-in")));
-        }
 
       }
     } catch(e) {
