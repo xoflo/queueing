@@ -199,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                        */
 
 
-                      Text("$version", style: TextStyle(color: Colors.grey)),
+                      Text("v1.0.8", style: TextStyle(color: Colors.grey)),
                     ]
                 ),
               ),
