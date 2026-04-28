@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:queueing/node.dart';
+import 'package:queueing/screens/adminScreen.dart';
 import 'package:queueing/screens/displayScreen.dart';
 import 'package:queueing/screens/servicesScreen.dart';
 import 'package:queueing/screens/staffScreen.dart';
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.blueGrey),
       ),
       home: Scaffold(
-        body: autoDisplay(context, 0),
+        body: autoDisplay(context, 1),
       ),
       // 0: Phone, 1: Kiosk, 2: Display build
       //

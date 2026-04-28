@@ -235,7 +235,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
     }
 
     displayTicketList = ticketList;
-    stationStream.value = stationList;
+
+    if (!listEquals(stationStream.value, stationList)) {
+      stationStream.value = stationList;
+    }
   }
 
   void _playNextTicket() async {
@@ -600,8 +603,10 @@ class _DisplayScreenState extends State<DisplayScreen> {
                               .black87,
                           child: AspectRatio(
                               aspectRatio: 16 / 9,
-                              child: WebVideoPlayer(
-                                  videoAssets: links, display: 1))),
+                              child: RepaintBoundary(
+                                child: WebVideoPlayer(
+                                    videoAssets: links, display: 1),
+                              ))),
                     ),
                     SizedBox(height: 10),
                     ClipRRect(
@@ -892,8 +897,8 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
   updateStations() async {
     List<Station> stations = await getStationSQL();
-    print(stations.length);
-    for (int i =0; i < stations.length; i++) {
+
+    for (int i = 0; i < stations.length; i++) {
       print(stations[i].ticketServingId);
     }
     stationStream.value = stations;
@@ -1183,7 +1188,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                       }
                     }
 
-                    return links.isEmpty ? SizedBox() : WebVideoPlayer(videoAssets: links, display: 0);
+                    return links.isEmpty ? SizedBox() : RepaintBoundary(child: WebVideoPlayer(videoAssets: links, display: 0));
                   }
                 ) :
                     SizedBox();

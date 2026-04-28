@@ -888,7 +888,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "gender": gender
       };
 
-      int value = 0;
+      int value = 0; // debug
 
       if (usb?.selectedDevice == null) {
         int? valueBlue = await printer.ticket("$serviceCode$numberParsed",
@@ -907,7 +907,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 0 to generate Tickets without printer.
 
-      if (value == 1) {
+      if (value == 0) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
