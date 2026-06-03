@@ -203,6 +203,12 @@ class _DisplayScreenState extends State<DisplayScreen> {
   final refreshKey = GlobalKey();
   bool showRefresh = false;
 
+  String stationSignature(List<Station> stations) {
+    return stations.map((s) =>
+    "${s.id}:${s.ticketServingId}:${s.inSession}:${s.ticketServing}"
+    ).join("|");
+  }
+
 
   updateDisplayNode(List<dynamic> data) async {
 
@@ -236,9 +242,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
 
     displayTicketList = ticketList;
 
-    if (!listEquals(stationStream.value, stationList)) {
-      stationStream.value = stationList;
-    }
+    stationStream.value = stationList;
   }
 
   void _playNextTicket() async {
@@ -570,7 +574,7 @@ class _DisplayScreenState extends State<DisplayScreen> {
                         .data!
                         .length;
                 i++) {
-                  links.add("http://192.168.110.100:8080/queueing_api/videos/${snapshotMedia.data![i]['link']}");
+                  links.add("http://$site/queueing_api/videos/${snapshotMedia.data![i]['link']}");
                 }
 
                 return Column(
