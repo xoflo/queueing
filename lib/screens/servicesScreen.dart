@@ -852,7 +852,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
+  bool _creatingTicket = false;
+
   addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender]) async {
+    if (_creatingTicket == true)  {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket currently being generated")));
+      return;
+    };
+
+    _creatingTicket = true;
+
     final String timestamp = DateTime.now().toString();
 
     final List<Ticket> tickets = await getTicketSQL(serviceCode);
@@ -907,7 +916,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 0 to generate Tickets without printer.
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
@@ -924,6 +933,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       print(e);
     }
+
+    _creatingTicket = false;
   }
 
   _handlePrinter() async {
