@@ -827,12 +827,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       final result = await http.get(uri);
 
+      if (result.statusCode != 200) {
+         throw Exception("Failed to retrieve today's tickets.");
+      }
+
       final List<dynamic> response = jsonDecode(result.body);
       final sorted = response
-          .where((e) =>
-      toDateTime(DateTime.parse(e['timeCreated'])) ==
-          toDateTime(DateTime.now()) &&
-          e['serviceCode'] == serviceCode)
+          .where((e) => e['serviceCode'] == serviceCode)
           .toList();
       List<Ticket> newTickets = [];
 
@@ -893,19 +894,20 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
     _creatingTicket = true;
 
-    final String timestamp = DateTime.now().toString();
-
-    final List<Ticket> tickets = await getTicketSQL(serviceCode);
-    final thisDay = tickets.where((e) {
-      final eDate = toDateTime(e.timeCreatedAsDate!).toString();
-      final today = toDateTime(DateTime.now()).toString();
-      return eDate == today;
-    }).toList();
-
-    final number = thisDay.length + 1;
-    final numberParsed = number.toString().padLeft(3, '0');
 
     try {
+      final String timestamp = DateTime.now().toString();
+
+      final List<Ticket> tickets = await getTicketSQLPrint(serviceCode);
+      final thisDay = tickets.where((e) {
+        final eDate = toDateTime(e.timeCreatedAsDate!).toString();
+        final today = toDateTime(DateTime.now()).toString();
+        return eDate == today;
+      }).toList();
+
+      final number = thisDay.length + 1;
+      final numberParsed = number.toString().padLeft(3, '0');
+
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final body = {
         "timeCreated": timestamp,
@@ -963,9 +965,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
           content: Text("Cannot connect to the server. Please try again.")));
 
       print(e);
+
+
     }
 
-    _creatingTicket = false;
+    finally {
+      _creatingTicket = false;
+    }
   }
 
   _handlePrinter() async {
