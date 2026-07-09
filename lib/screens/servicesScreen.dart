@@ -821,6 +821,37 @@ class _ServicesScreenState extends State<ServicesScreen> {
    return result;
   }
 
+  getTicketSQLPrint(String serviceCode) async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php?today=true');
+
+      final result = await http.get(uri);
+
+      final List<dynamic> response = jsonDecode(result.body);
+      final sorted = response
+          .where((e) =>
+      toDateTime(DateTime.parse(e['timeCreated'])) ==
+          toDateTime(DateTime.now()) &&
+          e['serviceCode'] == serviceCode)
+          .toList();
+      List<Ticket> newTickets = [];
+
+      for (int i = 0; i < sorted.length; i++) {
+        newTickets.add(Ticket.fromJson(sorted[i]));
+      }
+
+      newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
+          .compareTo(DateTime.parse(b.timeCreated!)));
+
+      return newTickets;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+  }
+
   getTicketSQL(String serviceCode) async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
