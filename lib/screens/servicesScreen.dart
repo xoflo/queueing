@@ -821,6 +821,38 @@ class _ServicesScreenState extends State<ServicesScreen> {
    return result;
   }
 
+  getTicketSQLPrint(String serviceCode) async {
+    try {
+      final uri = Uri.parse('http://$site/queueing_api/api_ticket.php?today=true');
+
+      final result = await http.get(uri);
+
+      if (result.statusCode != 200) {
+         throw Exception("Failed to retrieve today's tickets.");
+      }
+
+      final List<dynamic> response = jsonDecode(result.body);
+      final sorted = response
+          .where((e) => e['serviceCode'] == serviceCode)
+          .toList();
+      List<Ticket> newTickets = [];
+
+      for (int i = 0; i < sorted.length; i++) {
+        newTickets.add(Ticket.fromJson(sorted[i]));
+      }
+
+      newTickets.sort((a, b) => DateTime.parse(a.timeCreated!)
+          .compareTo(DateTime.parse(b.timeCreated!)));
+
+      return newTickets;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Cannot connect to the server. Please try again.")));
+      print(e);
+      return [];
+    }
+  }
+
   getTicketSQL(String serviceCode) async {
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
@@ -852,20 +884,30 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
+  bool _creatingTicket = false;
+
   addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender]) async {
-    final String timestamp = DateTime.now().toString();
+    if (_creatingTicket == true)  {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket currently being generated")));
+      return;
+    };
 
-    final List<Ticket> tickets = await getTicketSQL(serviceCode);
-    final thisDay = tickets.where((e) {
-      final eDate = toDateTime(e.timeCreatedAsDate!).toString();
-      final today = toDateTime(DateTime.now()).toString();
-      return eDate == today;
-    }).toList();
+    _creatingTicket = true;
 
-    final number = thisDay.length + 1;
-    final numberParsed = number.toString().padLeft(3, '0');
 
     try {
+      final String timestamp = DateTime.now().toString();
+
+      final List<Ticket> tickets = await getTicketSQLPrint(serviceCode);
+      final thisDay = tickets.where((e) {
+        final eDate = toDateTime(e.timeCreatedAsDate!).toString();
+        final today = toDateTime(DateTime.now()).toString();
+        return eDate == today;
+      }).toList();
+
+      final number = thisDay.length + 1;
+      final numberParsed = number.toString().padLeft(3, '0');
+
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php');
       final body = {
         "timeCreated": timestamp,
@@ -923,6 +965,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
           content: Text("Cannot connect to the server. Please try again.")));
 
       print(e);
+
+
+    }
+
+    finally {
+      _creatingTicket = false;
     }
   }
 
