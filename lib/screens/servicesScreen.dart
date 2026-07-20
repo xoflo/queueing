@@ -907,7 +907,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       // value == 0 to generate Tickets without printer.
 
-      if (value == 0) {
+      if (value == 1) {
         final result = await http.post(uri, body: jsonEncode(body));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
@@ -951,10 +951,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
               usb!.devices.clear();
               usb!.printerManager.discovery(type: PrinterType.usb).listen((device) {
-
-                if (device.name != 'ILITEK-TP') {
-                  devices.add(device);
-                }
+                devices.add(device);
               });
 
               if (devices.isNotEmpty) {
@@ -1122,7 +1119,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ));
     } else {
       _devices.forEach((device) {
-        device.name == "ILITEK-TP" ? () {}  : items.add(DropdownMenuItem(
+        items.add(DropdownMenuItem(
           child: Text(device.name ?? ""),
           value: device,
         ));
