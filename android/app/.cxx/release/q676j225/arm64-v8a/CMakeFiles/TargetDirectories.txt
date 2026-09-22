@@ -1,0 +1,2 @@
+C:/Users/flo/StudioProjects/queueing1/android/app/.cxx/release/q676j225/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/flo/StudioProjects/queueing1/android/app/.cxx/release/q676j225/arm64-v8a/CMakeFiles/rebuild_cache.dir
