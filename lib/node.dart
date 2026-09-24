@@ -16,7 +16,12 @@ class NodeSocketService {
   WebSocketChannel? _channel;
   StreamSubscription? _subscription;
   Timer? _reconnectTimer;
+  Timer? _watchdogTimer;
+  DateTime? _lastMessageTime;
   bool _isConnected = false;
+
+  // How long without any message before we assume the connection is dead
+  static const Duration _staleTimeout = Duration(seconds: 25);
 
   // 🔑 Persistent broadcast controller
   final StreamController<String> _controller = StreamController<String>.broadcast();
@@ -44,16 +49,21 @@ class NodeSocketService {
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
 
+    _lastMessageTime = DateTime.now();
+    _startWatchdog(context);
+
     _subscription = _channel!.stream.listen(
           (message) {
+        final wasConnected = _isConnected;
         _isConnected = true;
+        _lastMessageTime = DateTime.now();
         _controller.add(message); // ✅ push into broadcast
 
         try {
           final json = jsonDecode(message);
           if (json['type'] == 'ping') {
             print("📡 Ping: ${json['data']}");
-            _connected();
+            if (!wasConnected) _connected(); // only announce on reconnect
           }
         } catch (e) {
           print("JSON parse error: $e");
@@ -69,9 +79,28 @@ class NodeSocketService {
     );
   }
 
+  // Force a reconnect if no message (including pings) has arrived in a while.
+  // Catches silently-dead sockets that never fire onDone/onError.
+  void _startWatchdog(BuildContext? context) {
+    _watchdogTimer?.cancel();
+    _watchdogTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_lastMessageTime == null) return;
+      final silentFor = DateTime.now().difference(_lastMessageTime!);
+      if (silentFor > _staleTimeout) {
+        print("⚠️ No messages for ${silentFor.inSeconds}s, assuming dead connection");
+        _watchdogTimer?.cancel();
+        _watchdogTimer = null;
+        _handleDisconnect(context, reason: "Stale connection (watchdog)");
+      }
+    });
+  }
+
   void _handleDisconnect(BuildContext? context, {required String reason}) {
     _isConnected = false;
     print(reason);
+
+    _watchdogTimer?.cancel();
+    _watchdogTimer = null;
 
     _subscription?.cancel();
     _subscription = null;
@@ -143,6 +172,8 @@ class NodeSocketService {
     } catch (_) {}
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
+    _watchdogTimer?.cancel();
+    _watchdogTimer = null;
     _isConnected = false;
   }
 }
