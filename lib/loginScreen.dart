@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
+    super.initState();
 
     if (widget.debug == 1) {
       username.text = 'staff';
@@ -39,131 +40,131 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     getIP();
+    NodeSocketService().connect(context: context);
   }
 
   @override
   Widget build(BuildContext context) {
-    NodeSocketService().connect(context: context);
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                  fit: BoxFit.fill,
-                  image: Image.asset('images/background.jpg').image),
-            ),
-            child: Center(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      BatteryWidget(),
-                      SizedBox(height: 25),
-                      Container(
-                        height: MediaQuery.of(context).size.width < 400 ? 150 : 300,
-                        child: Image.asset('images/logo.png'),
-                      ),
-                      SizedBox(height: 25),
-                      Center(child: Text("Office of the Ombudsman", style: TextStyle(fontFamily: 'BebasNeue' ,fontSize: 60, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
-                      Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-                      SizedBox(height: 20),
-                      Container(
-                          width: 300,
-                          child: TextField(
-                            onSubmitted: (value) {
-                              submit();
-                            },
-                            controller: username,
-                            decoration: InputDecoration(
+        body: Stack(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: Image.asset('images/background.jpg').image),
+              ),
+              child: Center(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        BatteryWidget(),
+                        SizedBox(height: 25),
+                        Container(
+                          height: MediaQuery.of(context).size.width < 400 ? 150 : 300,
+                          child: Image.asset('images/logo.png'),
+                        ),
+                        SizedBox(height: 25),
+                        Center(child: Text("Office of the Ombudsman", style: TextStyle(fontFamily: 'BebasNeue' ,fontSize: 60, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
+                        Center(child: Text("Queueing App", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
+                        SizedBox(height: 20),
+                        Container(
+                            width: 300,
+                            child: TextField(
+                              onSubmitted: (value) {
+                                submit();
+                              },
+                              controller: username,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)
+                                  ),
+                                  hintText: 'User'
+                              ),
+                            )),
+                        SizedBox(height: 10),
+                        Container(
+                            width: 300,
+                            child: TextField(
+                              obscureText: obscure,
+                              controller: pass,
+                              onSubmitted: (value) {
+                                submit();
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Password',
                                 border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10)
                                 ),
-                                hintText: 'User'
-                            ),
-                          )),
-                      SizedBox(height: 10),
-                      Container(
-                          width: 300,
-                          child: TextField(
-                            obscureText: obscure,
-                            controller: pass,
-                            onSubmitted: (value) {
-                              submit();
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'Password',
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10)
                               ),
+                            )),
+                        IconButton(onPressed: () {
+                          obscure = !obscure;
+                          setState(() {
+
+                          });
+                        }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
+                        SizedBox(height: 10),
+                        Container(
+                          height: 50,
+                          width: 300,
+                          padding: EdgeInsets.all(5),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                submit();
+                              }, child: Text("Log-in")),
+                        ),
+
+                        SizedBox(height: 10),
+
+                        // comment
+
+                        widget.debug == 1 ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              height: 40,
+                              child: ElevatedButton(onPressed: () async {
+                                try {
+                                  final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
+                                  final result = await http.get(uri);
+
+                                  print(result.headers);
+
+                                  if (result.statusCode == 200) {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
+                                  }
+                                } catch(e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
+                                }
+                              }, child: Text("Queue Screen")),
                             ),
-                          )),
-                      IconButton(onPressed: () {
-                        obscure = !obscure;
-                        setState(() {
+                            SizedBox(width: 10),
+                            Container(
+                              height: 40,
+                              child: ElevatedButton(onPressed: () async {
+                                try {
+                                  final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
+                                  final result = await http.get(uri);
 
-                        });
-                      }, icon: obscure == true ? Icon(Icons.remove_red_eye): Icon(Icons.remove_red_eye_outlined)),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: 300,
-                        padding: EdgeInsets.all(5),
-                        child: ElevatedButton(
-                            onPressed: () {
-                              submit();
-                            }, child: Text("Log-in")),
-                      ),
-
-                      SizedBox(height: 10),
-
-                      // comment
-
-                      widget.debug == 1 ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            height: 40,
-                            child: ElevatedButton(onPressed: () async {
-                              try {
-                                final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
-                                final result = await http.get(uri);
-
-                                print(result.headers);
-
-                                if (result.statusCode == 200) {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => DisplayScreen()));
+                                  if (result.statusCode == 200) {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
+                                  }
+                                } catch(e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
                                 }
-                              } catch(e) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
-                              }
-                            }, child: Text("Queue Screen")),
-                          ),
-                          SizedBox(width: 10),
-                          Container(
-                            height: 40,
-                            child: ElevatedButton(onPressed: () async {
-                              try {
-                                final uri = Uri.parse('http://$site/queueing_api/api_controls.php');
-                                final result = await http.get(uri);
 
-                                if (result.statusCode == 200) {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => ServicesScreen()));
-                                }
-                              } catch(e) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server not found.")));
-                              }
+                              }, child: Text("Services Kiosk")),
+                            ),
+                          ],
+                        ) : SizedBox(),
 
-                            }, child: Text("Services Kiosk")),
-                          ),
-                        ],
-                      ) : SizedBox(),
+                        //comment
 
-                      //comment
-
-                      /*
+                        /*
 
                       SizedBox(height: 10),
                       TextButton(onPressed: () async {
@@ -199,14 +200,14 @@ class _LoginScreenState extends State<LoginScreen> {
                        */
 
 
-                      Text("v1.0.8", style: TextStyle(color: Colors.grey)),
-                    ]
+                        Text("v1.0.8", style: TextStyle(color: Colors.grey)),
+                      ]
+                  ),
                 ),
               ),
-            ),
-          )
-        ],
-      )
+            )
+          ],
+        )
     );
   }
 
@@ -245,81 +246,81 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
 
-          if (user.userType == 'Admin') {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen(user: user)));
-          }
+        if (user.userType == 'Admin') {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => AdminScreen(user: user)));
+        }
 
-          if (user.userType == 'Staff') {
-            final List<dynamic> stations = await _getStationSQL();
-            final List<Control> controls = await _getControls();
+        if (user.userType == 'Staff') {
+          final List<dynamic> stations = await _getStationSQL();
+          final List<Control> controls = await _getControls();
 
-            final value = controls.where((e) => e.controlName == 'One Session per User').toList()[0].value;
-
-
-            if (value == 1) {
-              final activeStations = stations.where((s) {
-                final int inSession = s['inSession'] is int
-                    ? s['inSession']
-                    : int.parse(s['inSession'].toString());
-
-                final String userInSession = s['userInSession'].toString();
-                final String sessionPing = s['sessionPing'].toString();
-
-                print('session: $sessionPing');
+          final value = controls.where((e) => e.controlName == 'One Session per User').toList()[0].value;
 
 
-                return inSession == 1 &&
-                    userInSession == user.username &&
-                    sessionPing.isNotEmpty;
-              }).toList();
+          if (value == 1) {
+            final activeStations = stations.where((s) {
+              final int inSession = s['inSession'] is int
+                  ? s['inSession']
+                  : int.parse(s['inSession'].toString());
 
-              if (activeStations.isNotEmpty) {
-                final timestamp = DateTime.parse(activeStations[0]['sessionPing']);
-                final now = DateTime.now();
+              final String userInSession = s['userInSession'].toString();
+              final String sessionPing = s['sessionPing'].toString();
 
-                if (now.difference(timestamp).inSeconds > 5) {
+              print('session: $sessionPing');
 
-                  print("diffSec: ${now.difference(timestamp).inSeconds}");
 
-                  final v = await _getVersion();
+              return inSession == 1 &&
+                  userInSession == user.username &&
+                  sessionPing.isNotEmpty;
+            }).toList();
 
-                  if (version == v) {
-                    if (user.assignedStationId != 999) {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
-                    } else {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
-                    }
+            if (activeStations.isNotEmpty) {
+              final timestamp = DateTime.parse(activeStations[0]['sessionPing']);
+              final now = DateTime.now();
+
+              if (now.difference(timestamp).inSeconds > 5) {
+
+                print("diffSec: ${now.difference(timestamp).inSeconds}");
+
+                final v = await _getVersion();
+
+                if (version == v) {
+                  if (user.assignedStationId != 999) {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Old Version. Update Required.")));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
                   }
-
                 } else {
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("This user is already in a session.")));
-                  return;
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Old Version. Update Required.")));
                 }
 
-              }
-            }
-
-            final v = await _getVersion();
-
-            if (version == v) {
-              if (user.assignedStationId != 999) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
               } else {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
-              }
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Old Version. Update Required.")));
-            }
 
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("This user is already in a session.")));
+                return;
+              }
+
+            }
           }
+
+          final v = await _getVersion();
+
+          if (version == v) {
+            if (user.assignedStationId != 999) {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => StaffSession(user: user, station: thisStation!)));
+            } else {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => StaffScreen(user: user)));
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Old Version. Update Required.")));
+          }
+
+        }
 
 
 

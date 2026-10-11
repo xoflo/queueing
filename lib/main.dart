@@ -22,6 +22,7 @@ void main() async {
   await DefaultCacheManager().emptyCache();
   await WakelockPlus.enable();
   await Hive.initFlutter();
+  NodeSocketService().connect();
   runApp(MyApp());
 }
 
@@ -31,7 +32,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    NodeSocketService().connect(context: context);
     return MaterialApp(
       scaffoldMessengerKey: scaffoldMessengerKey,
       scrollBehavior: ScrollBehavior().copyWith(dragDevices: {
@@ -174,10 +174,3 @@ class _BootInterfaceState extends State<BootInterface> {
     );
   }
 }
-
-
-
-
-
-
-

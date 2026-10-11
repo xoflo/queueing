@@ -9,6 +9,7 @@ import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import android.view.View
 import android.os.BatteryManager
+import android.net.wifi.WifiManager
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -16,6 +17,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "battery.channel"
+    private var wifiLock: WifiManager.WifiLock? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -40,6 +42,7 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         whitelistAppForLockTask()
+        acquireWifiLock()
 
         window.decorView.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -51,6 +54,37 @@ class MainActivity : FlutterActivity() {
                 )
 
 
+    }
+
+    // Keeps the Wi-Fi radio out of low-power/doze mode for as long as the
+    // app is alive. Standard, long-documented Android API (WIFI_MODE_FULL_HIGH_PERF
+    // is marked deprecated since API 29 but still functional) — this is what
+    // VOIP/streaming apps use to stop the radio from sleeping and dropping
+    // the connection on its own. Some budget/OEM Android builds layer their
+    // own power management on top and may ignore this; worth monitoring on
+    // this specific kiosk hardware to confirm it actually helps.
+    private fun acquireWifiLock() {
+        try {
+            val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "kiosk_wifi_lock")
+            wifiLock?.setReferenceCounted(false)
+            wifiLock?.acquire()
+            Log.i("MainActivity", "Wifi high-perf lock acquired")
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Failed to acquire wifi lock: ${e.message}")
+        }
+    }
+
+    override fun onDestroy() {
+        try {
+            if (wifiLock?.isHeld == true) {
+                wifiLock?.release()
+                Log.i("MainActivity", "Wifi high-perf lock released")
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Failed to release wifi lock: ${e.message}")
+        }
+        super.onDestroy()
     }
 
     override fun onResume() {
