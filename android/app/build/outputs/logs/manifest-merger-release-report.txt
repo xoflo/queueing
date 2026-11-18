@@ -235,11 +235,11 @@ ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidMan
 	android:name
 		ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:44:13-41
 meta-data#io.flutter.embedding.android.NormalTheme
-ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:60:13-63:17
+ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:60:13-63:19
 	android:resource
-		ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:62:15-52
+		ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:62:17-54
 	android:name
-		ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:61:15-70
+		ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:61:17-72
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.DEFAULT+category:name:android.intent.category.HOME+category:name:android.intent.category.LAUNCHER
 ADDED from C:\Users\flo\StudioProjects\queueing1\android\app\src\main\AndroidManifest.xml:65:13-70:29
 action#android.intent.action.MAIN

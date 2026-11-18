@@ -7,6 +7,7 @@ import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart' show Hive;
 import 'package:flutter_pos_printer_platform_image_3/flutter_pos_printer_platform_image_3.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
@@ -43,6 +44,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Timer? timer;
   Timer? activeServiceTimer;
+  Timer? printerTimer;
 
   List<dynamic> services = [];
 
@@ -50,6 +52,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   void dispose() {
     timer?.cancel();
     activeServiceTimer?.cancel();
+    printerTimer?.cancel();
     super.dispose();
   }
 
@@ -66,7 +69,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
         NodeSocketService().sendMessage('getActiveServices', {});
       }
 
-      if (type == 'getActiveServices') {
+      // The server also sends getActiveServices with null data (on every
+      // station ping); that used to throw on data.length.
+      if (type == 'getActiveServices' && data is List) {
         List<String> newServices = [];
 
         for (int i = 0; i <data.length; i++ ) {
@@ -92,6 +97,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
     if (!kIsWeb) {
       if (Platform.isAndroid) {
         usb = Usbprint();
+
+        // While no printer is connected, keep looking for one (wired, then
+        // Bluetooth, or the reverse) so nobody has to press connect.
+        printerTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+          if (_creatingTicket || _printerCheck != null) return;
+          if (usb?.selectedDevice != null) return;
+          _handlePrinter();
+        });
       }
     }
 
@@ -962,6 +975,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   getTicketSQLPrint(String serviceCode) async {
+    _numberLookupFailed = false;
     try {
       final uri = Uri.parse('http://$site/queueing_api/api_ticket.php?today=true');
 
@@ -986,6 +1000,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       return newTickets;
     } catch (e) {
+      _numberLookupFailed = true;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Cannot connect to the server. Please try again.")));
       print(e);
@@ -1026,6 +1041,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   bool _creatingTicket = false;
 
+  // True when the last ticket-number lookup could not reach the server.
+  // Without this a failed lookup looked like "no tickets today" (number 001).
+  bool _numberLookupFailed = false;
+
   addTicketSQL(String serviceType, String serviceCode, [String? priorityType, String? ticketName, String? gender]) async {
     if (_creatingTicket == true)  {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket currently being generated")));
@@ -1039,6 +1058,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
       final String timestamp = DateTime.now().toString();
 
       final List<Ticket> tickets = await getTicketSQLPrint(serviceCode);
+      if (_numberLookupFailed) {
+        throw Exception("Could not get today's ticket count from the server.");
+      }
       final thisDay = tickets.where((e) {
         final eDate = toDateTime(e.timeCreatedAsDate!).toString();
         final today = toDateTime(DateTime.now()).toString();
@@ -1070,22 +1092,39 @@ class _ServicesScreenState extends State<ServicesScreen> {
         "gender": gender
       };
 
-      if (usb?.selectedDevice == null) await _handlePrinter();
+      // Find a printer first (saved type first, then the other type).
+      bool printerFound = usb?.selectedDevice != null
+          ? true
+          : await _handlePrinter();
 
-      int value = 0; // debug
-
-      if (usb?.selectedDevice == null) {
-        int? valueBlue = await printer.ticket("$serviceCode$numberParsed",
-            "$timestamp", "$priorityType", "$ticketName");
-        value = valueBlue ?? 0;
-      } else {
-        try {
-          final valueUSB = await usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
-          value = valueUSB ?? 0;
-        } catch(e) {
-          print(e);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      Future<int> printOnce() async {
+        int v = 0;
+        if (usb?.selectedDevice == null) {
+          int? valueBlue = await printer.ticket("$serviceCode$numberParsed",
+              "$timestamp", "$priorityType", "$ticketName");
+          v = valueBlue ?? 0;
+        } else {
+          try {
+            final valueUSB = await usb!.buildTicketQueue("$serviceCode$numberParsed", "$timestamp", "$priorityType", "$ticketName");
+            v = valueUSB ?? 0;
+          } catch(e) {
+            print(e);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+          }
         }
+        return v;
+      }
+
+      int value = await printOnce();
+
+      // The printer looked connected but the print failed (stale connection).
+      // Drop it, look for a printer again (wired, then Bluetooth, or the
+      // reverse) and retry once. If no printer was found at all, skip this so
+      // the ticket is not delayed.
+      if (value != 1 && printerFound) {
+        usb?.selectedDevice = null;
+        printerFound = await _handlePrinter();
+        if (printerFound) value = await printOnce();
       }
 
 
@@ -1093,19 +1132,31 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
       final codeAndNumber = "$serviceCode$numberParsed";
 
+      // Always save the ticket, printed or not. The next ticket number is
+      // counted from saved tickets, so skipping the save when the printer
+      // fails made the number repeat (stuck) and left photographed tickets
+      // that staff never saw in the queue.
+      body["printStatus"] = value == 1 ? 1 : 0;
+
+      final result = await http
+          .post(uri, body: jsonEncode(body))
+          .timeout(const Duration(seconds: 8));
+      if (result.statusCode >= 400) {
+        throw Exception("Ticket save failed (${result.statusCode})");
+      }
+
+      NodeSocketService().sendMessage('createTicket', {});
+
       if (value == 1) {
-        final result = await http.post(uri, body: jsonEncode(body)).timeout(const Duration(seconds: 8));
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Ticket Created Successfully")));
-
-        NodeSocketService().sendMessage('createTicket', {});
 
         _addRecentTicket(codeAndNumber, printed: true);
         _showTicketNumberDialog(codeAndNumber, printed: true);
 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("No Printer Connected.")));
+            SnackBar(content: Text("Ticket saved. Printer not connected.")));
 
         _addRecentTicket(codeAndNumber, printed: false);
         _showTicketNumberDialog(codeAndNumber, printed: false);
@@ -1124,52 +1175,168 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-  bool _handlingPrinter = false;
+  // ---- Printer auto-connect -------------------------------------------
+  // The most recent printer type is checked first. If it is not available,
+  // the other type is tried, and a snackbar says when it switched.
+  //   USB saved  -> USB, then the paired Bluetooth printer
+  //   BT saved   -> paired Bluetooth printer, then USB
+  // Main saved value (HiveService printer): USB = "name_productId_vendorId",
+  // Bluetooth = "BT|name|address" (older builds saved just "BT"). The
+  // Bluetooth printer is also kept under its own key so it can be used as a
+  // fallback while USB is the recent one.
+  static const String _btKey = 'btPrinter';
 
-  _handlePrinter() async {
-    if (kIsWeb || usb == null) return;
-    if (_handlingPrinter) return;
-    _handlingPrinter = true;
-
+  Future<String?> _savedBluetooth(dynamic main) async {
     try {
-      final dynamic saved = await getPrinter();
+      final box = await Hive.openBox('printerBox');
+      final own = box.get(_btKey);
+      if (own is String && own.startsWith('BT|')) return own;
+    } catch (_) {}
+    if (main is String && main.startsWith('BT')) return main;
+    return null;
+  }
 
-      // Saved as Bluetooth: leave USB alone
-      if (saved == 'BT') {
-        usb!.selectedDevice = null;
-        return;
+  // Remember which Bluetooth printer was connected (not just "BT").
+  void _saveBluetooth(BluetoothDevice? d) {
+    if (d != null && d.address != null) {
+      final v = 'BT|${d.name ?? ""}|${d.address}';
+      savePrinter(v);
+      Hive.openBox('printerBox').then((b) => b.put(_btKey, v)).catchError((_) {});
+    } else {
+      savePrinter('BT');
+    }
+  }
+
+  void _printerNote(String msg) {
+    try {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), duration: const Duration(seconds: 4)));
+    } catch (_) {}
+  }
+
+  // Finds the paired Bluetooth printer and connects. true = connected.
+  Future<bool> _connectSavedBluetooth(String? saved) async {
+    try {
+      if (saved == null) return false;
+
+      if (await bluetooth.isConnected == true) {
+        _connected = true;
+        return true;
       }
 
-      // 1. Try the saved USB printer
-      if (saved != null && saved != "") {
-        final parts = saved.toString().split("_");
+      final parts = saved.split('|');
+      final savedAddress = parts.length > 2 ? parts[2] : '';
+
+      final bonded = await bluetooth.getBondedDevices();
+      BluetoothDevice? target;
+
+      if (savedAddress.isNotEmpty) {
+        for (final d in bonded) {
+          if (d.address == savedAddress) {
+            target = d;
+            break;
+          }
+        }
+      } else if (saved == 'BT') {
+        // Old save with no address: only use it if there is one paired printer.
+        final candidates =
+        bonded.where((d) => d.name != "ILITEK-TP").toList();
+        if (candidates.length == 1) target = candidates.first;
+      }
+
+      if (target == null) return false;
+
+      await bluetooth.connect(target).timeout(const Duration(seconds: 6));
+      if (await bluetooth.isConnected != true) return false;
+
+      _device = target;
+      _connected = true;
+      return true;
+    } catch (e) {
+      print("Bluetooth reconnect failed: $e");
+      return false;
+    }
+  }
+
+  // Wired printer: the saved one first, otherwise the first USB printer found.
+  Future<bool> _connectUsb(dynamic saved) async {
+    try {
+      if (saved is String && saved != "" && !saved.startsWith('BT')) {
+        final parts = saved.split("_");
         if (parts.length >= 3) {
           final vendorId = parts.last;
           final productId = parts[parts.length - 2];
           final name = parts.sublist(0, parts.length - 2).join("_");
           if (await usb!.connectDevice(
               PrinterDevice(name: name, productId: productId, vendorId: vendorId))) {
-            return;
+            return true;
           }
         }
       }
 
-      // 2. Saved one missing/stale: auto-detect the first USB printer
-      final found = await usb!.scanUsb();
-      if (found.isNotEmpty) {
-        final d = found.first;
+      // No saved printer needed: take whatever USB device the scan finds
+      // (the touchscreen is already ignored) and connect to the first one
+      // that accepts.
+      final found = await usb!.scanUsb(wait: const Duration(seconds: 3));
+      for (final d in found) {
         if (await usb!.connectDevice(d)) {
           await savePrinter("${d.name}_${d.productId}_${d.vendorId}");
-          return;
+          return true;
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+    return false;
+  }
+
+  Future<bool>? _printerCheck;
+
+  /// Looks for a printer. true = one is connected. Calls made while a check
+  /// is running share that check.
+  Future<bool> _handlePrinter() {
+    if (kIsWeb || usb == null) return Future.value(false);
+    return _printerCheck ??=
+        _findPrinter().whenComplete(() => _printerCheck = null);
+  }
+
+  Future<bool> _findPrinter() async {
+    try {
+      final dynamic saved = await getPrinter();
+      final bool preferBt = saved is String && saved.startsWith('BT');
+
+      if (preferBt) {
+        // 1. Paired Bluetooth printer
+        if (await _connectSavedBluetooth(await _savedBluetooth(saved))) {
+          usb!.selectedDevice = null;
+          return true;
+        }
+        // 2. Not found: wired printer
+        if (await _connectUsb(saved)) {
+          _printerNote(
+              "Bluetooth printer not found. Using USB printer: ${usb!.selectedDevice?.name ?? ''}");
+          return true;
+        }
+      } else {
+        // 1. Wired printer
+        if (await _connectUsb(saved)) return true;
+        // 2. Not found: paired Bluetooth printer
+        if (await _connectSavedBluetooth(await _savedBluetooth(saved))) {
+          usb!.selectedDevice = null;
+          _saveBluetooth(_device);
+          _printerNote(
+              "USB printer not found. Using Bluetooth printer: ${_device?.name ?? ''}");
+          return true;
         }
       }
 
-      // 3. No USB printer: Bluetooth path. Saved value is not erased.
+      // 3. No printer: tickets are still saved without printing.
       usb!.selectedDevice = null;
+      return false;
     } catch (e) {
       print(e);
-    } finally {
-      _handlingPrinter = false;
+      return false;
     }
   }
 
@@ -1264,7 +1431,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
         case BlueThermalPrinter.CONNECTED:
           _connected = true;
           usb?.selectedDevice = null;
-          savePrinter('BT');
+          getPrinter().then((s) {
+            if (!(s is String && s.startsWith('BT|'))) _saveBluetooth(_device);
+          });
           setState(() {
             print("bluetooth device state: connected");
           });
@@ -1353,7 +1522,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           bluetooth.connect(_device!).catchError((error) {
             _connected = false;
           });
-          savePrinter('BT');
+          _saveBluetooth(_device);
           usb?.selectedDevice = null;
           _connected = true;
         }

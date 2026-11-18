@@ -47,187 +47,187 @@ class _StaffScreenState extends State<StaffScreen> {
       canPop: false,
       child: Scaffold(
         body:
-            MediaQuery.of(context).size.width < 350 ||
-                    MediaQuery.of(context).size.height < 550
-                ? Container(
-                    child: Center(
-                        child: Text(
-                      "Expand Screen Size to Display",
-                      style: TextStyle(fontSize: 30),
-                      textAlign: TextAlign.center,
-                    )),
-                  )
-                : Stack(
-                    children: [
-                      imageBackground(context),
-                      logoBackground(context, 350),
-                      FutureBuilder(
-                        future: thisUser(),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<User> snapshot) {
-                          return snapshot.connectionState ==
+        MediaQuery.of(context).size.width < 350 ||
+            MediaQuery.of(context).size.height < 550
+            ? Container(
+          child: Center(
+              child: Text(
+                "Expand Screen Size to Display",
+                style: TextStyle(fontSize: 30),
+                textAlign: TextAlign.center,
+              )),
+        )
+            : Stack(
+          children: [
+            imageBackground(context),
+            logoBackground(context, 350),
+            FutureBuilder(
+              future: thisUser(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<User> snapshot) {
+                return snapshot.connectionState ==
+                    ConnectionState.done
+                    ? Builder(builder: (context) {
+                  return Container(
+                    padding: EdgeInsets.all(20),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        children: [
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      icon: Icon(
+                                          Icons.chevron_left)),
+                                  Text(
+                                      "Welcome, ${widget.user.username}",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight:
+                                          FontWeight.w700)),
+                                  Spacer(),
+                                ],
+                              )),
+                          Divider(),
+                          SizedBox(height: 10),
+                          FutureBuilder(
+                            future: getStationSQL(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<dynamic>>
+                                snapshot) {
+                              return snapshot.connectionState ==
                                   ConnectionState.done
-                              ? Builder(builder: (context) {
-                                  return Container(
-                                    padding: EdgeInsets.all(20),
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.vertical,
-                                      child: Column(
-                                        children: [
-                                          Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Row(
-                                                children: [
-                                                  IconButton(
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      },
-                                                      icon: Icon(
-                                                          Icons.chevron_left)),
-                                                  Text(
-                                                      "Welcome, ${widget.user.username}",
-                                                      style: TextStyle(
-                                                          fontSize: 20,
-                                                          fontWeight:
-                                                              FontWeight.w700)),
-                                                  Spacer(),
-                                                ],
-                                              )),
-                                          Divider(),
-                                          SizedBox(height: 10),
-                                          FutureBuilder(
-                                            future: getStationSQL(),
-                                            builder: (BuildContext context,
-                                                AsyncSnapshot<List<dynamic>>
-                                                    snapshot) {
-                                              return snapshot.connectionState ==
-                                                      ConnectionState.done
-                                                  ? Container(
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .height -
-                                                              120,
-                                                      child: GridView.builder(
-                                                          gridDelegate:
-                                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                                                  childAspectRatio:
-                                                                      3 / 1.2,
-                                                                  crossAxisCount: MediaQuery.of(context)
-                                                                              .size
-                                                                              .width <
-                                                                          800
-                                                                      ? MediaQuery.of(context).size.width <
-                                                                              700
-                                                                          ? 2
-                                                                          : 3
-                                                                      : 5),
-                                                          itemCount: snapshot
-                                                              .data!.length,
-                                                          itemBuilder:
-                                                              (context, i) {
-                                                            final Station
-                                                                station =
-                                                                Station.fromJson(
-                                                                    snapshot
-                                                                        .data![i]);
-                                                            return InkWell(
-                                                              child: Card(
-                                                                  child: Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Text(
-                                                                      "${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}",
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              20,
-                                                                          fontWeight:
-                                                                              FontWeight.w700)),
-                                                                  station.inSession ==
-                                                                          0
-                                                                      ? Text(
-                                                                          "Available",
-                                                                          style: TextStyle(
-                                                                              color: Colors
-                                                                                  .green))
-                                                                      : Text(
-                                                                          "${station.userInSession}",
-                                                                          style:
-                                                                              TextStyle(color: Colors.redAccent))
-                                                                ],
-                                                              )),
-                                                              onTap: () async {
-                                                                final timestamp =
-                                                                    DateTime.now()
-                                                                        .toString();
+                                  ? Container(
+                                height:
+                                MediaQuery.of(context)
+                                    .size
+                                    .height -
+                                    120,
+                                child: GridView.builder(
+                                    gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                        childAspectRatio:
+                                        3 / 1.2,
+                                        crossAxisCount: MediaQuery.of(context)
+                                            .size
+                                            .width <
+                                            800
+                                            ? MediaQuery.of(context).size.width <
+                                            700
+                                            ? 2
+                                            : 3
+                                            : 5),
+                                    itemCount: snapshot
+                                        .data!.length,
+                                    itemBuilder:
+                                        (context, i) {
+                                      final Station
+                                      station =
+                                      Station.fromJson(
+                                          snapshot
+                                              .data![i]);
+                                      return InkWell(
+                                        child: Card(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment
+                                                  .center,
+                                              children: [
+                                                Text(
+                                                    "${station.stationName}${station.stationNumber == 0 ? "" : " ${station.stationNumber}"}",
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                        20,
+                                                        fontWeight:
+                                                        FontWeight.w700)),
+                                                station.inSession ==
+                                                    0
+                                                    ? Text(
+                                                    "Available",
+                                                    style: TextStyle(
+                                                        color: Colors
+                                                            .green))
+                                                    : Text(
+                                                    "${station.userInSession}",
+                                                    style:
+                                                    TextStyle(color: Colors.redAccent))
+                                              ],
+                                            )),
+                                        onTap: () async {
+                                          final timestamp =
+                                          DateTime.now()
+                                              .toString();
 
-                                                                if (station
-                                                                        .inSession ==
-                                                                    1) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(SnackBar(
-                                                                          content:
-                                                                              Text("Station is currently in session.")));
-                                                                } else {
-                                                                  await station
-                                                                      .update({
-                                                                    "inSession":
-                                                                        1,
-                                                                    "userInSession":
-                                                                        widget
-                                                                            .user
-                                                                            .username,
-                                                                    "sessionPing":
-                                                                        timestamp
-                                                                  });
+                                          if (station
+                                              .inSession ==
+                                              1) {
+                                            ScaffoldMessenger.of(
+                                                context)
+                                                .showSnackBar(SnackBar(
+                                                content:
+                                                Text("Station is currently in session.")));
+                                          } else {
+                                            await station
+                                                .update({
+                                              "inSession":
+                                              1,
+                                              "userInSession":
+                                              widget
+                                                  .user
+                                                  .username,
+                                              "sessionPing":
+                                              timestamp
+                                            });
 
-                                                                  final User
-                                                                      user =
-                                                                      await thisUser();
+                                            final User
+                                            user =
+                                            await thisUser();
 
-                                                                  Navigator.push(
-                                                                      context,
-                                                                      MaterialPageRoute(
-                                                                          builder: (_) => StaffSession(
-                                                                              user: user,
-                                                                              station: station)));
-                                                                }
-                                                              },
-                                                            );
-                                                          }),
-                                                    )
-                                                  : Container(
-                                                      height: 300,
-                                                      child: Center(
-                                                        child: Container(
-                                                          height: 50,
-                                                          width: 50,
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ),
-                                                      ),
-                                                    );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                })
-                              : Center(
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (_) => StaffSession(
+                                                        user: user,
+                                                        station: station)));
+                                          }
+                                        },
+                                      );
+                                    }),
+                              )
+                                  : Container(
+                                height: 300,
+                                child: Center(
                                   child: Container(
                                     height: 50,
                                     width: 50,
-                                    child: CircularProgressIndicator(),
+                                    child:
+                                    CircularProgressIndicator(),
                                   ),
-                                );
-                        },
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  );
+                })
+                    : Center(
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    child: CircularProgressIndicator(),
                   ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -236,7 +236,7 @@ class _StaffScreenState extends State<StaffScreen> {
     try {
       final List<User> users = await getUserSQL();
       final thisUser =
-          users.where((e) => e.username == widget.user.username).toList()[0];
+      users.where((e) => e.username == widget.user.username).toList()[0];
 
       return thisUser;
     } catch (e) {
@@ -319,6 +319,11 @@ class _StaffSessionState extends State<StaffSession> {
 
   ValueNotifier<Ticket?> servingStream = ValueNotifier(null);
   ValueNotifier<List<Ticket>> ticketStream = ValueNotifier([]);
+
+  // Set when the connection comes back; the next getTicket reply then
+  // re-announces this station's serving ticket (the server clears it when a
+  // station is silent for 60s, e.g. during a router reboot).
+  bool _resyncStation = false;
 
   getUserSQL() async {
     try {
@@ -404,9 +409,38 @@ class _StaffSessionState extends State<StaffSession> {
       if (type == 'getTicket') {
         updateTicketStream(null, data);
         updateServingTicketStream(data);
+
+        if (_resyncStation) {
+          _resyncStation = false;
+          final serving = servingStream.value;
+          if (serving != null) {
+            NodeSocketService().sendMessage('updateStation', {
+              'id': widget.station.id!,
+              'ticketServing': serving.codeAndNumber!,
+              'ticketServingId': serving.id!
+            });
+          }
+          NodeSocketService().sendMessage('updateDisplay', {});
+        }
       }
 
       if (type == 'createTicket') {
+        NodeSocketService().sendMessage('getTicket', {});
+      }
+
+      // Connection came back: re-register this session and pull fresh state.
+      if (type == 'reconnected') {
+        _resyncStation = true;
+        NodeSocketService().sendMessage("identify", {
+          "userId": widget.user.id,
+          "userInSession": widget.user.username,
+        });
+        NodeSocketService().sendMessage("stationPing", {
+          "id": widget.station.id,
+          "sessionPing": DateTime.now().toString(),
+          "inSession": 1,
+          "userInSession": widget.user.username
+        });
         NodeSocketService().sendMessage('getTicket', {});
       }
     },
@@ -468,449 +502,449 @@ class _StaffSessionState extends State<StaffSession> {
 
     return Scaffold(
       body:
-          MediaQuery.of(context).size.width < 350 ||
-                  MediaQuery.of(context).size.height < 550
-              ? Container(
-                  child: Center(
-                      child: Text("Expand Screen Size to Display",
-                          style: TextStyle(fontSize: 30),
-                          textAlign: TextAlign.center)),
-                )
-              : Listener(
-                  onPointerDown: (value) {
-                    resetRinger();
-                  },
-                  child: Stack(
-                    children: [
-                      imageBackground(context),
-                      StatefulBuilder(
-                        builder: (BuildContext context, setStateSession) {
-                          return Container(
-                            padding: EdgeInsets.all(20),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              child: Column(
-                                children: [
-                                  BatteryWidget(),
-                                  Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: IconButton(
-                                          onPressed: () {
-                                            if (ringTimer != null) {
-                                              ringTimer!.cancel();
-                                              ringTimer = null;
-                                            }
-                                            Navigator.pop(context);
-                                          },
-                                          icon: Icon(Icons.chevron_left))),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      Text("User In-Session: ",
-                                          style: TextStyle(fontSize: 20)),
-                                      Text("${widget.user.username}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 20))
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      Text("Station: ",
-                                          style: TextStyle(fontSize: 20)),
-                                      Text(
-                                          "${widget.station.stationName}${widget.station.stationNumber == 0 ? "" : " ${widget.station.stationNumber}"}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 20))
-                                    ],
-                                  ),
-                                  SizedBox(height: 30),
-                                  Builder(
-                                    builder: (context) {
-                                      return ValueListenableBuilder<Ticket?>(
-                                        valueListenable: servingStream,
-                                        builder: (BuildContext context, Ticket? value, Widget? child) {
-                                          return servingStream.value != null ? Card(
-                                            clipBehavior:
-                                            Clip.antiAlias,
+      MediaQuery.of(context).size.width < 350 ||
+          MediaQuery.of(context).size.height < 550
+          ? Container(
+        child: Center(
+            child: Text("Expand Screen Size to Display",
+                style: TextStyle(fontSize: 30),
+                textAlign: TextAlign.center)),
+      )
+          : Listener(
+        onPointerDown: (value) {
+          resetRinger();
+        },
+        child: Stack(
+          children: [
+            imageBackground(context),
+            StatefulBuilder(
+              builder: (BuildContext context, setStateSession) {
+                return Container(
+                  padding: EdgeInsets.all(20),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: [
+                        BatteryWidget(),
+                        Align(
+                            alignment: Alignment.centerLeft,
+                            child: IconButton(
+                                onPressed: () {
+                                  if (ringTimer != null) {
+                                    ringTimer!.cancel();
+                                    ringTimer = null;
+                                  }
+                                  Navigator.pop(context);
+                                },
+                                icon: Icon(Icons.chevron_left))),
+                        Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.center,
+                          children: [
+                            Text("User In-Session: ",
+                                style: TextStyle(fontSize: 20)),
+                            Text("${widget.user.username}",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 20))
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.center,
+                          children: [
+                            Text("Station: ",
+                                style: TextStyle(fontSize: 20)),
+                            Text(
+                                "${widget.station.stationName}${widget.station.stationNumber == 0 ? "" : " ${widget.station.stationNumber}"}",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 20))
+                          ],
+                        ),
+                        SizedBox(height: 30),
+                        Builder(
+                            builder: (context) {
+                              return ValueListenableBuilder<Ticket?>(
+                                valueListenable: servingStream,
+                                builder: (BuildContext context, Ticket? value, Widget? child) {
+                                  return servingStream.value != null ? Card(
+                                    clipBehavior:
+                                    Clip.antiAlias,
+                                    child: Padding(
+                                      padding:
+                                      const EdgeInsets
+                                          .all(15.0),
+                                      child: Container(
+                                        height: 130,
+                                        width: 250,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment
+                                              .center,
+                                          children: [
+                                            Text(
+                                                overflow:
+                                                TextOverflow
+                                                    .ellipsis,
+                                                "${servingStream.value!.serviceType}",
+                                                style: TextStyle(
+                                                    fontSize:
+                                                    15,
+                                                    fontWeight: FontWeight
+                                                        .w700),
+                                                textAlign:
+                                                TextAlign
+                                                    .center),
+                                            Text(
+                                                servingStream.value!
+                                                    .codeAndNumber!,
+                                                style: TextStyle(
+                                                    fontSize:
+                                                    45)),
+                                            Row(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment
+                                                  .center,
+                                              spacing: 5,
+                                              children: [
+                                                Text(
+                                                    "Priority:",
+                                                    style:
+                                                    TextStyle(fontSize: 15)),
+                                                Text(
+                                                    servingStream.value!
+                                                        .priorityType!,
+                                                    style:
+                                                    TextStyle(fontSize: 15)),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ) : Card(
+                                    child: Builder(
+                                        builder: (context) {
+                                          resetRinger();
+                                          return Container(
+                                            height: 130,
+                                            width: 220,
                                             child: Padding(
                                               padding:
                                               const EdgeInsets
-                                                  .all(15.0),
-                                              child: Container(
-                                                height: 130,
-                                                width: 250,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .center,
-                                                  children: [
-                                                    Text(
-                                                        overflow:
-                                                        TextOverflow
-                                                            .ellipsis,
-                                                        "${servingStream.value!.serviceType}",
-                                                        style: TextStyle(
-                                                            fontSize:
-                                                            15,
-                                                            fontWeight: FontWeight
-                                                                .w700),
-                                                        textAlign:
-                                                        TextAlign
-                                                            .center),
-                                                    Text(
-                                                        servingStream.value!
-                                                            .codeAndNumber!,
-                                                        style: TextStyle(
-                                                            fontSize:
-                                                            45)),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .center,
-                                                      spacing: 5,
-                                                      children: [
-                                                        Text(
-                                                            "Priority:",
-                                                            style:
-                                                            TextStyle(fontSize: 15)),
-                                                        Text(
-                                                            servingStream.value!
-                                                                .priorityType!,
-                                                            style:
-                                                            TextStyle(fontSize: 15)),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
+                                                  .all(
+                                                  20.0),
+                                              child: Align(
+                                                alignment:
+                                                Alignment
+                                                    .center,
+                                                child: Text(
+                                                    "No ticket being served at the moment.",
+                                                    textAlign:
+                                                    TextAlign
+                                                        .center,
+                                                    style: TextStyle(
+                                                        color: Colors
+                                                            .grey,
+                                                        fontSize:
+                                                        15)),
                                               ),
                                             ),
-                                          ) : Card(
-                                            child: Builder(
-                                                builder: (context) {
-                                                  resetRinger();
-                                                  return Container(
-                                                    height: 130,
-                                                    width: 220,
-                                                    child: Padding(
-                                                      padding:
-                                                      const EdgeInsets
-                                                          .all(
-                                                          20.0),
-                                                      child: Align(
-                                                        alignment:
-                                                        Alignment
-                                                            .center,
-                                                        child: Text(
-                                                            "No ticket being served at the moment.",
-                                                            textAlign:
-                                                            TextAlign
-                                                                .center,
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .grey,
-                                                                fontSize:
-                                                                15)),
-                                                      ),
-                                                    ),
-                                                  );
-                                                }),
                                           );
-                                        },
-                                      );
-                                    }
+                                        }),
+                                  );
+                                },
+                              );
+                            }
+                        ),
+                        SizedBox(height: 30),
+                        Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.center,
+                          children: [
+                            ClipRRect(
+                              child: Card(
+                                child: InkWell(
+                                  splashColor:
+                                  Theme.of(context).splashColor,
+                                  highlightColor: Theme.of(context)
+                                      .highlightColor,
+                                  child: Container(
+                                    height: 120,
+                                    width: 95,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.double_arrow),
+                                        SizedBox(width: 5),
+                                        Text("Call Next",
+                                            textAlign:
+                                            TextAlign.center),
+                                      ],
+                                    ),
                                   ),
-                                  SizedBox(height: 30),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      ClipRRect(
-                                        child: Card(
-                                          child: InkWell(
-                                            splashColor:
-                                                Theme.of(context).splashColor,
-                                            highlightColor: Theme.of(context)
-                                                .highlightColor,
-                                            child: Container(
-                                              height: 120,
-                                              width: 95,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(Icons.double_arrow),
-                                                  SizedBox(width: 5),
-                                                  Text("Call Next",
-                                                      textAlign:
-                                                          TextAlign.center),
-                                                ],
-                                              ),
-                                            ),
-                                            onTap: () {
+                                  onTap: () {
 
-                                              callAgainCounter = 0;
+                                    callAgainCounter = 0;
 
-                                                try {
-                                                  showDialog(context: context, builder: (dialogContext) => AlertDialog(
-                                                    title: Text("Call Next?"),
-                                                    content: Container(
-                                                      height: 30,
-                                                      width: 250,
-                                                      child: Column(
-                                                        children: [
-                                                          Text("Your next pending will be called.", style: TextStyle()),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    actions: [
-                                                      TextButton(child: Text("Confirm", style: TextStyle(fontWeight: FontWeight.w700)), onPressed: () async {
+                                    try {
+                                      showDialog(context: context, builder: (dialogContext) => AlertDialog(
+                                        title: Text("Call Next?"),
+                                        content: Container(
+                                          height: 30,
+                                          width: 250,
+                                          child: Column(
+                                            children: [
+                                              Text("Your next pending will be called.", style: TextStyle()),
+                                            ],
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(child: Text("Confirm", style: TextStyle(fontWeight: FontWeight.w700)), onPressed: () async {
 
-                                                        if (servingStream.value != null) {
-                                                          try {
+                                            if (servingStream.value != null) {
+                                              try {
 
-                                                            final timestamp = DateTime.now().toString();
+                                                final timestamp = DateTime.now().toString();
 
-                                                            List<Map<String, dynamic>> dataBatch = [];
+                                                List<Map<String, dynamic>> dataBatch = [];
 
-                                                            dataBatch.add({
-                                                              'type': 'updateTicket',
-                                                              'data': {
-                                                                'id': servingStream.value!.id,
-                                                                'status': 'Done',
-                                                                'timeDone': timestamp,
-                                                                'log': "${servingStream.value!.log}, $timestamp: Ticket Session Finished",
-                                                                "userAssigned": widget.user.username,
-                                                                "stationName": widget.station.stationName,
-                                                                "stationNumber": widget.station.stationNumber,
-                                                                "timeTaken": servingStream.value!.timeTaken,
-                                                                "serviceType": servingStream.value!.serviceType,
-                                                                "blinker": 1,
-                                                                "callCheck": 1
-                                                              }
-                                                            });
+                                                dataBatch.add({
+                                                  'type': 'updateTicket',
+                                                  'data': {
+                                                    'id': servingStream.value!.id,
+                                                    'status': 'Done',
+                                                    'timeDone': timestamp,
+                                                    'log': "${servingStream.value!.log}, $timestamp: Ticket Session Finished",
+                                                    "userAssigned": widget.user.username,
+                                                    "stationName": widget.station.stationName,
+                                                    "stationNumber": widget.station.stationNumber,
+                                                    "timeTaken": servingStream.value!.timeTaken,
+                                                    "serviceType": servingStream.value!.serviceType,
+                                                    "blinker": 1,
+                                                    "callCheck": 1
+                                                  }
+                                                });
 
-                                                            if (ticketStream.value.isNotEmpty) {
-                                                              dataBatch.add({
-                                                                'type': 'updateTicket',
-                                                                'data': {
-                                                                  "id": ticketStream.value[0].id!,
-                                                                  'status': 'Serving',
-                                                                  'timeDone': null,
-                                                                  'log': "${ticketStream.value[0].log!}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
-                                                                  "userAssigned": widget.user.username!,
-                                                                  "stationName": widget.station.stationName!,
-                                                                  "stationNumber": widget.station.stationNumber!,
-                                                                  "timeTaken": timestamp,
-                                                                  "serviceType": ticketStream.value[0].serviceType!,
-                                                                  "blinker": 0,
-                                                                  "callCheck": 0
-                                                                }
-                                                              });
+                                                if (ticketStream.value.isNotEmpty) {
+                                                  dataBatch.add({
+                                                    'type': 'updateTicket',
+                                                    'data': {
+                                                      "id": ticketStream.value[0].id!,
+                                                      'status': 'Serving',
+                                                      'timeDone': null,
+                                                      'log': "${ticketStream.value[0].log!}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
+                                                      "userAssigned": widget.user.username!,
+                                                      "stationName": widget.station.stationName!,
+                                                      "stationNumber": widget.station.stationNumber!,
+                                                      "timeTaken": timestamp,
+                                                      "serviceType": ticketStream.value[0].serviceType!,
+                                                      "blinker": 0,
+                                                      "callCheck": 0
+                                                    }
+                                                  });
 
-                                                              dataBatch.add({
-                                                                'type': 'updateStation',
-                                                                'data': {
-                                                                  'id': widget.station.id!,
-                                                                  'ticketServing': ticketStream.value[0].codeAndNumber!,
-                                                                  'ticketServingId': ticketStream.value[0].id!
-                                                                }
-                                                              });
+                                                  dataBatch.add({
+                                                    'type': 'updateStation',
+                                                    'data': {
+                                                      'id': widget.station.id!,
+                                                      'ticketServing': ticketStream.value[0].codeAndNumber!,
+                                                      'ticketServingId': ticketStream.value[0].id!
+                                                    }
+                                                  });
 
-                                                              dataBatch.add({
-                                                                'type': 'updateDisplay',
-                                                                'data': {}
-                                                              });
+                                                  dataBatch.add({
+                                                    'type': 'updateDisplay',
+                                                    'data': {}
+                                                  });
 
-                                                              Navigator.pop(dialogContext);
-                                                              NodeSocketService().sendBatch(dataBatch);
-                                                              swap = !swap;
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                  content:
-                                                                  Text("Ticket complete.")));
+                                                  Navigator.pop(dialogContext);
+                                                  NodeSocketService().sendBatch(dataBatch);
+                                                  swap = !swap;
+                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                      content:
+                                                      Text("Ticket complete.")));
 
 
-                                                            } else {
+                                                } else {
 
-                                                              dataBatch.add({
-                                                                'type': 'updateStation',
-                                                                'data': {
-                                                                  'id': widget.station.id!,
-                                                                  'ticketServing': "",
-                                                                  'ticketServingId': null,
-                                                                }
-                                                              });
+                                                  dataBatch.add({
+                                                    'type': 'updateStation',
+                                                    'data': {
+                                                      'id': widget.station.id!,
+                                                      'ticketServing': "",
+                                                      'ticketServingId': null,
+                                                    }
+                                                  });
 
-                                                              dataBatch.add({
-                                                                'type': 'updateDisplay',
-                                                                'data': {}
-                                                              });
-
-
-                                                              Navigator.pop(dialogContext);
-                                                              NodeSocketService().sendBatch(dataBatch);
-                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                  content:
-                                                                  Text("Ticket complete.")));
-                                                            }
+                                                  dataBatch.add({
+                                                    'type': 'updateDisplay',
+                                                    'data': {}
+                                                  });
 
 
-                                                            print(dataBatch);
-
-
-                                                          } catch(e) {
-                                                            print(e);
-                                                          }
-                                                        } else {
-
-                                                          List<Map<String, dynamic>> dataBatch = [];
-
-                                                          if (ticketStream.value.isNotEmpty) {
-
-                                                            final timestamp = DateTime.now().toString();
-
-                                                            dataBatch.add({
-                                                              'type': 'updateTicket',
-                                                              'data': {
-                                                                "id": ticketStream.value[0].id!,
-                                                                'status': 'Serving',
-                                                                'timeDone': null,
-                                                                'log': "${ticketStream.value[0].log!}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
-                                                                "userAssigned": widget.user.username!,
-                                                                "stationName": widget.station.stationName!,
-                                                                "stationNumber": widget.station.stationNumber!,
-                                                                "timeTaken": timestamp,
-                                                                "serviceType": ticketStream.value[0].serviceType!,
-                                                                "blinker": 0,
-                                                                "callCheck": 0
-                                                              }
-                                                            });
-
-                                                            dataBatch.add({
-                                                              'type': 'updateStation',
-                                                              'data': {
-                                                                'id': widget.station.id!,
-                                                                'ticketServing': ticketStream.value[0].codeAndNumber!,
-                                                                'ticketServingId': ticketStream.value[0].id!
-                                                              }
-                                                            });
-
-                                                            dataBatch.add({
-                                                              'type': 'updateDisplay',
-                                                              'data': {}
-                                                            });
-
-
-                                                            Navigator.pop(dialogContext);
-                                                            NodeSocketService().sendBatch(dataBatch);
-                                                            swap = !swap;
-                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                content:
-                                                                Text("Ticket complete.")));
-
-                                                          }  else {
-
-                                                            ScaffoldMessenger.of(
-                                                                context)
-                                                                .showSnackBar(SnackBar(
-                                                                content: Text(
-                                                                    "No pending tickets to serve at the moment.")));
-                                                          }
-                                                        }
-                                                      })
-                                                    ],
-                                                  ));
-
-
-
-                                                } catch(e) {
-                                                  print(e);
-                                                  print("Call Next no Dialog");
+                                                  Navigator.pop(dialogContext);
+                                                  NodeSocketService().sendBatch(dataBatch);
+                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                      content:
+                                                      Text("Ticket complete.")));
                                                 }
 
 
+                                                print(dataBatch);
 
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      ClipRRect(
-                                        child: Card(
-                                          child: InkWell(
-                                            child: Container(
-                                              height: 120,
-                                              width: 95,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(Icons.move_down_sharp),
-                                                  SizedBox(height: 5),
-                                                  Text("Transfer"),
-                                                ],
-                                              ),
-                                            ),
-                                            onTap: () async {
-                                              final timestamp =
-                                                  DateTime.now().toString();
 
-                                              if (servingStream.value != null) {
-                                                showDialog(
-                                                    context: context,
+                                              } catch(e) {
+                                                print(e);
+                                              }
+                                            } else {
+
+                                              List<Map<String, dynamic>> dataBatch = [];
+
+                                              if (ticketStream.value.isNotEmpty) {
+
+                                                final timestamp = DateTime.now().toString();
+
+                                                dataBatch.add({
+                                                  'type': 'updateTicket',
+                                                  'data': {
+                                                    "id": ticketStream.value[0].id!,
+                                                    'status': 'Serving',
+                                                    'timeDone': null,
+                                                    'log': "${ticketStream.value[0].log!}, $timestamp: serving on ${widget.station.stationName!}${widget.station.stationNumber!} by ${widget.user.username!}",
+                                                    "userAssigned": widget.user.username!,
+                                                    "stationName": widget.station.stationName!,
+                                                    "stationNumber": widget.station.stationNumber!,
+                                                    "timeTaken": timestamp,
+                                                    "serviceType": ticketStream.value[0].serviceType!,
+                                                    "blinker": 0,
+                                                    "callCheck": 0
+                                                  }
+                                                });
+
+                                                dataBatch.add({
+                                                  'type': 'updateStation',
+                                                  'data': {
+                                                    'id': widget.station.id!,
+                                                    'ticketServing': ticketStream.value[0].codeAndNumber!,
+                                                    'ticketServingId': ticketStream.value[0].id!
+                                                  }
+                                                });
+
+                                                dataBatch.add({
+                                                  'type': 'updateDisplay',
+                                                  'data': {}
+                                                });
+
+
+                                                Navigator.pop(dialogContext);
+                                                NodeSocketService().sendBatch(dataBatch);
+                                                swap = !swap;
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                    content:
+                                                    Text("Ticket complete.")));
+
+                                              }  else {
+
+                                                ScaffoldMessenger.of(
+                                                    context)
+                                                    .showSnackBar(SnackBar(
+                                                    content: Text(
+                                                        "No pending tickets to serve at the moment.")));
+                                              }
+                                            }
+                                          })
+                                        ],
+                                      ));
+
+
+
+                                    } catch(e) {
+                                      print(e);
+                                      print("Call Next no Dialog");
+                                    }
+
+
+
+                                  },
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            ClipRRect(
+                              child: Card(
+                                child: InkWell(
+                                  child: Container(
+                                    height: 120,
+                                    width: 95,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.move_down_sharp),
+                                        SizedBox(height: 5),
+                                        Text("Transfer"),
+                                      ],
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    final timestamp =
+                                    DateTime.now().toString();
+
+                                    if (servingStream.value != null) {
+                                      showDialog(
+                                          context: context,
+                                          builder:
+                                              (dialogContext) => AlertDialog(
+                                              title: Text(
+                                                  "Select Station to Transfer"),
+                                              content:
+                                              Container(
+                                                height: 400,
+                                                width: 400,
+                                                child:
+                                                FutureBuilder(
+                                                    future:
+                                                    getServiceSQL(),
                                                     builder:
-                                                        (dialogContext) => AlertDialog(
-                                                              title: Text(
-                                                                  "Select Station to Transfer"),
-                                                              content:
-                                                                  Container(
-                                                                height: 400,
-                                                                width: 400,
-                                                                child:
-                                                                    FutureBuilder(
-                                                                        future:
-                                                                            getServiceSQL(),
-                                                                        builder:
-                                                                            (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                                                                          return snapshot.connectionState == ConnectionState.done
-                                                                              ? snapshot.data!.isNotEmpty
-                                                                                  ? ListView.builder(
-                                                                                      itemCount: snapshot.data!.length,
-                                                                                      itemBuilder: (context, i) {
-                                                                                        final service = Service.fromJson(snapshot.data![i]);
+                                                        (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                                                      return snapshot.connectionState == ConnectionState.done
+                                                          ? snapshot.data!.isNotEmpty
+                                                          ? ListView.builder(
+                                                          itemCount: snapshot.data!.length,
+                                                          itemBuilder: (context, i) {
+                                                            final service = Service.fromJson(snapshot.data![i]);
 
-                                                                                        return ListTile(
-                                                                                          title: Text(service.serviceType!),
-                                                                                          onTap: () {
-                                                                                            callAgainCounter = 0;
+                                                            return ListTile(
+                                                              title: Text(service.serviceType!),
+                                                              onTap: () {
+                                                                callAgainCounter = 0;
 
-                                                                                            try {
-                                                                                              List<Map<String, dynamic>> dataBatch = [];
-                                                                                              final timestamp = DateTime.now().toString();
+                                                                try {
+                                                                  List<Map<String, dynamic>> dataBatch = [];
+                                                                  final timestamp = DateTime.now().toString();
 
-                                                                                              dataBatch.add({
-                                                                                                'type': 'updateTicket',
-                                                                                                'data': {
-                                                                                                  "id": servingStream.value!.id,
-                                                                                                  'log': "${servingStream.value!.log!}, $timestamp: ticket transferred to ${service.serviceType!}",
-                                                                                                  'status': "Pending",
-                                                                                                  'userAssigned': "",
-                                                                                                  'stationName': "",
-                                                                                                  'stationNumber': "",
-                                                                                                  'timeTaken': servingStream.value!.timeTaken,
-                                                                                                  'timeDone' : null,
-                                                                                                  'serviceType': service.serviceType!,
-                                                                                                  'callCheck': 0,
-                                                                                                  'blinker': 0
-                                                                                                }
-                                                                                              });
+                                                                  dataBatch.add({
+                                                                    'type': 'updateTicket',
+                                                                    'data': {
+                                                                      "id": servingStream.value!.id,
+                                                                      'log': "${servingStream.value!.log!}, $timestamp: ticket transferred to ${service.serviceType!}",
+                                                                      'status': "Pending",
+                                                                      'userAssigned': "",
+                                                                      'stationName': "",
+                                                                      'stationNumber': "",
+                                                                      'timeTaken': servingStream.value!.timeTaken,
+                                                                      'timeDone' : null,
+                                                                      'serviceType': service.serviceType!,
+                                                                      'callCheck': 0,
+                                                                      'blinker': 0
+                                                                    }
+                                                                  });
 
 
-                                                                                              /*
+                                                                  /*
                                                                                               if (ticketStream.value.isNotEmpty) {
 
                                                                                                 dataBatch.add({
@@ -974,394 +1008,394 @@ class _StaffSessionState extends State<StaffSession> {
 
                                                                                                */
 
-                                                                                              dataBatch.add({
-                                                                                                'type': 'updateStation',
-                                                                                                'data': {
-                                                                                                  'id': widget.station.id!,
-                                                                                                  'ticketServing': "",
-                                                                                                  'ticketServingId': null
-                                                                                                }
-                                                                                              });
+                                                                  dataBatch.add({
+                                                                    'type': 'updateStation',
+                                                                    'data': {
+                                                                      'id': widget.station.id!,
+                                                                      'ticketServing': "",
+                                                                      'ticketServingId': null
+                                                                    }
+                                                                  });
 
-                                                                                              dataBatch.add({
-                                                                                                'type': 'updateDisplay',
-                                                                                                'data': {}
-                                                                                              });
-
-
-                                                                                              Navigator.pop(dialogContext);
-                                                                                              NodeSocketService().sendBatch(dataBatch);
-                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
-
-                                                                                            } catch(e) {
-                                                                                              print(e);
-                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
-                                                                                            }
-
-                                                                                          },
-                                                                                        );
-                                                                                      })
-                                                                                  : Center(
-                                                                                      child: Text("No Stations", style: TextStyle(color: Colors.grey)),
-                                                                                    )
-                                                                              : Container(
-                                                                                  height: 300,
-                                                                                  child: Center(
-                                                                                    child: Container(
-                                                                                      height: 50,
-                                                                                      width: 50,
-                                                                                      child: CircularProgressIndicator(),
-                                                                                    ),
-                                                                                  ),
-                                                                                );
-                                                                        }),
-                                                              )
-                                                            ));
+                                                                  dataBatch.add({
+                                                                    'type': 'updateDisplay',
+                                                                    'data': {}
+                                                                  });
 
 
-                                              } else {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            "No ticket being served at the moment.")));
+                                                                  Navigator.pop(dialogContext);
+                                                                  NodeSocketService().sendBatch(dataBatch);
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ticket Transferred to '${service.serviceType!}'")));
+
+                                                                } catch(e) {
+                                                                  print(e);
+                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+                                                                }
+
+                                                              },
+                                                            );
+                                                          })
+                                                          : Center(
+                                                        child: Text("No Stations", style: TextStyle(color: Colors.grey)),
+                                                      )
+                                                          : Container(
+                                                        height: 300,
+                                                        child: Center(
+                                                          child: Container(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: CircularProgressIndicator(),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }),
+                                              )
+                                          ));
+
+
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                          content: Text(
+                                              "No ticket being served at the moment.")));
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Builder(builder: (context) {
+
+                              return ClipRRect(
+                                child: Card(
+                                  child: InkWell(
+                                    child: Container(
+                                      height: 120,
+                                      width: 95,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment
+                                            .center,
+                                        children: [
+                                          Icon(Icons.volume_up),
+                                          SizedBox(width: 5),
+                                          Text("Call Again"),
+                                        ],
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      final timestamp =
+                                      DateTime.now().toString();
+
+                                      try {
+                                        List<Map<String, dynamic>> dataBatch = [];
+
+                                        if (servingStream.value != null) {
+                                          if (callAgainCounter < 3) {
+                                            callAgainCounter += 1;
+
+                                            dataBatch.add({
+                                              'type': 'updateTicket',
+                                              'data': {
+                                                "id": servingStream.value!.id,
+                                                "userAssigned": widget.user.username!,
+                                                "status": "Serving",
+                                                "stationName": widget.station.stationName!,
+                                                "stationNumber": widget.station.stationNumber!,
+                                                "timeTaken": timestamp,
+                                                "timeDone" : null,
+                                                "serviceType": servingStream.value!.serviceType!,
+                                                'callCheck': 0,
+                                                'blinker': 0,
+                                                'log': "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
                                               }
+                                            });
+
+                                            dataBatch.add({
+                                              'type': 'updateStation',
+                                              'data': {
+                                                'id': widget.station.id!,
+                                                'ticketServing': servingStream.value!.codeAndNumber!,
+                                                'ticketServingId': servingStream.value!.id!
+                                              }
+                                            });
+
+                                            dataBatch.add({
+                                              'type': 'updateDisplay',
+                                              'data': {}
+                                            });
+
+                                            NodeSocketService().sendBatch(dataBatch);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Ticket called again.")));
+
+                                          } else {
+                                            showDialog(
+                                                context: context,
+                                                builder:
+                                                    (dialogContext) =>
+                                                    AlertDialog(
+                                                      title: Text(
+                                                          "Release Ticket?"),
+                                                      content:
+                                                      Container(
+                                                        child: Text(
+                                                            "Ticket has been called a few times."),
+                                                        height:
+                                                        40,
+                                                      ),
+                                                      actions: [
+                                                        TextButton(onPressed: () {
+
+                                                          dataBatch.add({
+                                                            'type': 'updateTicket',
+                                                            'data': {
+                                                              "id": servingStream.value!.id,
+                                                              "userAssigned": widget.user.username!,
+                                                              "status": "Serving",
+                                                              "stationName": widget.station.stationName!,
+                                                              "stationNumber": widget.station.stationNumber!,
+                                                              "timeTaken": timestamp,
+                                                              "timeDone" : null,
+                                                              "serviceType": servingStream.value!.serviceType!,
+                                                              'callCheck': 0,
+                                                              'blinker': 0,
+                                                              'log': "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
+                                                            }
+                                                          });
+
+                                                          dataBatch.add({
+                                                            'type': 'updateStation',
+                                                            'data': {
+                                                              'id': widget.station.id!,
+                                                              'ticketServing': servingStream.value!.codeAndNumber!,
+                                                              'ticketServingId': servingStream.value!.id!
+                                                            }
+                                                          });
+
+                                                          dataBatch.add({
+                                                            'type': 'updateDisplay',
+                                                            'data': {}
+                                                          });
+
+                                                          NodeSocketService().sendBatch(dataBatch);
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                              SnackBar(content: Text("Ticket called again.")));
+                                                        }, child: Text("Call Again")),
+                                                        TextButton(
+                                                            child: Text(
+                                                                "Release"),
+                                                            onPressed:
+                                                                () {
+
+                                                              dataBatch.add({
+                                                                'type': 'updateTicket',
+                                                                'data': {
+                                                                  "id": servingStream.value!.id!,
+                                                                  "status": 'Released',
+                                                                  'log': "${servingStream.value!.log!}, ${DateTime.now()}: Ticket Released",
+                                                                  "userAssigned": widget.user.username!,
+                                                                  "stationName": "",
+                                                                  "stationNumber": "",
+                                                                  "timeTaken": timestamp,
+                                                                  "timeDone" : null,
+                                                                  "serviceType": servingStream.value!.serviceType!,
+                                                                  'callCheck': servingStream.value!.callCheck!,
+                                                                  'blinker': servingStream.value!.blinker!,
+                                                                }
+                                                              });
+
+                                                              servingStream.value = null;
+
+                                                              dataBatch.add({
+                                                                'type': 'updateStation',
+                                                                'data': {
+                                                                  'id': widget.station.id!,
+                                                                  'ticketServing': "",
+                                                                  'ticketServingId': null
+                                                                }
+                                                              });
+
+                                                              dataBatch.add({
+                                                                'type': 'updateDisplay',
+                                                                'data': {}
+                                                              });
+
+                                                              NodeSocketService().sendBatch(dataBatch);
+                                                              Navigator.pop(dialogContext);
+                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                SnackBar(content: Text("Ticket released.")),
+                                                              );
+
+                                                            })
+                                                      ],
+                                                    ));
+                                          }
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                              context)
+                                              .showSnackBar(SnackBar(
+                                              content: Text(
+                                                  "No ticket being served at the moment.")));
+                                        }
+
+                                      } catch(e) {
+                                        print(e);
+                                      }
+
+                                    },
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.center,
+                          children: [
+                            StatefulBuilder(
+                              builder: (context, setStateCheck) {
+                                return Checkbox(
+                                    value: alternate,
+                                    onChanged: (value) async {
+                                      alternate = !alternate;
+                                      NodeSocketService().sendMessage('getTicket', {});
+                                      setStateCheck((){});
+                                    });
+                              },
+                            ),
+                            SizedBox(width: 5),
+                            Text("Alternate Priority & Regular",
+                                style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14)),
+
+                            SizedBox(width: 5),
+                            IconButton(onPressed: () async {
+                              NodeSocketService().sendMessage('getTicket', {});
+                              swap = !swap;
+                            }, icon: Icon(Icons.change_circle_outlined))
+                          ],
+                        ),
+                        ValueListenableBuilder<List<Ticket>>(
+                          valueListenable: ticketStream,
+                          builder: (BuildContext context, List<Ticket> value, Widget? child) {
+
+                            return StatefulBuilder(
+                              builder: (BuildContext context,
+                                  void Function(void Function())
+                                  setStateTickets) {
+                                return Column(
+                                  children: [
+                                    Builder(builder: (context) {
+                                      List<String> callByList = [];
+                                      if (widget.user.serviceType!
+                                          .isNotEmpty) {
+                                        callByList = stringToList(
+                                            widget.user.serviceType!
+                                                .toString());
+                                      }
+
+                                      callByList.insert(
+                                          0, "Time Order");
+
+                                      return Container(
+                                        height: 40,
+                                        width: 300,
+                                        child: TextButton(
+                                            child: Text(
+                                                "Sort By: $callBy",
+                                                textAlign: TextAlign
+                                                    .center,
+                                                style: TextStyle(
+                                                    fontSize: 15)),
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (_) =>
+                                                      AlertDialog(
+                                                        title: Text(
+                                                            "Sort Ticket Calls"),
+                                                        content:
+                                                        Container(
+                                                          height:
+                                                          300,
+                                                          width:
+                                                          300,
+                                                          child: ListView.builder(
+                                                              itemCount: callByList.length,
+                                                              itemBuilder: (context, i) {
+                                                                return ListTile(
+                                                                  title: Text(callByList[i]),
+                                                                  onTap: () {
+                                                                    callBy = callByList[i];
+                                                                    NodeSocketService().sendMessage('getTicket', {});
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                );
+                                                              }),
+                                                        ),
+                                                      ));
+                                            }),
+                                      );
+                                    }),
+                                    Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                      children: [
+                                        Text("Upcoming Tickets:",
+                                            style: TextStyle(
+                                                fontWeight:
+                                                FontWeight
+                                                    .w700)),
+                                        Container(
+                                          height: 240,
+                                          child: ticketStream.value.isEmpty
+                                              ? Text(
+                                              "No pending tickets\nat the moment.",
+                                              style: TextStyle(
+                                                  color: Colors
+                                                      .grey),
+                                              textAlign:
+                                              TextAlign
+                                                  .center)
+                                              : ValueListenableBuilder(
+                                            valueListenable: ticketStream,
+                                            builder: (BuildContext context, List<Ticket> value, Widget? child) {
+
+                                              return ListView.builder(
+                                                  scrollDirection: Axis.vertical,
+                                                  itemCount: ticketStream.value.length,
+                                                  itemBuilder: (context, i) {
+                                                    return ListTile(
+                                                      dense: true,
+                                                      title: Text("${i + 1}. ${ticketStream.value[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                                                      subtitle: Text(ticketStream.value[i].priorityType == "Regular" ? "" : ticketStream.value[i].priorityType!.length > 20 ? "(${smartAbbreviate(ticketStream.value[i].priorityType!)})" : ticketStream.value[i].priorityType!, style: TextStyle(fontWeight: FontWeight.bold)),
+                                                      trailing: ticketStream.value[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
+                                                    );
+                                                  });
                                             },
                                           ),
                                         ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      Builder(builder: (context) {
-
-                                        return ClipRRect(
-                                          child: Card(
-                                            child: InkWell(
-                                              child: Container(
-                                                height: 120,
-                                                width: 95,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .center,
-                                                  children: [
-                                                    Icon(Icons.volume_up),
-                                                    SizedBox(width: 5),
-                                                    Text("Call Again"),
-                                                  ],
-                                                ),
-                                              ),
-                                              onTap: () {
-                                                final timestamp =
-                                                    DateTime.now().toString();
-
-                                                try {
-                                                  List<Map<String, dynamic>> dataBatch = [];
-
-                                                  if (servingStream.value != null) {
-                                                    if (callAgainCounter < 3) {
-                                                      callAgainCounter += 1;
-
-                                                      dataBatch.add({
-                                                        'type': 'updateTicket',
-                                                        'data': {
-                                                          "id": servingStream.value!.id,
-                                                          "userAssigned": widget.user.username!,
-                                                          "status": "Serving",
-                                                          "stationName": widget.station.stationName!,
-                                                          "stationNumber": widget.station.stationNumber!,
-                                                          "timeTaken": timestamp,
-                                                          "timeDone" : null,
-                                                          "serviceType": servingStream.value!.serviceType!,
-                                                          'callCheck': 0,
-                                                          'blinker': 0,
-                                                          'log': "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
-                                                        }
-                                                      });
-
-                                                      dataBatch.add({
-                                                        'type': 'updateStation',
-                                                        'data': {
-                                                          'id': widget.station.id!,
-                                                          'ticketServing': servingStream.value!.codeAndNumber!,
-                                                          'ticketServingId': servingStream.value!.id!
-                                                        }
-                                                      });
-
-                                                      dataBatch.add({
-                                                        'type': 'updateDisplay',
-                                                        'data': {}
-                                                      });
-
-                                                      NodeSocketService().sendBatch(dataBatch);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(content: Text("Ticket called again.")));
-
-                                                    } else {
-                                                      showDialog(
-                                                          context: context,
-                                                          builder:
-                                                              (dialogContext) =>
-                                                              AlertDialog(
-                                                                title: Text(
-                                                                    "Release Ticket?"),
-                                                                content:
-                                                                Container(
-                                                                  child: Text(
-                                                                      "Ticket has been called a few times."),
-                                                                  height:
-                                                                  40,
-                                                                ),
-                                                                actions: [
-                                                                  TextButton(onPressed: () {
-
-                                                                    dataBatch.add({
-                                                                      'type': 'updateTicket',
-                                                                      'data': {
-                                                                        "id": servingStream.value!.id,
-                                                                        "userAssigned": widget.user.username!,
-                                                                        "status": "Serving",
-                                                                        "stationName": widget.station.stationName!,
-                                                                        "stationNumber": widget.station.stationNumber!,
-                                                                        "timeTaken": timestamp,
-                                                                        "timeDone" : null,
-                                                                        "serviceType": servingStream.value!.serviceType!,
-                                                                        'callCheck': 0,
-                                                                        'blinker': 0,
-                                                                        'log': "${servingStream.value!.log!}, ${DateTime.now()}: ticket called again"
-                                                                      }
-                                                                    });
-
-                                                                    dataBatch.add({
-                                                                      'type': 'updateStation',
-                                                                      'data': {
-                                                                        'id': widget.station.id!,
-                                                                        'ticketServing': servingStream.value!.codeAndNumber!,
-                                                                        'ticketServingId': servingStream.value!.id!
-                                                                      }
-                                                                    });
-
-                                                                    dataBatch.add({
-                                                                      'type': 'updateDisplay',
-                                                                      'data': {}
-                                                                    });
-
-                                                                    NodeSocketService().sendBatch(dataBatch);
-                                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                                        SnackBar(content: Text("Ticket called again.")));
-                                                                  }, child: Text("Call Again")),
-                                                                  TextButton(
-                                                                      child: Text(
-                                                                          "Release"),
-                                                                      onPressed:
-                                                                          () {
-
-                                                                        dataBatch.add({
-                                                                          'type': 'updateTicket',
-                                                                          'data': {
-                                                                            "id": servingStream.value!.id!,
-                                                                            "status": 'Released',
-                                                                            'log': "${servingStream.value!.log!}, ${DateTime.now()}: Ticket Released",
-                                                                            "userAssigned": widget.user.username!,
-                                                                            "stationName": "",
-                                                                            "stationNumber": "",
-                                                                            "timeTaken": timestamp,
-                                                                            "timeDone" : null,
-                                                                            "serviceType": servingStream.value!.serviceType!,
-                                                                            'callCheck': servingStream.value!.callCheck!,
-                                                                            'blinker': servingStream.value!.blinker!,
-                                                                          }
-                                                                        });
-
-                                                                        servingStream.value = null;
-
-                                                                        dataBatch.add({
-                                                                          'type': 'updateStation',
-                                                                          'data': {
-                                                                            'id': widget.station.id!,
-                                                                            'ticketServing': "",
-                                                                            'ticketServingId': null
-                                                                          }
-                                                                        });
-
-                                                                        dataBatch.add({
-                                                                          'type': 'updateDisplay',
-                                                                          'data': {}
-                                                                        });
-
-                                                                        NodeSocketService().sendBatch(dataBatch);
-                                                                        Navigator.pop(dialogContext);
-                                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                                        SnackBar(content: Text("Ticket released.")),
-                                                                        );
-
-                                                                      })
-                                                                ],
-                                                              ));
-                                                    }
-                                                  } else {
-                                                    ScaffoldMessenger.of(
-                                                        context)
-                                                        .showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            "No ticket being served at the moment.")));
-                                                  }
-
-                                                } catch(e) {
-                                                  print(e);
-                                                }
-
-                                              },
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                    ],
-                                  ),
-                                  SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      StatefulBuilder(
-                                        builder: (context, setStateCheck) {
-                                          return Checkbox(
-                                              value: alternate,
-                                              onChanged: (value) async {
-                                                alternate = !alternate;
-                                                NodeSocketService().sendMessage('getTicket', {});
-                                                setStateCheck((){});
-                                              });
-                                        },
-                                      ),
-                                      SizedBox(width: 5),
-                                      Text("Alternate Priority & Regular",
-                                          style: TextStyle(
-                                              fontFamily: 'Inter',
-                                              fontSize: 14)),
-
-                                      SizedBox(width: 5),
-                                      IconButton(onPressed: () async {
-                                        NodeSocketService().sendMessage('getTicket', {});
-                                        swap = !swap;
-                                      }, icon: Icon(Icons.change_circle_outlined))
-                                    ],
-                                  ),
-                                  ValueListenableBuilder<List<Ticket>>(
-                                    valueListenable: ticketStream,
-                                    builder: (BuildContext context, List<Ticket> value, Widget? child) {
-
-                                      return StatefulBuilder(
-                                        builder: (BuildContext context,
-                                            void Function(void Function())
-                                                setStateTickets) {
-                                          return Column(
-                                            children: [
-                                              Builder(builder: (context) {
-                                                List<String> callByList = [];
-                                                if (widget.user.serviceType!
-                                                    .isNotEmpty) {
-                                                  callByList = stringToList(
-                                                      widget.user.serviceType!
-                                                          .toString());
-                                                }
-
-                                                callByList.insert(
-                                                    0, "Time Order");
-
-                                                return Container(
-                                                  height: 40,
-                                                  width: 300,
-                                                  child: TextButton(
-                                                      child: Text(
-                                                          "Sort By: $callBy",
-                                                          textAlign: TextAlign
-                                                              .center,
-                                                          style: TextStyle(
-                                                              fontSize: 15)),
-                                                      onPressed: () {
-                                                        showDialog(
-                                                            context: context,
-                                                            builder: (_) =>
-                                                                AlertDialog(
-                                                                  title: Text(
-                                                                      "Sort Ticket Calls"),
-                                                                  content:
-                                                                      Container(
-                                                                    height:
-                                                                        300,
-                                                                    width:
-                                                                        300,
-                                                                    child: ListView.builder(
-                                                                        itemCount: callByList.length,
-                                                                        itemBuilder: (context, i) {
-                                                                          return ListTile(
-                                                                            title: Text(callByList[i]),
-                                                                            onTap: () {
-                                                                              callBy = callByList[i];
-                                                                              NodeSocketService().sendMessage('getTicket', {});
-                                                                              Navigator.pop(context);
-                                                                            },
-                                                                          );
-                                                                        }),
-                                                                  ),
-                                                                ));
-                                                      }),
-                                                );
-                                              }),
-                                              Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text("Upcoming Tickets:",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight
-                                                                  .w700)),
-                                                  Container(
-                                                    height: 240,
-                                                    child: ticketStream.value.isEmpty
-                                                        ? Text(
-                                                            "No pending tickets\nat the moment.",
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .grey),
-                                                            textAlign:
-                                                                TextAlign
-                                                                    .center)
-                                                        : ValueListenableBuilder(
-                                                          valueListenable: ticketStream,
-                                                          builder: (BuildContext context, List<Ticket> value, Widget? child) {
-
-                                                            return ListView.builder(
-                                                                scrollDirection: Axis.vertical,
-                                                                itemCount: ticketStream.value.length,
-                                                                itemBuilder: (context, i) {
-                                                                  return ListTile(
-                                                                    dense: true,
-                                                                    title: Text("${i + 1}. ${ticketStream.value[i].codeAndNumber}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                                                                    subtitle: Text(ticketStream.value[i].priorityType == "Regular" ? "" : ticketStream.value[i].priorityType!.length > 20 ? "(${smartAbbreviate(ticketStream.value[i].priorityType!)})" : ticketStream.value[i].priorityType!, style: TextStyle(fontWeight: FontWeight.bold)),
-                                                                    trailing: ticketStream.value[i].priorityType == "Regular" ? null : Icon(Icons.star, color: Colors.blueGrey),
-                                                                  );
-                                                                });
-                                                          },
-                                                        ),
-                                                  ),
-                                                ],
-                                              )
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    ],
+                                      ],
+                                    )
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                );
+              },
+            )
+          ],
+        ),
+      ),
     );
   }
 
@@ -1421,9 +1455,9 @@ class _StaffSessionState extends State<StaffSession> {
       for (int i = 0; i < widget.user.serviceType!.length; i++) {
         sorted.addAll(response
             .where((e) =>
-                e['serviceType'].toString() ==
-                    widget.user.serviceType![i].toString() &&
-                e['status'] == "Pending")
+        e['serviceType'].toString() ==
+            widget.user.serviceType![i].toString() &&
+            e['status'] == "Pending")
             .toList());
       }
 
@@ -1435,8 +1469,8 @@ class _StaffSessionState extends State<StaffSession> {
 
       newTickets = newTickets
           .where((e) =>
-              e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) &&
-              e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1)))))
+      e.timeCreatedAsDate!.isAfter(toDateTime(dateNow)) &&
+          e.timeCreatedAsDate!.isBefore(toDateTime(dateNow.add(Duration(days: 1)))))
           .toList();
 
 
@@ -1549,9 +1583,9 @@ class _StaffSessionState extends State<StaffSession> {
       for (int i = 0; i < widget.user.serviceType!.length; i++) {
         sorted.addAll(response
             .where((e) =>
-                e['serviceType'] == widget.user.serviceType![i] &&
-                e['status'] == "Serving" &&
-                e['userAssigned'] == widget.user.username)
+        e['serviceType'] == widget.user.serviceType![i] &&
+            e['status'] == "Serving" &&
+            e['userAssigned'] == widget.user.username)
             .toList());
       }
 
@@ -1602,8 +1636,8 @@ class _StaffSessionState extends State<StaffSession> {
       if (stationNameNumber != null) {
         response
             .where((e) =>
-                "${e['stationName']}${e['stationNumber']}".trim() ==
-                stationNameNumber)
+        "${e['stationName']}${e['stationNumber']}".trim() ==
+            stationNameNumber)
             .toList();
         toReturn = response;
       } else {
@@ -1640,32 +1674,32 @@ class _StaffSessionState extends State<StaffSession> {
             resetRinger();
           },
           child: AlertDialog(
-                content: GestureDetector(
-                  onTap: () {
-                    dialogOn = false;
-                    ringerSound.cancel();
-                    _stop();
-                    resetRinger();
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    height: 150,
-                    width: 200,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("INACTIVITY DETECTED",
-                            style: TextStyle(
-                                fontSize: 25, fontWeight: FontWeight.w700),
-                            textAlign: TextAlign.center),
-                        Text("Press to Dismiss",
-                            style: TextStyle(fontSize: 15),
-                            textAlign: TextAlign.center),
-                      ],
-                    ),
-                  ),
+            content: GestureDetector(
+              onTap: () {
+                dialogOn = false;
+                ringerSound.cancel();
+                _stop();
+                resetRinger();
+                Navigator.pop(context);
+              },
+              child: Container(
+                height: 150,
+                width: 200,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("INACTIVITY DETECTED",
+                        style: TextStyle(
+                            fontSize: 25, fontWeight: FontWeight.w700),
+                        textAlign: TextAlign.center),
+                    Text("Press to Dismiss",
+                        style: TextStyle(fontSize: 15),
+                        textAlign: TextAlign.center),
+                  ],
                 ),
               ),
+            ),
+          ),
         ));
   }
 
@@ -1726,5 +1760,3 @@ class _StaffSessionState extends State<StaffSession> {
     player.stop();
   }
 }
-
-

@@ -20,8 +20,14 @@ class NodeSocketService {
   DateTime? _lastMessageTime;
   bool _isConnected = false;
 
+  // The server sends a {"type":"hb"} message every 10s. The stale-connection
+  // watchdog only runs once this connection has actually received one, so it
+  // can never drop a healthy-but-quiet connection, and it stays harmless
+  // against an older server.js that does not send heartbeats yet.
+  bool _serverHasHeartbeat = false;
+
   // How long without any message before we assume the connection is dead
-  static const Duration _staleTimeout = Duration(seconds: 25);
+  static const Duration _staleTimeout = Duration(seconds: 30);
 
   // 🔑 Persistent broadcast controller
   final StreamController<String> _controller = StreamController<String>.broadcast();
@@ -35,6 +41,7 @@ class NodeSocketService {
     } catch (_) {}
 
     _isConnected = false;
+    _serverHasHeartbeat = false;
 
     final url = 'ws://${site.toString().split(":")[0]}:3000';
     print("Connecting to $url");
@@ -57,13 +64,25 @@ class NodeSocketService {
         final wasConnected = _isConnected;
         _isConnected = true;
         _lastMessageTime = DateTime.now();
-        _controller.add(message); // ✅ push into broadcast
 
         try {
           final json = jsonDecode(message);
+
+          // Heartbeat: proves the connection is alive. Not passed to screens.
+          if (json['type'] == 'hb') {
+            _serverHasHeartbeat = true;
+            return;
+          }
+
+          _controller.add(message); // ✅ push into broadcast
+
           if (json['type'] == 'ping') {
             print("📡 Ping: ${json['data']}");
-            if (!wasConnected) _connected(); // only announce on reconnect
+            if (!wasConnected) {
+              _connected(); // only announce on reconnect
+              // Tell every screen to re-sync its state with the server.
+              _controller.add(jsonEncode({'type': 'reconnected', 'data': null}));
+            }
           }
         } catch (e) {
           print("JSON parse error: $e");
@@ -79,12 +98,13 @@ class NodeSocketService {
     );
   }
 
-  // Force a reconnect if no message (including pings) has arrived in a while.
+  // Force a reconnect if the server's heartbeat stops arriving.
   // Catches silently-dead sockets that never fire onDone/onError.
   void _startWatchdog(BuildContext? context) {
     _watchdogTimer?.cancel();
     _watchdogTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (_lastMessageTime == null) return;
+      if (!_serverHasHeartbeat) return;
       final silentFor = DateTime.now().difference(_lastMessageTime!);
       if (silentFor > _staleTimeout) {
         print("⚠️ No messages for ${silentFor.inSeconds}s, assuming dead connection");
@@ -127,18 +147,36 @@ class NodeSocketService {
     });
   }
 
-  void sendMessage(String type, dynamic data) {
+  // Returns true if the message was sent. When offline the message is NOT
+  // sent (it would be stale by the time we reconnect), so the person is told.
+  bool sendMessage(String type, dynamic data) {
     if (_isConnected && _channel != null) {
       final msg = jsonEncode({'type': type, 'data': data});
       _channel!.sink.add(msg);
+      return true;
     }
+    return false;
   }
 
-  void sendBatch(List<Map<String, dynamic>> data) {
+  bool sendBatch(List<Map<String, dynamic>> data) {
     if (_isConnected && _channel != null) {
       final msg = jsonEncode({'batch': data});
       _channel!.sink.add(msg);
+      return true;
     }
+    _notSent();
+    return false;
+  }
+
+  void _notSent() {
+    Fluttertoast.showToast(
+      msg: "Offline - that action was NOT sent. Wait for 'Connected' and try again.",
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.CENTER,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 18.0,
+    );
   }
 
   void _connected() {
